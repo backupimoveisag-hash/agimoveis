@@ -521,7 +521,13 @@ function initLoginV7(){
   if(!firebaseMode){const session=localStorage.getItem('nexoSessionV1');if(session){document.body.classList.remove('auth-required');screen?.classList.add('hidden')}}
   $('#togglePassword')?.addEventListener('click',()=>{const i=$('#loginPassword');if(!i)return;i.type=i.type==='password'?'text':'password';$('#togglePassword').textContent=i.type==='password'?'Mostrar':'Ocultar'});
   if(firebaseMode)return;
-  form?.addEventListener('submit',e=>{e.preventDefault();$('#loginError').textContent='Este CRM requer conexão com o Firebase Authentication.';});
+  // Não exibe uma mensagem definitiva antes do módulo de autenticação terminar de carregar.
+  // O login-ui-v57 mostra o diagnóstico real caso o Firebase/CDN falhe.
+  form?.addEventListener('submit',e=>{
+    e.preventDefault();
+    const status=$('#loginStatus');
+    if(status && !status.textContent) status.textContent='Inicializando autenticação…';
+  });
   $('#logoutBtn')?.addEventListener('click',()=>{localStorage.removeItem('nexoSessionV1');document.body.classList.add('auth-required');screen.classList.remove('hidden');$('#loginPassword').focus()});
 }
 const v7RenderAllBase=renderAll;renderAll=function(){v7RenderAllBase();ensureV7SiteSchema();renderSiteManager()};
