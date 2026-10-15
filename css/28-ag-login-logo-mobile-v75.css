@@ -1,17 +1,23 @@
-/* AG CRM V75 — ajuste específico da logo na tela de entrada em dispositivos móveis */
+/* AG CRM V76 — login mobile mais compacto */
 @media (max-width: 640px) {
+  #loginScreen .login-card {
+    padding-top: 20px !important;
+  }
   #loginScreen .login-brand-center {
-    margin-bottom: 18px !important;
+    margin: 0 0 14px !important;
   }
   #loginScreen .login-brand-center img {
-    width: min(145px, 42vw) !important;
-    max-width: 145px !important;
+    width: min(112px, 30vw) !important;
+    max-width: 112px !important;
     height: auto !important;
   }
 }
 @media (max-width: 380px) {
+  #loginScreen .login-brand-center {
+    margin-bottom: 12px !important;
+  }
   #loginScreen .login-brand-center img {
-    width: min(132px, 40vw) !important;
-    max-width: 132px !important;
+    width: min(98px, 28vw) !important;
+    max-width: 98px !important;
   }
 }
