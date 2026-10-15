@@ -1,0 +1,24 @@
+/* V40 — dados executivos em azul-marinho AG, mantendo o fundo interno branco */
+  .v5-management,.v5-alert-card{background:#fff!important;border-color:rgba(20,37,63,.16)!important}
+  .v5-management .card-head,.v5-alert-card .card-head{border-bottom-color:rgba(20,37,63,.12)!important}
+  .v5-management .card-head h3,.v5-alert-card .card-head h3{color:#14253F!important}
+  .v5-management .v5-kicker,.v5-alert-card .v5-kicker,.v25-attention-head .v5-kicker{color:#14253F!important}
+  .v5-health-grid{background:#fff!important;border-top-color:rgba(20,37,63,.12)!important}
+  .v5-health-grid>div{border-right-color:rgba(20,37,63,.12)!important}
+  .v5-health-grid span,.v5-health-grid small{color:rgba(20,37,63,.66)!important}
+  .v5-health-grid strong{color:#14253F!important}
+  .v5-live{color:#14253F!important}
+  .v5-alert{background:#fff!important;border-color:rgba(20,37,63,.12)!important}
+  .v5-alert-icon{background:#14253F!important;color:#EAC686!important}
+  .v5-alert b{color:#14253F!important}
+  .v5-alert p{color:rgba(20,37,63,.64)!important}
+  .v5-alert .btn{border-color:rgba(20,37,63,.22)!important;color:#14253F!important;background:#fff!important}
+  .v5-alert .btn:hover{background:#14253F!important;color:#fff!important;border-color:#14253F!important}
+  .v25-attention-head h2{color:#14253F!important}
+  .v25-attention-head p{color:rgba(20,37,63,.58)!important}
+  .v25-attention-card{background:#fff!important;border-color:rgba(20,37,63,.15)!important}
+  .v25-attention-card small{color:rgba(20,37,63,.65)!important}
+  .v25-attention-card strong{color:#14253F!important}
+  .v25-attention-card span{color:rgba(20,37,63,.67)!important}
+  .v25-attention-card:after{color:#14253F!important}
+  .v25-attention-card:hover{border-color:rgba(20,37,63,.34)!important;box-shadow:0 18px 48px rgba(20,37,63,.08)!important}

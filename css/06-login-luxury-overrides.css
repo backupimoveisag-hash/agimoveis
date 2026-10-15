@@ -1,0 +1,24 @@
+html,body{height:100%;margin:0;background:#050505}
+  body.auth-required{overflow:hidden}
+  #loginScreen.login-screen{position:fixed!important;inset:0!important;z-index:99999!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:32px!important;overflow:hidden!important;background:#050505!important;grid-template-columns:none!important}
+  #loginScreen.hidden{display:none!important}
+  #loginScreen .login-bg{position:absolute!important;inset:0!important;background-image:linear-gradient(180deg, rgba(0,0,0,.36), rgba(0,0,0,.58)), url('../assets/login-luxury-bg.jpg')!important;background-position:center center!important;background-size:cover!important;background-repeat:no-repeat!important;transform:scale(1.04)!important;filter:saturate(1.02) contrast(1.02)}
+  #loginScreen .login-overlay{position:absolute!important;inset:0!important;background:radial-gradient(circle at center, rgba(0,0,0,.12) 0%, rgba(0,0,0,.44) 72%), radial-gradient(circle at top right, rgba(215,184,120,.18), transparent 30%)!important;pointer-events:none!important}
+  #loginScreen .login-panel{position:relative!important;z-index:2!important;display:flex!important;align-items:center!important;justify-content:center!important;width:auto!important;max-width:none!important;padding:0!important;background:transparent!important;box-shadow:none!important}
+  #loginScreen .login-card{width:min(420px, 92vw)!important;padding:34px 30px!important;border-radius:30px!important;background:linear-gradient(180deg, rgba(32,32,35,.68), rgba(18,18,20,.72))!important;border:1px solid rgba(234,204,147,.22)!important;box-shadow:0 30px 90px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.06)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important}
+  #loginScreen .login-card h2,#loginScreen .login-card>p,#loginScreen .login-google,#loginScreen .login-first,#loginScreen .login-demo,#loginScreen .cloud-auth-note,#loginScreen .login-kicker,#loginScreen .login-mobile-brand,#loginScreen .login-visual{display:none!important}
+  #loginScreen .login-brand-center{display:flex!important;justify-content:center!important;align-items:center!important;margin:0 0 26px!important}
+  #loginScreen .login-brand-center img{display:block!important;width:min(200px,54vw)!important;height:auto!important;filter:drop-shadow(0 14px 30px rgba(0,0,0,.25))!important}
+  #loginScreen .login-card label{display:block!important;margin:0 0 16px!important;font-size:11px!important;font-weight:700!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:rgba(255,255,255,.92)!important}
+  #loginScreen .login-card input{width:100%!important;height:56px!important;margin-top:8px!important;padding:0 16px!important;border-radius:16px!important;border:1px solid rgba(255,255,255,.14)!important;background:rgba(255,255,255,.11)!important;color:#fff!important;font-size:15px!important;outline:none!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important}
+  #loginScreen .login-card input::placeholder{color:rgba(255,255,255,.64)!important}
+  #loginScreen .login-card input:focus{border-color:rgba(228,197,135,.9)!important;box-shadow:0 0 0 4px rgba(228,197,135,.13)!important}
+  #loginScreen .login-password{position:relative!important}
+  #loginScreen .login-password input{padding-right:96px!important}
+  #loginScreen .login-password button{position:absolute!important;right:8px!important;bottom:8px!important;height:40px!important;padding:0 16px!important;border:0!important;border-radius:12px!important;background:rgba(255,255,255,.14)!important;color:#fff!important;font-size:11px!important;font-weight:700!important;cursor:pointer!important}
+  #loginScreen .login-password button:hover{background:rgba(255,255,255,.2)!important}
+  #loginScreen .login-submit{width:100%!important;height:58px!important;border:0!important;border-radius:16px!important;margin-top:8px!important;background:linear-gradient(135deg,#ead39f 0%, #c89d57 100%)!important;color:#1a1a1a!important;font-size:14px!important;font-weight:800!important;letter-spacing:.02em!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;cursor:pointer!important;box-shadow:0 16px 30px rgba(0,0,0,.22)!important}
+  #loginScreen .login-submit:hover{filter:brightness(1.03)!important;transform:translateY(-1px)}
+  #loginScreen .login-error{min-height:18px!important;margin-top:14px!important;text-align:center!important;color:#ffe1e1!important;font-size:11px!important}
+  .app{position:relative;z-index:1}
+  @media (max-width:640px){#loginScreen.login-screen{padding:18px!important}#loginScreen .login-card{padding:26px 22px!important;border-radius:26px!important}#loginScreen .login-brand-center img{width:min(170px,52vw)!important}}

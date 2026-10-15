@@ -1,0 +1,15 @@
+/* Typography V4 — clean premium interface */
+body{font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.012em}
+.brand-copy strong{font-weight:700;letter-spacing:-.035em}
+.nav button{font-weight:600;letter-spacing:-.01em}
+.dashboard-intro h1,.page-head h1{font-family:"Manrope",sans-serif;font-weight:600;letter-spacing:-.055em}
+.dashboard-intro h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:500;letter-spacing:-.04em}
+.pulse-value{font-weight:600;letter-spacing:-.065em}
+.pulse-caption,.spotlight-copy h3,.property-content h3,.lead-card h4,.cal-head h3,.report-card>h3,.settings-card h3,.modal-head h2{font-family:"Manrope",sans-serif}
+.spotlight-copy h3{font-weight:600}
+.property-content h3{font-weight:650!important}
+.lead-card h4{font-weight:650}
+.card-head h3,.card h3{font-weight:700;letter-spacing:-.015em}
+.kpi-label,.eyebrow,.property-tag,.property-status,.property-code,.form-group label{letter-spacing:.055em}
+.kpi strong,.lead-value,.price-row strong{font-variant-numeric:tabular-nums}
+input,select,textarea,button{font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif}

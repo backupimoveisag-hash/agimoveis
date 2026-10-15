@@ -1,0 +1,36 @@
+/* V56 — Firebase Auth, aprovação e permissões */
+#loginScreen.login-screen{overflow-y:auto!important}
+.role-hidden{display:none!important}
+#loginScreen .login-card{width:min(460px,94vw)!important}
+#loginScreen .login-brand-center{margin-bottom:18px!important}
+#loginScreen .login-brand-center img{width:min(180px,50vw)!important}
+#loginScreen .login-card .hidden{display:none!important}
+#loginScreen .login-google{display:flex!important;width:100%;height:54px;border-radius:16px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);color:#fff;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:750;cursor:pointer;margin-top:10px}
+#loginScreen .login-google:hover{background:rgba(255,255,255,.16)}
+#loginScreen .login-google svg{width:19px;height:19px;flex:0 0 auto}
+#loginScreen .login-separator{display:flex!important;align-items:center;gap:12px;margin:15px 0;color:rgba(255,255,255,.56);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+#loginScreen .login-separator:before,#loginScreen .login-separator:after{content:"";height:1px;background:rgba(255,255,255,.14);flex:1}
+#loginScreen .login-account-action{display:flex!important;width:100%;min-height:44px;border:0;background:transparent;color:#ead39f;align-items:center;justify-content:center;font-size:13px;font-weight:750;cursor:pointer}
+#loginScreen .login-status{display:block!important;min-height:18px;margin-top:11px;text-align:center;font-size:12px;line-height:1.45;color:rgba(255,255,255,.72)}
+#loginScreen .login-status[data-tone="pending"]{color:#ffe3a8}#loginScreen .login-status[data-tone="error"]{color:#ffd0d0}
+#loginScreen .register-heading{display:block!important;margin:3px 0 16px;text-align:center;color:#fff;font-size:14px;font-weight:750}
+#loginScreen #loginRegisterPanel label{margin-bottom:12px!important}
+#loginScreen #loginRegisterPanel input{height:50px!important}
+#loginScreen .register-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:9px;margin-top:8px}
+#loginScreen .register-actions .login-submit{margin:0!important;height:52px!important}
+#loginScreen .register-back{height:52px;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-weight:750;cursor:pointer}
+
+.ag-users-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:3px 0 17px}.ag-users-intro h2{margin:5px 0 7px;font-size:clamp(25px,2.3vw,38px);letter-spacing:-.045em}.ag-users-intro p{margin:0;color:var(--muted);font-size:13px;line-height:1.6;max-width:720px}
+.ag-current-access{display:grid;grid-template-columns:1fr 1fr;gap:1px;min-width:360px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--line)}.ag-current-access>div{background:#fff;padding:12px 14px}.ag-current-access b,.ag-current-access span{display:block}.ag-current-access b{font-size:12px;color:var(--ink)}.ag-current-access span{font-size:11px;color:var(--muted);margin-top:3px}
+.ag-users-lock{padding:26px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);font-size:13px}.ag-users-admin-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:16px;align-items:start}.ag-access-card{padding:19px}.ag-access-card h3{font-size:19px;margin:4px 0 4px}.ag-access-card>.support{font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 14px}
+.ag-access-list{display:grid;gap:9px}.ag-access-row,.ag-user-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px;border:1px solid var(--line);border-radius:15px;background:#fff}.ag-access-person{display:flex;align-items:center;gap:11px;min-width:0}.ag-access-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#14253F;color:#EAC686;font-size:13px;font-weight:850;flex:0 0 auto}.ag-access-person>div{min-width:0}.ag-access-person b{display:block;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ag-access-person small{display:block;font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}.ag-access-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}.ag-access-actions .form-control{min-width:130px;min-height:38px;font-size:12px;padding:0 9px}.ag-access-empty{padding:20px;text-align:center;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:12px}
+.ag-create-user-form{display:grid;gap:10px}.ag-create-user-form .form-grid{grid-template-columns:1fr 1fr}.ag-create-user-form label{font-size:12px}.ag-create-user-form .form-control{font-size:14px;min-height:44px}.ag-permission-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:5px 0 8px}.ag-permission-title b{font-size:12px}.ag-permission-title span{font-size:11px;color:var(--muted)}.ag-permission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.ag-permission-check{display:flex!important;align-items:center;gap:8px;min-height:39px;padding:8px 9px;border:1px solid var(--line);border-radius:11px;background:#fbfbfa;color:var(--ink);font-size:11px!important;text-transform:none!important;letter-spacing:0!important;margin:0!important;cursor:pointer}.ag-permission-check input{width:16px!important;height:16px!important;min-height:0!important;margin:0!important;accent-color:#14253F}.ag-permission-editor{margin-top:14px;padding:14px;border:1px solid #d7c49b;border-radius:15px;background:#fffaf0}.ag-permission-editor[hidden]{display:none!important}.ag-permission-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.ag-permission-editor-head b{font-size:13px}.ag-permission-editor-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+@media(max-width:1050px){.ag-users-admin-grid{grid-template-columns:1fr}.ag-users-intro{align-items:flex-start;flex-direction:column}.ag-current-access{min-width:0;width:100%}}
+@media(max-width:760px){.ag-access-row,.ag-user-row{align-items:flex-start;flex-direction:column}.ag-access-actions{width:100%;justify-content:flex-start}.ag-access-actions .form-control{flex:1}.ag-permission-grid{grid-template-columns:1fr 1fr}.ag-create-user-form .form-grid{grid-template-columns:1fr}.ag-current-access{grid-template-columns:1fr}.register-actions{grid-template-columns:1fr!important}}
+
+/* V58 — login Google robusto */
+#loginScreen .login-google:disabled{opacity:.72;cursor:wait}
+#loginScreen .login-google.is-loading{position:relative}
+#loginScreen .login-google.is-loading svg{animation:agGoogleSpin 1s linear infinite}
+@keyframes agGoogleSpin{to{transform:rotate(360deg)}}
+#loginScreen .login-error:not(:empty){padding:9px 11px;border-radius:11px;background:rgba(150,30,30,.18);border:1px solid rgba(255,190,190,.16);line-height:1.45}

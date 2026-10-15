@@ -1,0 +1,31 @@
+:root{--blue:#14253F!important;--blue-deep:#0D1A2C!important}
+  .btn.primary,.intro-actions .btn.primary,.top-actions .btn.primary,.head-actions .btn.primary{background:#14253F!important;border-color:#14253F!important;color:#fff!important;box-shadow:0 8px 20px rgba(20,37,63,.16)!important}
+  .btn.primary:hover,.intro-actions .btn.primary:hover,.top-actions .btn.primary:hover,.head-actions .btn.primary:hover{background:#0D1A2C!important;border-color:#0D1A2C!important}
+  .kpi-icon{background:#EEF1F5!important;color:#14253F!important}
+  .sparkline polyline{stroke:#14253F!important}
+  .row-avatar .avatar{background:#EAF0F6!important;color:#14253F!important}
+  .day.today b{background:#14253F!important;color:#fff!important}
+  .event-chip{background:#EAF0F6!important;color:#14253F!important;border-color:#D7E0EA!important}
+  .progress span,.bar span{background:#14253F!important}
+  .pulse-chip{background:#EAF0F6!important;color:#14253F!important;border-color:#D7E0EA!important}
+  .field:focus,.select:focus,.form-control:focus,.search input:focus{border-color:#14253F!important;box-shadow:0 0 0 4px rgba(20,37,63,.08)!important}
+  .site-toggle input:checked+i{background:#14253F!important}
+
+  /* Command Center AG navy */
+  .v25-command-center{background:rgba(7,15,27,.46)!important}
+  .v25-command-dialog{background:#14253F!important;border:1px solid rgba(234,198,134,.24)!important;box-shadow:0 44px 130px rgba(5,12,22,.38)!important}
+  .v25-command-search{border-bottom-color:rgba(255,255,255,.12)!important}
+  .v25-command-search>span:first-child{background:rgba(234,198,134,.14)!important;color:#EAC686!important}
+  .v25-command-search input{color:#fff!important}
+  .v25-command-search input::placeholder{color:rgba(255,255,255,.58)!important}
+  .v25-command-search kbd{background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.14)!important;color:#EAC686!important}
+  .v25-command-item{color:#fff!important}
+  .v25-command-item:hover,.v25-command-item.active{background:rgba(234,198,134,.13)!important}
+  .v25-command-icon{background:rgba(234,198,134,.12)!important;color:#EAC686!important;border:1px solid rgba(234,198,134,.16)!important}
+  .v25-command-copy b{color:#fff!important}
+  .v25-command-copy span{color:rgba(255,255,255,.66)!important}
+  .v25-command-item>small{color:#EAC686!important}
+  .v25-command-empty{color:rgba(255,255,255,.68)!important}
+  .v25-command-footer{border-top-color:rgba(255,255,255,.12)!important;color:rgba(255,255,255,.58)!important}
+  .v25-command-footer b{color:#EAC686!important}
+  .v25-command-close{color:#fff!important}
