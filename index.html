@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#14253f" />
+<title>AG — CRM Imobiliário</title>
+<meta name="application-name" content="AG CRM">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AG CRM">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.webmanifest?v=75">
+<link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon-64.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/01-styles.css?v=75">
+
+<link rel="stylesheet" id="quiet-luxury-redesign" href="./css/02-quiet-luxury-redesign.css?v=75">
+
+<link rel="stylesheet" id="typography-v4" href="./css/03-typography-v4.css?v=75">
+
+<link rel="stylesheet" id="property-detail-v6" href="./css/04-property-detail-v6.css?v=75">
+
+
+<link rel="stylesheet" id="crm-fluid-responsive-v16" href="./css/05-crm-fluid-responsive-v16.css?v=75">
+
+
+
+<link rel="stylesheet" id="login-luxury-overrides" href="./css/06-login-luxury-overrides.css?v=75">
+
+
+<link rel="stylesheet" id="ag-menu-identity" href="./css/07-ag-menu-identity.css?v=75">
+
+
+<link rel="stylesheet" id="ag-white-background-fix" href="./css/08-ag-white-background-fix.css?v=75">
+<link rel="stylesheet" id="ag-menu-distribution-v32" href="./css/09-ag-menu-distribution-v32.css?v=75">
+
+
+<link rel="stylesheet" id="ag-menu-distribution-v33" href="./css/10-ag-menu-distribution-v33.css?v=75">
+
+
+<link rel="stylesheet" id="ag-menu-v34" href="./css/11-ag-menu-v34.css?v=75">
+
+<link rel="stylesheet" id="ag-v35-prospecting-style" href="./css/12-ag-v35-prospecting-style.css?v=75">
+
+
+<link rel="stylesheet" id="ag-v39-navy-accent" href="./css/13-ag-v39-navy-accent.css?v=75">
+
+
+<link rel="stylesheet" id="ag-v40-dashboard-navy-data" href="./css/14-ag-v40-dashboard-navy-data.css?v=75">
+
+
+<link rel="stylesheet" id="ag-v40b-blue-cards-fix" href="./css/15-ag-v40b-blue-cards-fix.css?v=75">
+
+
+<link rel="stylesheet" id="ag-v43-dashboard-cards-refined" href="./css/16-ag-v43-dashboard-cards-refined.css?v=75">
+
+
+<link rel="stylesheet" id="ag-v44-journey-interactions" href="./css/17-ag-v44-journey-interactions.css?v=75">
+
+<script id="ag-light-only" src="./js/01-ag-light-only.js?v=75"></script>
+
+<link rel="stylesheet" id="ag-v46-property-media" href="./css/18-ag-v46-property-media.css?v=75">
+
+<link rel="stylesheet" id="ag-v47-media-visible-fix" href="./css/19-ag-v47-media-visible-fix.css?v=75">
+<link rel="stylesheet" id="ag-readable-typography-v53" href="./css/20-ag-readable-typography.css?v=75">
+<link rel="stylesheet" id="ag-settings-automation-v55" href="./css/23-ag-settings-automation-v55.css?v=75">
+<link rel="stylesheet" id="ag-auth-users-v56" href="./css/24-ag-auth-users-v56.css?v=75">
+<link rel="stylesheet" id="ag-mobile-pwa-v72" href="./css/25-ag-mobile-pwa-v72.css?v=75">
+<link rel="stylesheet" id="ag-mobile-overflow-v73" href="./css/26-ag-mobile-overflow-v73.css?v=75">
+<link rel="stylesheet" id="ag-mobile-menu-v74" href="./css/27-ag-mobile-menu-v74.css?v=75">
+<link rel="stylesheet" id="ag-login-logo-mobile-v75" href="./css/28-ag-login-logo-mobile-v75.css?v=75">
+</head>
+<body class="auth-required">
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-bg"></div>
+  <div class="login-overlay"></div>
+  <div class="login-panel">
+    <form class="login-card" id="loginForm">
+      <div class="login-brand-center"><img src="assets/ag-logo.png" alt="AG"></div>
+      <div id="loginSigninFields">
+        <label>E-mail<input id="loginEmail" type="email" autocomplete="username" placeholder="Digite seu e-mail" required></label>
+        <label>Senha<div class="login-password"><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Digite sua senha" required><button type="button" id="togglePassword">Mostrar</button></div></label>
+        <button class="login-submit" type="submit">Entrar <span>→</span></button>
+        <div class="login-separator">ou</div>
+        <button class="login-google" type="button" id="loginGoogle" aria-label="Entrar com Google"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.35 12.25c0-.71-.06-1.24-.2-1.79H12v3.26h5.37a4.58 4.58 0 0 1-1.99 3.01l-.02.11 2.89 2.24.2.02c1.84-1.7 2.9-4.2 2.9-6.85Z"/><path fill="#34A853" d="M12 21.75c2.63 0 4.83-.86 6.44-2.35l-3.07-2.38c-.82.55-1.91.93-3.37.93a5.85 5.85 0 0 1-5.53-4.04l-.1.01-3 2.32-.04.1A9.74 9.74 0 0 0 12 21.75Z"/><path fill="#FBBC05" d="M6.47 13.91A6 6 0 0 1 6.15 12c0-.66.12-1.3.31-1.9l-.01-.13-3.04-2.36-.1.05A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.06 4.35l3.16-2.44Z"/><path fill="#EA4335" d="M12 6.05c1.83 0 3.07.79 3.78 1.45l2.73-2.66C16.84 3.28 14.63 2.25 12 2.25a9.74 9.74 0 0 0-8.69 5.4l3.15 2.45A5.87 5.87 0 0 1 12 6.05Z"/></svg>Continuar com Google</button>
+        <button class="login-account-action" type="button" id="loginCreateAccountToggle">Criar uma conta</button>
+      </div>
+      <div class="hidden" id="loginRegisterPanel">
+        <div class="register-heading">Criar acesso ao CRM</div>
+        <label>Nome completo<input id="registerName" type="text" autocomplete="name" placeholder="Seu nome"></label>
+        <label>E-mail<input id="registerEmail" type="email" autocomplete="email" placeholder="seu@email.com"></label>
+        <label>Senha<input id="registerPassword" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label>
+        <label>Confirmar senha<input id="registerConfirm" type="password" autocomplete="new-password" placeholder="Repita a senha"></label>
+        <div class="register-actions"><button class="register-back" type="button" id="loginBackToSignIn">Voltar</button><button class="login-submit" type="button" id="loginRegisterSubmit">Cadastrar <span>→</span></button></div>
+      </div>
+      <div class="login-status" id="loginStatus" aria-live="polite"></div>
+      <div class="login-error" id="loginError" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand brand--with-logo">
+      <div class="brand-mark logo-full" aria-hidden="true">
+        <img src="assets/ag-logo.png" alt="AG">
+      </div>
+      <div class="brand-copy brand-copy--minimal"><strong id="brandNameSide" class="sr-only">AG</strong></div>
+    </div>
+    <nav class="nav" id="sideNav">
+      <button class="active" data-page="dashboard" title="Visão"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M4 11h16M10 5v14"/></svg></span>Visão</button>
+      <button data-page="imoveis" title="Imóveis"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg></span>Imóveis</button>
+      <button data-page="leads" title="Leads"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="8" r="4"/><path d="M3 21a7 7 0 0 1 14 0M19 7v6M16 10h6"/></svg></span>Leads</button>
+      <button data-page="atendimento" title="Atendimento automático"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v12H7l-3 3z"/><path d="M8 9h8M8 13h5"/></svg></span>Atendimento <span class="badge" id="navSiteInboxBadge">0</span></button>
+      <button data-page="funil" title="Jornada"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg></span>Jornada</button>
+      <button class="nav-heart" data-page="match" title="Match inteligente" aria-label="Match inteligente"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/></svg></span></button>
+      <button data-page="clientes" title="Pessoas"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 5.5a3 3 0 0 1 0 5.8M17 15a5 5 0 0 1 4.5 5"/></svg></span>Pessoas</button>
+      <button data-page="proprietarios" title="Proprietários"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V9l8-6 8 6v12M8 21v-7h8v7"/><path d="M17 7.2V4h2v4.7"/></svg></span>Propriet.</button>
+      <button data-page="agenda" title="Agenda"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Agenda</button>
+      <button data-page="propostas" title="Documentos"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6zM14 2v6h6M9 13h7M9 17h5"/></svg></span>Docs</button>
+      <button data-page="financeiro" title="Financeiro"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="M7 15l4-4 3 2 5-7"/></svg></span>Financeiro</button>
+      <button data-page="site" title="Site público"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></span>Site</button>
+      <button data-page="configuracoes" title="Configurações"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span>Ajustes</button>
+    </nav>
+    <div class="sidebar-foot"><button type="button" class="pwa-install-btn" id="pwaInstallBtn" hidden>▣ Instalar AG CRM</button><div class="user-mini"><div class="avatar">AG</div><div><b id="loggedUserName">Administrador</b><small>AG Imóveis</small></div><button class="logout-mini" id="logoutBtn" title="Sair">↗</button></div></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" id="mobileMenu">☰</button>
+      <div class="search"><input id="globalSearch" placeholder="Encontre qualquer coisa no CRM..." /><span class="search-key">CTRL K</span></div>
+      <div class="top-actions">
+        <button class="icon-btn hide-mobile" id="notificationBtn" title="Sinais">●</button>
+        <button class="btn primary" id="quickAddBtn">＋ <span class="new-label">Criar</span></button>
+      </div>
+    </header>
+
+    <section class="page active" id="page-dashboard">
+      <div class="dashboard-intro">
+        <div><div class="eyebrow">Visão geral</div><h1>Bem-vindo. <em>A operação começa limpa.</em></h1></div>
+        <div class="intro-actions"><button class="btn primary" data-open="prospecting">＋ Nova oportunidade</button><button class="btn" data-pagejump="imoveis">Explorar carteira</button><button class="btn" id="exportBtn">Backup ↘</button></div>
+      </div>
+      <div class="dashboard-stage">
+        <article class="operation-pulse">
+          <div class="pulse-top"><span class="pulse-label"><i class="live-dot"></i> Pipeline ativo</span><div class="pulse-value" id="heroPipeline">R$ 0</div><div class="pulse-caption">em oportunidades comerciais ativas</div></div>
+          <div class="pulse-bottom"><div class="pulse-note">Acompanhe o valor total em negociação e use o funil para identificar quais oportunidades precisam de ação hoje.</div><div class="pulse-chip" id="heroDeals">0 oportunidades</div></div>
+        </article>
+        <article class="spotlight">
+          <div class="spotlight-top"><span class="spotlight-index">01</span><span class="spotlight-tag">Imóvel em destaque</span></div>
+          <div class="spotlight-copy"><small>Carteira / Jaraguá do Sul</small><h3>Casa Horizonte</h3><div class="spotlight-meta"><span>Amizade · 240 m² · 4 suítes</span><strong>R$ 1,48 mi</strong></div></div>
+        </article>
+      </div>
+      <div class="grid kpis" id="kpiGrid"></div>
+      <div class="v5-control-grid">
+        <article class="card v5-management">
+          <div class="card-head"><div><span class="v5-kicker">GESTÃO EM TEMPO REAL</span><h3>Saúde da operação</h3></div><button class="btn small" data-pagejump="relatorios">Abrir dados ↗</button></div>
+          <div class="v5-health-grid">
+            <div><span>VGV da carteira</span><strong id="v5PortfolioVgv">R$ 0</strong><small>patrimônio comercial disponível</small></div>
+            <div><span>Forecast ponderado</span><strong id="v5Forecast">R$ 0</strong><small>pipeline × probabilidade da etapa</small></div>
+            <div><span>Leads sem ação</span><strong id="v5Stalled">0</strong><small>oportunidades pedindo atenção</small></div>
+            <div><span>Conversão</span><strong id="v5Conversion">0%</strong><small>fechados sobre oportunidades</small></div>
+          </div>
+        </article>
+        <article class="card v5-alert-card">
+          <div class="card-head"><div><span class="v5-kicker">PRÓXIMA MELHOR AÇÃO</span><h3>Radar comercial</h3></div><span class="v5-live">● ao vivo</span></div>
+          <div id="v5SmartAlerts" class="v5-alert-list"></div>
+        </article>
+      </div>
+      <section class="v25-attention-section">
+        <div class="v25-attention-head"><div><span class="v5-kicker">HOJE · FOCO OPERACIONAL</span><h2>O que merece sua atenção.</h2></div><p>Prioridades calculadas a partir da operação atual.</p></div>
+        <div class="v25-attention-grid" id="v25AttentionGrid"></div>
+      </section>
+
+      <div class="grid dash-grid">
+        <article class="card"><div class="card-head"><h3>Ritmo comercial / 6 meses</h3><div class="legend"><span><i></i>Leads</span><span><i class="dot2"></i>Fechamentos</span></div></div><div class="card-body"><div class="chart-wrap"><canvas id="salesChart"></canvas></div></div></article>
+        <article class="card"><div class="card-head"><h3>Sinais recentes</h3></div><div class="card-body"><div class="activity" id="activityList"></div></div></article>
+      </div>
+      <div class="section-row">
+        <article class="card"><div class="card-head"><h3>Próximos encontros</h3><button class="btn small" data-pagejump="agenda">Agenda ↗</button></div><div class="card-body"><div class="mini-list" id="nextVisits"></div></div></article>
+        <article class="card"><div class="card-head"><h3>Seleção da carteira</h3><button class="btn small" data-pagejump="imoveis">Carteira ↗</button></div><div class="card-body"><div class="mini-list" id="featuredProperties"></div></div></article>
+      </div>
+    </section>
+
+    <section class="page" id="page-imoveis">
+      <div class="page-head"><div><h1>Imóveis</h1><p>Gerencie toda a carteira, disponibilidade, proprietários e condições comerciais.</p></div><div class="head-actions"><button class="btn primary" data-open="property">＋ Novo imóvel</button></div></div>
+      <div class="toolbar"><input class="field" id="propertySearch" placeholder="Código, endereço, proprietário..."><select class="select" id="propertyTypeFilter"><option value="">Todos os tipos</option><option>Apartamento</option><option>Casa</option><option>Terreno</option><option>Comercial</option><option>Rural</option></select><select class="select" id="propertyPurposeFilter"><option value="">Venda + locação</option><option>Venda</option><option>Locação</option></select><div class="spacer"></div><button class="btn" id="clearPropertyFilters">Zerar filtros</button></div>
+      <div class="grid property-grid" id="propertyGrid"></div>
+    </section>
+
+    <section class="page" id="page-leads">
+      <div class="page-head"><div><h1>Oportunidades.</h1><p>Contato, contexto e próximo movimento em um só lugar.</p></div><div class="head-actions"><button class="btn primary" onclick="openModal('prospecting')">＋ Prospecção</button></div></div>
+      <div class="toolbar"><input class="field" id="leadSearch" placeholder="Nome, telefone ou e-mail"><select class="select" id="leadSourceFilter"><option value="">Todas as origens</option><option>Site</option><option>Instagram</option><option>Indicação</option><option>WhatsApp</option><option>Portal</option><option>Plantão</option></select><select class="select" id="leadStatusFilter"><option value="">Todas as etapas</option><option>Novo</option><option>Contato</option><option>Visita</option><option>Proposta</option><option>Fechado</option></select></div>
+      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contato</th><th>Interesse</th><th>Origem</th><th>Momento</th><th>Corretor</th><th>Potencial</th><th></th></tr></thead><tbody id="leadTable"></tbody></table></div></article>
+    </section>
+
+    <section class="page" id="page-atendimento">
+      <div class="page-head"><div><h1>Atendimento</h1><p>Leads do site entram, são distribuídos, recebem tarefa de contato e seguem para agenda e follow-up.</p></div><div class="head-actions"><button class="btn" id="openAutomationSettings" type="button">Configurar automações</button><button class="btn primary" id="syncSiteLeads">↻ Sincronizar agora</button></div></div>
+      <div class="auto-flow"><div><span>01</span>Site</div><div><span>02</span>Lead</div><div><span>03</span>Corretor</div><div><span>04</span>WhatsApp</div><div><span>05</span>Follow-up</div></div>
+      <div class="auto-kpis"><article class="card auto-kpi"><span>Entradas do site hoje</span><strong id="autoSiteToday">0</strong><small>interações capturadas</small></article><article class="card auto-kpi"><span>Aguardando contato</span><strong id="autoPending">0</strong><small>SLA do primeiro atendimento</small></article><article class="card auto-kpi"><span>Visitas do site</span><strong id="autoVisits">0</strong><small>agendadas automaticamente</small></article><article class="card auto-kpi"><span>Duplicidades preservadas</span><strong id="autoDuplicates">0</strong><small>mantêm o corretor original</small></article></div>
+      <div class="auto-layout auto-layout--operational">
+        <div class="auto-stack auto-stack--wide">
+          <article class="card"><div class="card-head"><div><span class="v5-kicker">ENTRADAS DIGITAIS</span><h3>Eventos recebidos do site</h3></div><button class="btn small" data-pagejump="leads">Abrir leads</button></div><div class="auto-list" id="autoEventList"></div></article>
+          <article class="card"><div class="card-head"><div><span class="v5-kicker">PRÓXIMAS AÇÕES</span><h3>Fila de atendimento e follow-up</h3></div></div><div class="auto-list" id="autoTaskList"></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-funil">
+      <div class="page-head"><div><h1>Jornada.</h1><p>Negócios avançam por movimento. Arraste para mudar o momento.</p></div><div class="head-actions"><button class="btn gold" data-open="lead">＋ Abrir oportunidade</button></div></div>
+      <div class="kanban" id="kanban"></div>
+    </section>
+
+    <section class="page" id="page-clientes">
+      <div class="page-head"><div><h1>Pessoas.</h1><p>Clientes, proprietários e investidores vistos como relacionamento.</p></div><div class="head-actions"><button class="btn primary" data-open="client">＋ Nova pessoa</button></div></div>
+      <div class="toolbar"><input class="field" id="clientSearch" placeholder="Nome, documento ou telefone"><select class="select" id="clientTypeFilter"><option value="">Todos os perfis</option><option>Comprador</option><option>Locatário</option><option>Proprietário</option><option>Investidor</option></select></div>
+      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Pessoa</th><th>Perfil</th><th>Documento</th><th>Telefone</th><th>Último toque</th><th>Responsável</th><th></th></tr></thead><tbody id="clientTable"></tbody></table></div></article>
+    </section>
+
+
+    <section class="page" id="page-match">
+      <div class="page-head"><div><h1>Match inteligente</h1><p>Transforme preferências de clientes em uma lista objetiva dos imóveis com maior chance de conversão.</p></div><div class="head-actions"><button class="btn" onclick="openModal('client')">＋ Cadastrar cliente</button></div></div>
+      <div class="v5-match-toolbar card">
+        <div><span class="v5-kicker">CLIENTE ANALISADO</span><select class="form-control" id="matchClientSelect"></select></div>
+        <div class="v5-match-hint">O score considera finalidade, tipo, localização, preço, dormitórios e metragem.</div>
+      </div>
+      <div class="v5-match-layout">
+        <aside class="card v5-profile" id="matchProfile"></aside>
+        <div class="v5-match-results" id="matchResults"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-proprietarios">
+      <div class="page-head"><div><h1>Proprietários</h1><p>Captação, exclusividade, carteira vinculada, relacionamento e dados essenciais de cada proprietário.</p></div><div class="head-actions"><button class="btn primary" data-open="owner">＋ Novo proprietário</button></div></div>
+      <div class="toolbar"><input class="field" id="ownerSearch" placeholder="Nome, documento, telefone ou imóvel..."><select class="select" id="ownerExclusivityFilter"><option value="">Todas as captações</option><option>Exclusivo</option><option>Não exclusivo</option></select></div>
+      <div class="v5-owner-grid" id="ownerGrid"></div>
+    </section>
+
+    <section class="page" id="page-agenda">
+      <div class="page-head"><div><h1>Agenda</h1><p>Visitas, retornos, reuniões e assinaturas em um único calendário.</p></div><div class="head-actions"><button class="btn primary" data-open="appointment">＋ Novo compromisso</button></div></div>
+      <div class="calendar-layout"><article class="card calendar"><div class="cal-head"><button class="btn small" id="prevMonth">←</button><h3 id="calendarTitle"></h3><button class="btn small" id="nextMonth">→</button></div><div class="cal-grid" id="calendarGrid"></div></article><article class="card"><div class="card-head"><h3>Na sequência</h3></div><div class="card-body"><div class="mini-list" id="appointmentList"></div></div></article></div>
+    </section>
+
+    <section class="page" id="page-propostas">
+      <div class="page-head"><div><h1>Propostas & contratos</h1><p>Do primeiro valor ofertado até assinatura, documentação e conclusão do negócio.</p></div><div class="head-actions"><button class="btn" data-open="contract">＋ Novo contrato</button><button class="btn primary" data-open="proposal">＋ Nova proposta</button></div></div>
+      <div class="v5-doc-stats" id="documentStats"></div>
+      <div class="v5-section-title"><div><span class="v5-kicker">NEGOCIAÇÃO</span><h3>Propostas comerciais</h3></div></div>
+      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Cliente</th><th>Imóvel</th><th>Operação</th><th>Valor</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody id="proposalTable"></tbody></table></div></article>
+      <div class="v5-section-title v5-contract-title"><div><span class="v5-kicker">FORMALIZAÇÃO</span><h3>Contratos e documentação</h3></div><button class="btn small" data-open="contract">＋ Contrato</button></div>
+      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contrato</th><th>Cliente</th><th>Imóvel</th><th>Tipo</th><th>Valor</th><th>Etapa</th><th>Responsável</th><th></th></tr></thead><tbody id="contractTable"></tbody></table></div></article>
+    </section>
+
+    <section class="page" id="page-financeiro">
+      <div class="page-head"><div><h1>Financeiro</h1><p>Acompanhe recebimentos, comissões, despesas e vencimentos.</p></div><div class="head-actions"><button class="btn primary" data-open="finance">＋ Novo lançamento</button></div></div>
+      <div class="grid finance-grid" id="financeCards"></div>
+      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Movimento</th><th>Categoria</th><th>Cliente</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="financeTable"></tbody></table></div></article>
+      <div class="v5-section-title v5-contract-title"><div><span class="v5-kicker">REMUNERAÇÃO</span><h3>Mapa de comissões</h3></div><button class="btn small" data-open="commission">＋ Comissão</button></div>
+      <div class="v5-commission-summary" id="commissionSummary"></div>
+      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Negócio</th><th>Imóvel</th><th>Corretor</th><th>Comissão base</th><th>Repasse</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="commissionTable"></tbody></table></div></article>
+    </section>
+
+    <section class="page" id="page-relatorios">
+      <div class="page-head"><div><span class="settings-parent-link" data-pagejump="configuracoes">← Ajustes</span><h1>Relatórios</h1><p>Indicadores comerciais para entender origem, conversão, carteira e performance.</p></div><div class="head-actions"><button class="btn" id="printReport">Imprimir visão ↘</button></div></div>
+      <div class="grid report-grid"><article class="card report-card"><h3>Aquisição</h3><p>De onde as oportunidades realmente entram.</p><div id="sourceReport"></div></article><article class="card report-card"><h3>Composição</h3><p>Como a carteira está distribuída por tipologia.</p><div id="typeReport"></div></article><article class="card report-card"><h3>Performance</h3><p>Fechamentos por pessoa do time comercial.</p><div id="brokerReport"></div></article><article class="card report-card"><h3>Essencial</h3><p>Os números que definem o momento da operação.</p><div id="summaryReport"></div></article></div>
+    </section>
+
+    <section class="page" id="page-equipe">
+      <div class="page-head"><div><span class="settings-parent-link" data-pagejump="configuracoes">← Ajustes</span><h1>Equipe</h1><p>Gerencie usuários, responsabilidades, acessos e desempenho comercial.</p></div><div class="head-actions"><button class="btn primary" data-open="user">＋ Nova pessoa</button></div></div>
+      <div class="grid property-grid" id="teamGrid"></div>
+    </section>
+
+
+    <section class="page" id="page-site">
+      <div class="page-head"><div><h1>Site público</h1><p>Escolha o que vai ao ar, acompanhe a sincronização e visualize o portal sem sair do CRM.</p></div><div class="head-actions"><button class="btn" id="refreshSitePreview">↻ Atualizar prévia</button><button class="btn primary" id="openPublicSite">Abrir site ↗</button></div></div>
+      <div class="site-status-strip">
+        <div><span class="site-live-dot"></span><b>Sincronização ativa</b><small>Alterações no CRM atualizam o catálogo publicado.</small></div>
+        <div><span>Publicados</span><strong id="sitePublishedCount">0</strong></div>
+        <div><span>Última sincronização</span><strong id="siteLastSync">agora</strong></div>
+        <div><span>Publicação</span><strong>Site hospedado separadamente</strong></div>
+      </div>
+      <div class="site-workspace">
+        <aside class="site-control-column">
+          <article class="card site-settings-card">
+            <div class="card-head"><div><span class="site-mini-kicker">IDENTIDADE PÚBLICA</span><h3>Conteúdo do site</h3></div></div>
+            <div class="site-form">
+              <label>Nome exibido<input class="form-control" id="siteBrandInput"></label>
+              <label>Slogan<input class="form-control" id="siteTaglineInput" placeholder="Imóveis para viver o próximo capítulo."></label>
+              <label>WhatsApp<input class="form-control" id="siteWhatsappInput" placeholder="5547999990000"></label>
+              <label>Cidade / região principal<input class="form-control" id="siteRegionInput" placeholder="Jaraguá do Sul e região"></label>
+              <button class="btn primary" id="saveSiteSettings">Salvar e sincronizar</button>
+            </div>
+          </article>
+          <article class="card site-publish-card">
+            <div class="card-head"><div><span class="site-mini-kicker">CARTEIRA ONLINE</span><h3>Publicação dos imóveis</h3></div><button class="btn small" id="publishAllAvailable">Publicar disponíveis</button></div>
+            <div id="sitePropertyPublishList" class="site-publish-list"></div>
+          </article>
+        </aside>
+        <section class="site-preview-column">
+          <div class="site-preview-toolbar"><div><span></span><span></span><span></span></div><b id="sitePreviewUrl">AG · site público</b><span>Prévia ao vivo</span></div>
+          <iframe id="sitePreviewFrame" class="site-preview-frame" title="Pré-visualização do site público"></iframe>
+        </section>
+      </div>
+    </section>
+
+    <section class="page" id="page-configuracoes">
+      <div class="page-head"><div><h1>Ajustes</h1><p>Identidade da AG, equipe, dados e regras de automação em um só lugar.</p></div></div>
+      <div class="ag-settings-tabs" role="tablist" aria-label="Áreas de ajustes">
+        <button class="ag-settings-tab active" type="button" role="tab" aria-selected="true" data-settings-tab="geral">Geral</button>
+        <button class="ag-settings-tab" type="button" role="tab" aria-selected="false" data-settings-tab="automacoes">Automações</button>
+        <button class="ag-settings-tab" type="button" role="tab" aria-selected="false" data-settings-tab="usuarios">Usuários e permissões</button>
+      </div>
+
+      <div class="ag-settings-panel active" data-settings-panel="geral">
+        <div class="ag-settings-hub">
+          <button class="ag-settings-link" data-pagejump="relatorios" type="button">
+            <span class="ag-settings-link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20V7"/></svg></span>
+            <span><b>Dados</b><small>Relatórios, indicadores e desempenho</small></span><i>→</i>
+          </button>
+          <button class="ag-settings-link" data-pagejump="equipe" type="button">
+            <span class="ag-settings-link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="7" r="2.5"/><path d="M2 20a6 6 0 0 1 12 0M14 14a5 5 0 0 1 8 4"/></svg></span>
+            <span><b>Time</b><small>Usuários, acessos e equipe comercial</small></span><i>→</i>
+          </button>
+        </div>
+        <div class="grid settings-grid"><article class="card settings-card"><h3>Identidade da imobiliária</h3><div class="form-grid"><div class="form-group"><label>Nome fantasia</label><input class="form-control" id="cfgName"></div><div class="form-group"><label>CNPJ</label><input class="form-control" id="cfgCnpj"></div><div class="form-group"><label>Telefone</label><input class="form-control" id="cfgPhone"></div><div class="form-group"><label>E-mail</label><input class="form-control" id="cfgEmail"></div><div class="form-group full"><label>Endereço</label><input class="form-control" id="cfgAddress"></div></div><div style="margin-top:14px"><button class="btn primary" id="saveSettings">Salvar identidade</button></div></article><article class="card settings-card cloud-card"><h3>Firebase · operação online</h3><div class="cloud-status-row"><div class="cloud-pill" id="cloudStatus">Não configurado</div><button class="btn small" id="cloudTestBtn">Testar</button></div><div class="cloud-grid"><div class="cloud-metric"><span>Projeto</span><b id="cloudProject">—</b></div><div class="cloud-metric"><span>Usuário</span><b id="cloudUser">—</b></div><div class="cloud-metric"><span>Perfil</span><b id="cloudRole">—</b></div><div class="cloud-metric"><span>Última sincronização</span><b id="cloudLastSync">—</b></div></div><div class="cloud-actions"><button class="btn primary" id="cloudPushBtn">Enviar local → nuvem</button><button class="btn" id="cloudPullBtn">Atualizar da nuvem</button></div><p class="cloud-help">Configuração central em <b>firebase-config.js</b>. Quando ativado, CRM, catálogo, leads e usuários sincronizam entre dispositivos. Fotos e documentos serão ligados ao Google Drive posteriormente.</p></article><article class="card settings-card"><h3>Dados e portabilidade</h3><p class="ag-settings-support-copy">O navegador funciona como cache e fallback. Com Firebase ativo, a nuvem passa a ser a fonte compartilhada da operação.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="backupBtn">Baixar JSON ↓</button><label class="btn" for="importFile">Importar ↑</label><input type="file" id="importFile" accept="application/json" hidden><button class="btn danger" id="resetBtn">Reiniciar cache local</button></div></article></div>
+      </div>
+
+      <div class="ag-settings-panel" data-settings-panel="automacoes">
+        <div class="ag-automation-settings-intro">
+          <div><span class="v5-kicker">AUTOMAÇÕES COMERCIAIS</span><h2>Distribuição, SLA e follow-up.</h2><p>Estas regras controlam como os leads do site entram na operação e são encaminhados para o time.</p></div>
+          <button class="btn" type="button" data-pagejump="atendimento">Abrir central de atendimento ↗</button>
+        </div>
+        <div class="ag-automation-settings-grid">
+          <article class="card ag-automation-settings-card">
+            <div class="card-head"><div><span class="v5-kicker">DISTRIBUIÇÃO COMERCIAL</span><h3>Regras automáticas</h3></div><span class="ag-settings-status-dot">● ativo</span></div>
+            <div class="auto-config ag-auto-config-settings">
+              <div class="auto-switch-row"><div><b>Rodízio automático</b><span>Novo telefone recebe o próximo corretor disponível.</span></div><button class="auto-switch" id="autoRoundRobinToggle" aria-label="Ativar ou desativar rodízio"></button></div>
+              <div class="auto-config-grid"><label>SLA primeiro contato (min)<input class="form-control" id="autoSlaInput" type="number" min="1" max="240"></label><label>Follow-up automático (horas)<input class="form-control" id="autoFollowupInput" type="number" min="1" max="168"></label></div>
+              <div class="ag-auto-broker-title"><b>Ordem atual do rodízio</b><span>Corretoras e corretores comerciais ativos entram nesta sequência.</span></div>
+              <div class="auto-brokers" id="autoBrokerOrder"></div>
+              <button class="btn primary" id="saveAutomationSettings" type="button">Salvar configurações de automação</button>
+            </div>
+          </article>
+          <aside class="ag-automation-rules-stack">
+            <article class="card ag-rule-card"><span class="v5-kicker">REGRA DE IDENTIDADE</span><h3>Telefone é a chave</h3><p>Se o mesmo telefone entrar novamente pelo site, o CRM <b>não cria outro lead</b> e mantém o corretor responsável. A nova interação entra na timeline 360° e não avança o rodízio.</p></article>
+            <article class="card ag-rule-card"><span class="v5-kicker">COMPORTAMENTO</span><h3>Primeiro contato e follow-up</h3><p>O SLA cria a tarefa inicial de atendimento. Depois que o contato é iniciado, o CRM agenda automaticamente o próximo follow-up conforme o intervalo definido acima.</p></article>
+          </aside>
+        </div>
+      </div>
+
+      <div class="ag-settings-panel" data-settings-panel="usuarios">
+        <div class="ag-users-intro">
+          <div><span class="v5-kicker">ACESSO E SEGURANÇA</span><h2>Usuários, aprovações e permissões.</h2><p>Cadastros feitos pela tela de login ficam aguardando aprovação. Somente o Administrador pode criar usuários, aprovar acessos e alterar permissões.</p></div>
+          <div class="ag-current-access" id="agCurrentAccess"><span>Carregando perfil…</span></div>
+        </div>
+        <div class="ag-users-lock" id="agUsersAdminLock" hidden>Esta área é exclusiva para usuários com perfil <b>Administrador</b>.</div>
+        <div id="agUsersAdminContent" hidden>
+          <div class="ag-users-admin-grid">
+            <section class="card ag-access-card">
+              <span class="v5-kicker">APROVAÇÕES</span><h3>Cadastros aguardando liberação</h3><p class="support">Quem se cadastra por e-mail/senha ou entra pela primeira vez com Google aparece aqui antes de acessar o CRM.</p>
+              <div class="ag-access-list" id="agPendingAccessList"><div class="ag-access-empty">Carregando solicitações…</div></div>
+            </section>
+            <section class="card ag-access-card">
+              <span class="v5-kicker">CRIAR USUÁRIO</span><h3>Novo acesso criado pelo administrador</h3><p class="support">Crie uma conta com senha temporária e escolha exatamente quais áreas do CRM a pessoa poderá acessar.</p>
+              <div class="ag-create-user-form">
+                <div class="form-grid"><div class="form-group"><label>Nome</label><input class="form-control" id="adminCreateName" placeholder="Nome completo"></div><div class="form-group"><label>E-mail</label><input class="form-control" id="adminCreateEmail" type="email" placeholder="usuario@empresa.com"></div><div class="form-group"><label>Perfil</label><select class="form-control" id="adminCreateRole"><option>Corretor</option><option>Corretora</option><option>Atendimento</option><option>Marketing</option><option>Financeiro</option><option>Gerente</option><option>Administrador</option></select></div><div class="form-group"><label>Senha temporária</label><input class="form-control" id="adminCreatePassword" type="password" minlength="6" placeholder="Mínimo 6 caracteres"></div></div>
+                <div><div class="ag-permission-title"><b>Permissões iniciais</b><span>Você pode personalizar antes de criar.</span></div><div class="ag-permission-grid" id="adminCreatePermissions"></div></div>
+                <button class="btn primary" type="button" id="adminCreateUser">Criar usuário e liberar acesso</button>
+              </div>
+            </section>
+          </div>
+          <section class="card ag-access-card" style="margin-top:16px">
+            <span class="v5-kicker">USUÁRIOS APROVADOS</span><h3>Acessos ativos e perfis</h3><p class="support">Altere o perfil, personalize permissões, desative acessos ou envie redefinição de senha.</p>
+            <div class="ag-access-list" id="agAccessUserList"><div class="ag-access-empty">Carregando usuários…</div></div>
+            <div class="ag-permission-editor" id="agPermissionEditor" hidden><div class="ag-permission-editor-head"><b id="agPermissionEditorTitle">Permissões</b><span class="status info">personalizado</span></div><div class="ag-permission-grid" id="agPermissionChecks"></div><div class="ag-permission-editor-actions"><button class="btn" type="button" id="agCancelPermissions">Cancelar</button><button class="btn primary" type="button" id="agSavePermissions">Salvar permissões</button></div></div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="mobile-bottom" id="mobileBottom"><button class="active" data-page="dashboard"><span>◫</span>Visão</button><button data-page="imoveis"><span>⌂</span>Imóveis</button><button data-page="leads"><span>◎</span>Leads</button><button data-page="agenda"><span>□</span>Agenda</button><button type="button" id="mobileMoreBtn"><span>☰</span>Mais</button></div>
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+<div class="v25-command-center" id="v25CommandCenter" aria-hidden="true" role="presentation">
+  <div class="v25-command-dialog" role="dialog" aria-modal="true" aria-label="Command Center">
+    <div class="v25-command-search">
+      <span>⌕</span>
+      <input id="v25CommandInput" autocomplete="off" placeholder="Buscar cliente, imóvel ou executar uma ação..." aria-label="Buscar no CRM">
+      <kbd>ESC</kbd>
+    </div>
+    <div class="v25-command-results" id="v25CommandResults"></div>
+    <div class="v25-command-footer"><span><b>↑ ↓</b> navegar</span><span><b>Enter</b> abrir</span><span><b>Esc</b> fechar</span></div>
+  </div>
+</div>
+
+<script src="firebase-config.js?v=75"></script>
+<script src="./js/07-login-ui-v57.js?v=75"></script>
+<script src="./js/02-app.js?v=75"></script>
+<script src="./js/03-app.js?v=75"></script>
+<script type="module" src="./js/04-app.js?v=75"></script>
+
+<script id="ag-v46-property-media-js" src="./js/05-ag-v46-property-media-js.js?v=75"></script>
+
+<script src="./js/06-ag-settings-automation-v55.js?v=75"></script>
+
+<script src="./js/08-ag-pwa-v72.js?v=75"></script>
+<script src="./js/09-ag-mobile-menu-v74.js?v=75"></script>
+</body>
+</html>
