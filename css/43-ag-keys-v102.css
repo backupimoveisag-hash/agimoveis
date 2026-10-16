@@ -25,3 +25,6 @@
   #page-chaves .page-head{gap:12px!important}#page-chaves .head-actions,#page-chaves .head-actions .btn{width:100%!important}
   .key-summary{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.key-stat{padding:13px}.key-stat strong{font-size:23px}.key-toolbar{grid-template-columns:1fr;gap:8px}.key-toolbar .select{width:100%!important}.key-grid{grid-template-columns:1fr;gap:10px}.key-card{padding:15px;border-radius:17px}.key-card h3{font-size:16px}.key-meta{grid-template-columns:1fr 1fr}.key-actions .btn{min-height:42px}.key-history-item{grid-template-columns:76px 1fr}
 }
+
+/* V104 — situação automática da chave */
+.key-auto-location{grid-column:1/-1;padding:13px 15px;border:1px solid rgba(20,37,63,.12);border-radius:14px;background:rgba(20,37,63,.035);display:grid;gap:3px}.key-auto-location span{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:800}.key-auto-location strong{font-size:14px;color:#14253f}.key-auto-location small{font-size:9px;color:var(--muted);line-height:1.45}
