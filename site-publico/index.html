@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-crm-integration="ag-realtime-v43">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14253F">
+<title>AG — Imóveis</title>
+<meta name="description" content="Encontre imóveis para compra e locação com busca inteligente, favoritos, comparação, agendamento de visita e atendimento personalizado.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/01-styles.css">
+
+<link rel="stylesheet" id="ag-site-identity-v27" href="./css/02-ag-site-identity-v27.css">
+
+
+<link rel="stylesheet" id="ag-v29-curadoria-contraste" href="./css/03-ag-v29-curadoria-contraste.css">
+
+
+<link rel="stylesheet" id="ag-site-v36-stable-concept" href="./css/04-ag-site-v36-stable-concept.css">
+
+
+<link rel="stylesheet" id="ag-site-v37-hero-clean" href="./css/05-ag-site-v37-hero-clean.css">
+
+
+<link rel="stylesheet" id="ag-site-v38-logo-busca" href="./css/06-ag-site-v38-logo-busca.css">
+
+
+<link rel="stylesheet" id="ag-site-v39-posicionamento" href="./css/07-ag-site-v39-posicionamento.css">
+
+
+<link rel="stylesheet" id="ag-site-v40-hero-clean-search" href="./css/08-ag-site-v40-hero-clean-search.css">
+
+
+<link rel="stylesheet" id="ag-concierge-v41" href="./css/09-ag-concierge-v41.css">
+
+
+<link rel="stylesheet" id="ag-v42-property-videos" href="./css/10-ag-v42-property-videos.css">
+<link rel="stylesheet" id="ag-readable-typography-v53" href="./css/11-ag-readable-typography.css">
+
+</head>
+<body>
+<header class="site-nav" id="siteNav">
+  <div class="shell nav-inner">
+    <a href="#top" class="brand brand--logo" aria-label="AG"><img class="brand-logo-img" src="./assets/ag-logo.png" alt="AG"><span id="brandName" class="sr-only">AG</span></a>
+    <nav class="nav-links" aria-label="Navegação principal">
+      <button class="nav-link" data-nav-purpose="Venda">Comprar</button>
+      <button class="nav-link" data-nav-purpose="Locação">Alugar</button>
+      <button class="nav-link" id="navProperties">Imóveis</button>
+      <button class="nav-link" id="navExperience">Experiência</button>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn is-favorite" id="openFavorites" aria-label="Favoritos" title="Favoritos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20.7 4.95 13.9a4.95 4.95 0 0 1 0-7 4.8 4.8 0 0 1 6.86 0L12 8l.19-.18a4.8 4.8 0 0 1 6.86 0 4.95 4.95 0 0 1 0 7L12 20.7Z"/><path d="M12 8.1 10.8 6.94a4.8 4.8 0 0 0-6.86 0 4.95 4.95 0 0 0 0 7L12 21l8.06-7.06a4.95 4.95 0 0 0 0-7 4.8 4.8 0 0 0-6.86 0L12 8.1Z" opacity=".08"/></svg>
+        <span class="fav-count hidden" id="favCount">0</span>
+      </button>
+      <a class="nav-cta" id="navWhatsapp" href="#">Falar com especialista</a>
+      <button class="icon-btn mobile-menu-btn" id="mobileSearchBtn" aria-label="Buscar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero concept-hero" aria-label="Busca de imóveis">
+    <div class="sr-only" aria-hidden="true"><span id="regionKicker"></span><span id="heroTagline"></span><span id="heroCount"></span><span id="heroCities"></span><span id="heroSync"></span></div>
+    <div class="hero-visual" id="heroVisual">
+      <div class="hero-photo" id="heroPhoto"></div>
+      <div class="hero-property-info" id="heroPropertyInfo"></div>
+      <button class="hero-badge" id="heroOpen" type="button">Ver destaque <span>↗</span></button>
+    </div>
+
+    <div class="concept-hero-center">
+      <div class="concept-purpose-tabs" role="tablist" aria-label="Objetivo">
+        <button type="button" class="active" data-concept-purpose="Venda">Comprar</button>
+        <button type="button" data-concept-purpose="Locação">Alugar</button>
+      </div>
+
+      <div class="search-dock-wrap" id="searchDock">
+        <div class="search-dock">
+          <div class="search-field concept-type-field">
+            <div style="width:100%"><label for="type">Tipo de imóvel</label><select id="type"><option value="">Todos os tipos</option><option>Apartamento</option><option>Casa</option><option>Terreno</option><option>Comercial</option><option>Rural</option></select></div>
+          </div>
+          <div class="search-field concept-query-field">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <div style="flex:1"><label for="search">Localização ou código</label><input id="search" autocomplete="off" placeholder="Digite o bairro, cidade ou código do imóvel"></div>
+          </div>
+          <button class="search-submit" id="searchSubmit" type="button"><span class="concept-search-icon">⌕</span> Buscar</button>
+
+          <div class="concept-hidden-controls" aria-hidden="true">
+            <select id="purpose"><option value="">Comprar ou alugar</option><option value="Venda" selected>Comprar</option><option value="Locação">Alugar</option></select>
+            <select id="priceRange"><option value="">Qualquer valor</option><option value="0-500000">Até R$ 500 mil</option><option value="500000-1000000">R$ 500 mil — 1 mi</option><option value="1000000-2000000">R$ 1 mi — 2 mi</option><option value="2000000-999999999">Acima de R$ 2 mi</option></select>
+          </div>
+        </div>
+
+        <div class="concept-search-meta">
+          <button class="concept-advanced-toggle" id="advancedLocationToggle" type="button" aria-expanded="false">+ Mais filtros</button>
+          <div class="geo-radius-status requesting" id="geoRadiusStatus" aria-live="polite">
+            <div class="geo-radius-copy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 21s7-5.4 7-12a7 7 0 1 0-14 0c0 6.6 7 12 7 12Z"/><circle cx="12" cy="9" r="2.2"/></svg>
+              <span id="geoRadiusText"><b>Raio de 20 km</b> · aguardando sua localização.</span>
+            </div>
+            <button class="geo-radius-retry hidden" id="geoRadiusRetry" type="button">Ativar localização</button>
+          </div>
+        </div>
+
+        <div class="geo-filter-bar" aria-label="Filtros por localização">
+          <div class="geo-filter-title"><b>Refine a localização</b><span>Estado, cidade e bairro</span></div>
+          <div class="geo-field"><div style="width:100%"><label for="stateFilter">Estado</label><select id="stateFilter"><option value="">Todos os estados</option></select></div></div>
+          <div class="geo-field"><div style="width:100%"><label for="cityFilter">Cidade</label><select id="cityFilter"><option value="">Todas as cidades</option></select></div></div>
+          <div class="geo-field"><div style="width:100%"><label for="districtFilter">Bairro</label><select id="districtFilter"><option value="">Todos os bairros</option></select></div></div>
+          <div class="geo-field"><div style="width:100%"><label for="priceRangeAdvanced">Faixa de valor</label><select id="priceRangeAdvanced"><option value="">Qualquer valor</option><option value="0-500000">Até R$ 500 mil</option><option value="500000-1000000">R$ 500 mil — 1 mi</option><option value="1000000-2000000">R$ 1 mi — 2 mi</option><option value="2000000-999999999">Acima de R$ 2 mi</option></select></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept-hero-footer">
+      <div class="concept-brand-line"><span>AG</span><b>Curadoria imobiliária</b></div>
+      <div class="concept-scroll">Explore os imóveis <span>↓</span></div>
+    </div>
+  </section>
+
+  <section class="explore shell">
+    <div class="section-title-row reveal">
+      <div><div class="eyebrow">ENCONTRE DO SEU JEITO</div><h2>Comece pela intenção.</h2></div>
+      <p>Não precisa saber exatamente o que procura. Escolha um ponto de partida e refine conforme você explora.</p>
+    </div>
+    <div class="intent-strip reveal" id="intentStrip">
+      <button class="intent-card" data-intent-purpose="Venda"><span class="intent-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h7"/><path d="m8 8 4 4-4 4"/><path d="M14 7h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-4"/></svg></span><div class="intent-copy"><strong>Quero comprar</strong><span id="buyCount">0 opções</span></div></button>
+      <button class="intent-card" data-intent-purpose="Locação"><span class="intent-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 14a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/><path d="M10 11h10"/><path d="M17 11v3"/><path d="M20 11v2"/><path d="M7.5 14v6"/></svg></span><div class="intent-copy"><strong>Quero alugar</strong><span id="rentCount">0 opções</span></div></button>
+      <button class="intent-card" data-intent-type="Casa"><span class="intent-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10.5 9-7 9 7"/><path d="M5.5 9.8V20h13V9.8"/><path d="M9.5 20v-5h5V20"/></svg></span><div class="intent-copy"><strong>Casas</strong><span id="houseCount">0 opções</span></div></button>
+      <button class="intent-card" data-intent-type="Apartamento"><span class="intent-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h8v18"/><path d="M14 10h6a1 1 0 0 1 1 1v10"/><path d="M8 7h2"/><path d="M8 11h2"/><path d="M8 15h2"/><path d="M17 14h1"/><path d="M17 17h1"/></svg></span><div class="intent-copy"><strong>Apartamentos</strong><span id="apartmentCount">0 opções</span></div></button>
+    </div>
+  </section>
+
+  <section class="location-explore shell" id="locations">
+    <div class="section-title-row reveal">
+      <div><div class="eyebrow">EXPLORE POR LOCALIZAÇÃO</div><h2>Encontre pelo lugar.</h2></div>
+      <p>Veja os bairros e cidades com imóveis publicados e entre direto nas opções daquela região.</p>
+    </div>
+    <div class="location-grid reveal" id="locationGrid"></div>
+  </section>
+
+  <section class="catalog shell" id="properties">
+    <div class="catalog-head reveal">
+      <div class="catalog-title"><div class="eyebrow">CURADORIA ATUAL</div><h2>Imóveis disponíveis</h2><p id="resultCount">0 resultados</p></div>
+      <div class="catalog-toolbar">
+        <button class="filter-chip active" data-quick="all">Todos</button>
+        <button class="filter-chip" data-quick="featured">Destaques</button>
+        <button class="filter-chip" data-quick="newest">Mais recentes</button>
+        <select class="tool-select" id="sort"><option value="distance">Mais próximos</option><option value="featured">Ordenar: relevância</option><option value="priceAsc">Menor preço</option><option value="priceDesc">Maior preço</option><option value="areaDesc">Maior área</option></select>
+        <button class="tool-btn" id="clearFilters">Limpar filtros</button>
+      </div>
+    </div>
+    <div class="property-grid" id="propertyGrid"></div>
+    <button class="load-more hidden" id="loadMore">Mostrar mais imóveis <span>↓</span></button>
+  </section>
+
+  <section class="recent-section shell hidden" id="recentSection">
+    <div class="section-title-row reveal">
+      <div><div class="eyebrow">CONTINUE DE ONDE PAROU</div><h2>Vistos recentemente.</h2></div>
+      <p>Os últimos imóveis que você abriu ficam aqui para facilitar a comparação e a retomada da busca.</p>
+    </div>
+    <div class="recent-grid reveal" id="recentGrid"></div>
+  </section>
+
+  <section class="service-zone reveal" id="services">
+    <article class="service-panel dark">
+      <div class="eyebrow">ATENDIMENTO IMOBILIÁRIO</div>
+      <h2>Da busca até a chave.</h2>
+      <p>O site organiza a descoberta. Quando você quiser avançar, a equipe assume a jornada para reduzir fricção em visitas, proposta, documentação e fechamento.</p>
+      <div class="service-steps">
+        <div class="service-step"><i>01</i><div><b>Curadoria</b><span>Refinamos opções conforme sua necessidade.</span></div><em>→</em></div>
+        <div class="service-step"><i>02</i><div><b>Visita</b><span>Agende o melhor horário para conhecer o imóvel.</span></div><em>→</em></div>
+        <div class="service-step"><i>03</i><div><b>Negociação</b><span>Apoio para proposta, contraproposta e condições.</span></div><em>→</em></div>
+        <div class="service-step"><i>04</i><div><b>Fechamento</b><span>Organização documental até a conclusão do negócio.</span></div><em>✓</em></div>
+      </div>
+    </article>
+    <article class="service-panel" id="finance">
+      <div class="eyebrow">SIMULAÇÃO RÁPIDA</div>
+      <h2>Planeje o financiamento.</h2>
+      <p>Faça uma estimativa inicial de parcela para entender a ordem de grandeza antes de conversar com a instituição financeira.</p>
+      <div class="finance-form">
+        <div class="finance-field"><label for="financeValue">Valor do imóvel</label><input id="financeValue" type="number" min="0" step="1000" value="780000"></div>
+        <div class="finance-field"><label for="financeDown">Entrada</label><input id="financeDown" type="number" min="0" step="1000" value="156000"></div>
+        <div class="finance-field"><label for="financeYears">Prazo</label><select id="financeYears"><option value="20">20 anos</option><option value="25">25 anos</option><option value="30" selected>30 anos</option><option value="35">35 anos</option></select></div>
+        <div class="finance-field"><label for="financeRate">Taxa mensal ilustrativa</label><input id="financeRate" type="number" min="0.01" step="0.01" value="0.95"></div>
+        <div class="finance-result"><div><small>Parcela estimada</small><strong id="financeMonthly">—</strong></div><span id="financeFinanced">Valor financiado: —</span></div>
+        <p class="finance-note">Simulação meramente ilustrativa, pelo sistema de parcelas fixas. Não representa proposta, CET, seguro, tarifas, TR ou aprovação de crédito.</p>
+        <div class="finance-actions"><button class="primary" id="financeFromFeatured">Usar imóvel em destaque</button><a id="financeWhatsapp" href="#">Falar sobre financiamento</a></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="preference-band reveal" id="preference">
+    <div class="preference-copy"><div class="eyebrow">CURADORIA PERSONALIZADA</div><h2>Seu próximo imóvel pode estar fora da vitrine.</h2><p>Conte o que você procura e deixe a AG fazer a curadoria por você. Sua preferência é enviada ao CRM, direcionada para um corretor e o atendimento continua pelo WhatsApp.</p></div>
+    <div class="preference-form">
+      <div class="pref-field"><label for="prefName">Seu nome</label><input id="prefName" placeholder="Como podemos chamar você?"></div>
+      <div class="pref-field"><label for="prefPhone">Seu WhatsApp</label><input id="prefPhone" inputmode="tel" placeholder="(47) 99999-0000"></div>
+      <div class="pref-field"><label for="prefCity">Cidade / região</label><input id="prefCity" placeholder="Ex.: Jaraguá do Sul"></div>
+      <div class="pref-field"><label for="prefPurpose">Objetivo</label><select id="prefPurpose"><option>Comprar</option><option>Alugar</option></select></div>
+      <div class="pref-field"><label for="prefType">Tipo</label><select id="prefType"><option>Casa</option><option>Apartamento</option><option>Terreno</option><option>Comercial</option><option>Rural</option><option>Estou aberto a opções</option></select></div>
+      <div class="pref-field"><label for="prefBudget">Orçamento aproximado</label><input id="prefBudget" placeholder="Ex.: até R$ 900 mil"></div>
+      <div class="pref-field"><label for="prefBeds">Dormitórios</label><select id="prefBeds"><option>Indiferente</option><option>1+</option><option>2+</option><option>3+</option><option>4+</option></select></div>
+      <button class="preference-submit" id="preferenceSubmit">Enviar minha busca para um especialista →</button>
+      <div class="pref-status" id="preferenceStatus"></div>
+    </div>
+  </section>
+
+  <section class="experience-band reveal" id="experience">
+    <div class="experience-copy">
+      <div class="eyebrow">UMA BUSCA MAIS HUMANA</div>
+      <h2>Escolher um imóvel não deveria parecer preencher uma planilha.</h2>
+      <p>Organizamos a informação para você comparar, favoritar e entender cada opção sem perder o contexto. Quando fizer sentido, nosso atendimento entra para simplificar o próximo passo.</p>
+      <div class="experience-points"><div><strong>Curadoria</strong><span>carteira organizada</span></div><div><strong>Contexto</strong><span>informação essencial</span></div><div><strong>Comparação</strong><span>lado a lado</span></div><div><strong>Atendimento</strong><span>sem fricção</span></div></div>
+    </div>
+    <div class="experience-image" id="experienceImage"></div>
+  </section>
+
+  <section class="faq-section shell" id="faq">
+    <div class="faq-layout">
+      <div class="faq-intro reveal"><div class="eyebrow">DÚVIDAS FREQUENTES</div><h2>Antes de avançar.</h2><p>Algumas respostas rápidas para tornar a busca e o contato mais transparentes.</p></div>
+      <div class="faq-list reveal">
+        <article class="faq-item"><button class="faq-question"><span>Os imóveis do site estão atualizados?</span><span>+</span></button><div class="faq-answer"><p>O catálogo é sincronizado com os imóveis marcados como publicados no CRM. Disponibilidade e condições podem mudar; confirme antes de formalizar proposta.</p></div></article>
+        <article class="faq-item"><button class="faq-question"><span>Posso agendar uma visita pelo site?</span><span>+</span></button><div class="faq-answer"><p>Sim. Abra qualquer imóvel e use “Agendar visita”. Você escolhe data e horário preferencial e o pedido é enviado organizado para o atendimento pelo WhatsApp.</p></div></article>
+        <article class="faq-item"><button class="faq-question"><span>O simulador de financiamento é uma aprovação de crédito?</span><span>+</span></button><div class="faq-answer"><p>Não. Ele serve apenas como estimativa inicial. Condições reais dependem da instituição financeira, perfil do cliente, CET, seguros, tarifas e demais critérios.</p></div></article>
+        <article class="faq-item"><button class="faq-question"><span>Posso comparar imóveis antes de falar com um corretor?</span><span>+</span></button><div class="faq-answer"><p>Sim. Use o botão de comparação nos cards para colocar até três imóveis lado a lado e avaliar preço, área, dormitórios, suítes, vagas e localização.</p></div></article>
+        <article class="faq-item"><button class="faq-question"><span>Como salvo imóveis para ver depois?</span><span>+</span></button><div class="faq-answer"><p>Use o coração nos cards. Os favoritos ficam salvos neste navegador e podem ser acessados pelo ícone no topo da página.</p></div></article>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="shell">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="#top" class="brand brand--logo" aria-label="AG"><img class="brand-logo-img" src="./assets/ag-logo.png" alt="AG"><span id="footerBrand" class="sr-only">AG</span></a><p id="footerTagline">Uma experiência imobiliária mais simples, clara e próxima.</p></div>
+      <div><h4>Explorar</h4><button data-footer-purpose="Venda">Comprar</button><button data-footer-purpose="Locação">Alugar</button><button id="footerProperties">Todos os imóveis</button></div>
+      <div><h4>Atendimento</h4><a id="footerWhatsapp" href="#">WhatsApp</a><a id="footerEmail" href="#">E-mail</a><span id="footerPhone" style="display:block;padding:4px 0;font-size:9px;color:#71726b"></span></div>
+      <div><h4>Região</h4><span id="footerRegion" style="display:block;padding:4px 0;font-size:9px;color:#71726b"></span><span style="display:block;padding:4px 0;font-size:9px;color:#71726b">Catálogo sincronizado com o CRM</span></div>
+    </div>
+    <div class="footer-bottom"><span>© <span id="year"></span> <span id="copyrightBrand">AG</span></span><span id="syncText">Catálogo atualizado</span></div>
+  </div>
+</footer>
+
+
+<div class="ag-concierge-teaser" id="agConciergeTeaser"><b>Posso ajudar na sua busca?</b><span>Responda 4 perguntas rápidas e eu direciono seu atendimento.</span></div>
+<button class="ag-concierge-launcher" id="agConciergeLauncher" type="button" aria-label="Abrir assistente AG" aria-expanded="false">
+  <span class="dot" aria-hidden="true"></span>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3 1.7-5.1A7 7 0 0 1 3 12V9a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v6Z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>
+</button>
+<div class="ag-concierge" id="agConcierge" role="dialog" aria-modal="false" aria-label="Assistente virtual AG">
+  <div class="ag-chat-head">
+    <div class="ag-chat-avatar">AG</div>
+    <div class="ag-chat-head-copy"><strong>Assistente AG</strong><span><i></i> atendimento automático</span></div>
+    <button class="ag-chat-close" id="agConciergeClose" type="button" aria-label="Fechar">×</button>
+  </div>
+  <div class="ag-chat-body" id="agChatBody"><div class="ag-chat-day">Agora</div></div>
+  <div class="ag-chat-foot">Seus dados serão usados somente para dar continuidade ao atendimento.</div>
+</div>
+<!-- /AG CONCIERGE -->
+
+<a class="floating-wa" id="floatingWa" href="#" aria-label="Conversar no WhatsApp">WA</a>
+
+<div class="modal-bg" id="modalBg"><article class="property-modal" id="modalContent"></article></div>
+<div class="lightbox" id="lightbox"><div class="lightbox-top"><span id="lightboxCounter">1 / 1</span><button class="lightbox-close" id="lightboxClose">×</button></div><div class="lightbox-stage"><button class="lightbox-nav lightbox-prev" id="lightboxPrev">‹</button><img class="lightbox-img" id="lightboxImg" alt="Foto do imóvel"><button class="lightbox-nav lightbox-next" id="lightboxNext">›</button></div><div class="lightbox-caption"><strong id="lightboxRoom">Foto</strong><span id="lightboxTitle"></span></div></div>
+
+<div class="drawer-bg" id="favoriteDrawerBg"><aside class="favorite-drawer"><div class="drawer-head"><h3>Seus favoritos</h3><button class="modal-icon-btn" id="closeFavorites">Fechar</button></div><div id="favoriteList"></div></aside></div>
+
+<div class="compare-bar" id="compareBar"><strong>Comparar</strong><div class="compare-items" id="compareItems"></div><button class="compare-open" id="openCompare">Comparar imóveis</button></div>
+<div class="modal-bg" id="compareBg"><article class="compare-modal"><div class="drawer-head"><div><div class="eyebrow">COMPARAÇÃO</div><h3 style="margin:8px 0 0;font-size:30px;letter-spacing:-.05em">Lado a lado</h3></div><button class="modal-close" id="closeCompare">×</button></div><div class="compare-grid" id="compareGrid"></div></article></div>
+
+
+<div class="visit-modal-bg" id="leadCaptureBg">
+  <div class="visit-modal lead-capture-modal">
+    <div class="visit-head"><div><div class="eyebrow">ATENDIMENTO PERSONALIZADO</div><h3 id="leadCaptureTitle">Falar com um especialista</h3></div><button class="visit-close" id="leadCaptureClose">×</button></div>
+    <div class="visit-form">
+      <label class="visit-field"><span>Seu nome</span><input id="leadCaptureName" placeholder="Nome completo"></label>
+      <label class="visit-field"><span>WhatsApp</span><input id="leadCapturePhone" inputmode="tel" placeholder="(47) 99999-0000"></label>
+      <label class="visit-field full"><span>E-mail (opcional)</span><input id="leadCaptureEmail" type="email" placeholder="voce@email.com"></label>
+      <div class="lead-capture-context full" id="leadCaptureContext"></div>
+      <button class="visit-submit" id="leadCaptureSubmit">Continuar pelo WhatsApp →</button>
+      <div class="lead-capture-status full" id="leadCaptureStatus" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<div class="visit-modal-bg" id="visitModalBg">
+  <div class="visit-modal">
+    <div class="visit-head"><div><div class="eyebrow">AGENDAR VISITA</div><h3 id="visitTitle">Escolha um horário</h3></div><button class="visit-close" id="visitClose">×</button></div>
+    <div class="visit-form">
+      <label class="visit-field full"><span>Imóvel</span><select id="visitProperty"></select></label>
+      <label class="visit-field"><span>Seu nome</span><input id="visitName" placeholder="Nome completo"></label>
+      <label class="visit-field"><span>WhatsApp</span><input id="visitPhone" placeholder="(47) 99999-0000"></label>
+      <label class="visit-field"><span>Data preferida</span><input id="visitDate" type="date"></label>
+      <label class="visit-field"><span>Horário preferido</span><select id="visitTime"><option>09:00</option><option>10:00</option><option>11:00</option><option>14:00</option><option>15:00</option><option>16:00</option><option>17:00</option></select></label>
+      <button class="visit-submit" id="visitSubmit">Solicitar visita pelo WhatsApp →</button>
+    </div>
+  </div>
+</div>
+
+<script src="./js/01-app.js"></script>
+
+
+
+<script src="./firebase-config.js?v=58"></script>
+<script type="module" src="./js/02-app.js"></script>
+
+<script id="ag-site-brand-v27" src="./js/03-ag-site-brand-v27.js"></script>
+
+
+<script id="ag-site-v36-concept-init" src="./js/04-ag-site-v36-concept-init.js"></script>
+
+
+<script id="ag-site-v40-init" src="./js/05-ag-site-v40-init.js"></script>
+
+
+<script id="ag-concierge-v41-script" src="./js/06-ag-concierge-v41-script.js"></script>
+
+
+<script id="ag-v42-property-videos-js" src="./js/07-ag-v42-property-videos-js.js"></script>
+
+
+<script id="ag-site-v43-brand-lock" src="./js/08-ag-site-v43-brand-lock.js"></script>
+</body>
+</html>
