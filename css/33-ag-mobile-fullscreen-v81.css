@@ -1,0 +1,77 @@
+/* AG CRM V81 — ocupa toda a tela no mobile/PWA, incluindo a área do indicador do iPhone */
+@media (max-width: 900px){
+  :root{
+    --ag-mobile-nav-core: 62px;
+    --ag-ios-bottom-fallback: 0px;
+    --ag-safe-bottom-effective: max(env(safe-area-inset-bottom, 0px), var(--ag-ios-bottom-fallback));
+  }
+
+  /* O conteúdo branco ocupa o viewport dinâmico; a faixa do sistema usa a cor da navegação. */
+  html{
+    min-height:100%;
+    min-height:100dvh;
+    background:#14253f!important;
+  }
+  body{
+    min-height:100%;
+    min-height:100dvh;
+    margin:0!important;
+    background:#14253f!important;
+    overscroll-behavior-y:none;
+  }
+  .app{
+    min-height:100dvh!important;
+    background:#f7f8fa!important;
+  }
+  .main{
+    box-sizing:border-box!important;
+    min-height:100dvh!important;
+    background:#f7f8fa!important;
+    padding-bottom:calc(var(--ag-mobile-nav-core) + 14px)!important;
+  }
+
+  /* Estende a tab bar até a borda física inferior do PWA. Em iOS standalone,
+     o fallback cobre a região do home indicator quando env() retorna zero. */
+  #mobileBottom.mobile-bottom{
+    box-sizing:border-box!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    bottom:calc(-1 * var(--ag-safe-bottom-effective))!important;
+    height:calc(var(--ag-mobile-nav-core) + var(--ag-safe-bottom-effective))!important;
+    min-height:calc(var(--ag-mobile-nav-core) + var(--ag-safe-bottom-effective))!important;
+    padding:4px 6px var(--ag-safe-bottom-effective)!important;
+    background:#14253f!important;
+    border-radius:0!important;
+    border-top:1px solid rgba(234,198,134,.16)!important;
+    overflow:visible!important;
+  }
+  #mobileBottom.mobile-bottom button{
+    height:54px!important;
+    min-height:54px!important;
+  }
+
+  /* Reforço visual sob a barra para impedir que o root branco apareça durante
+     resize/rotação/abertura do teclado no iOS. */
+  body::after{
+    content:""!important;
+    position:fixed!important;
+    z-index:158!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    height:calc(var(--ag-safe-bottom-effective) + 8px)!important;
+    background:#14253f!important;
+    pointer-events:none!important;
+  }
+
+  /* Quando o drawer abre, ele continua ocupando a altura útil inteira. */
+  #sidebar.sidebar{
+    min-height:100dvh!important;
+    height:100dvh!important;
+  }
+}
+
+@media (max-width: 900px) and (display-mode: standalone){
+  :root{--ag-ios-bottom-fallback:34px}
+}
