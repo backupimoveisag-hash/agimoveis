@@ -1,9 +1,6 @@
 const money=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(Number(v||0));
 const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fallback={version:1,syncedAt:new Date().toISOString(),settings:{brand:'AG',tagline:'Imóveis para viver o próximo capítulo.',whatsapp:'5547999990000',region:'Jaraguá do Sul e região',email:'',phone:'(47) 99999-0000'},properties:[
-{id:'IM001',title:'Residencial Aurora',type:'Apartamento',purpose:'Venda',price:780000,address:'Centro, Jaraguá do Sul - SC',city:'Jaraguá do Sul',state:'SC',district:'Centro',lat:-26.4851,lng:-49.0661,beds:3,suites:1,baths:2,parking:2,area:118,status:'Disponível',featured:true,notes:'Apartamento de alto padrão com ambientes integrados, ótima iluminação natural e localização central.',amenities:'Sacada gourmet,2 vagas,Elevador,Área de festas',photos:[{id:'1',room:'Sala',src:'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=2400&q=92'},{id:'2',room:'Cozinha',src:'https://images.unsplash.com/photo-1556912167-f556f1f39fdf?auto=format&fit=crop&w=2200&q=90'},{id:'3',room:'Suíte',src:'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=2200&q=90'}],coverPhoto:'1'},
-{id:'IM002',title:'Casa Jardim das Araucárias',type:'Casa',purpose:'Venda',price:1290000,address:'Vila Nova, Joinville - SC',city:'Joinville',state:'SC',district:'Vila Nova',lat:-26.3047,lng:-48.9178,beds:4,suites:2,baths:4,parking:3,area:265,status:'Disponível',notes:'Casa com piscina, espaço gourmet e excelente integração entre área social e jardim.',amenities:'Piscina,Espaço gourmet,Jardim,3 vagas',photos:[{id:'1',room:'Fachada',src:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2400&q=92'}],coverPhoto:'1'},
-{id:'IM004',title:'Terreno Vale Verde',type:'Terreno',purpose:'Venda',price:460000,address:'Amizade, Jaraguá do Sul - SC',city:'Jaraguá do Sul',state:'SC',district:'Amizade',lat:-26.4598,lng:-49.0876,beds:0,suites:0,baths:0,parking:0,area:720,status:'Disponível',notes:'Terreno residencial com frente ampla e excelente potencial construtivo.',amenities:'Rua pavimentada,Frente ampla',photos:[{id:'1',room:'Terreno',src:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=92'}],coverPhoto:'1'}]};
+const fallback={version:59,syncedAt:new Date().toISOString(),settings:{brand:'AG',tagline:'Imóveis para viver o próximo capítulo.',whatsapp:'5547999990000',region:'Jaraguá do Sul e região',email:'',phone:'(47) 99999-0000'},properties:[]};
 let catalog=loadCatalog();
 if(['NEXO Imóveis'].includes(catalog?.settings?.brand)){catalog.settings.brand='AG';try{localStorage.setItem('nexoPublicCatalogV1',JSON.stringify(catalog))}catch(e){}}
 let filters={q:'',purpose:'',type:'',price:'',state:'',city:'',district:'',quick:'all',sort:'featured'};
@@ -22,6 +19,7 @@ function normalizeAgCatalog(data){
 function loadJSON(key,fb){try{return JSON.parse(localStorage.getItem(key)||'null')??fb}catch(e){return fb}}
 function loadCatalog(){try{const raw=localStorage.getItem('nexoPublicCatalogV1');return raw?JSON.parse(raw):fallback}catch(e){return fallback}}
 function cover(p){return (p.photos||[]).find(x=>String(x.id)===String(p.coverPhoto))?.src||(p.photos||[])[0]?.src||''}
+const AG_DEFAULT_HERO='./assets/login-luxury-bg.jpg';
 function heroCoverHD(p){
   const src=cover(p);
   if(!src)return '';
@@ -98,7 +96,23 @@ function renderHeader(){
   const date=new Date(catalog.syncedAt||Date.now());document.getElementById('heroSync').textContent=date.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('syncText').textContent='Atualizado '+date.toLocaleDateString('pt-BR')+' às '+date.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('footerEmail').textContent=s.email||'E-mail';document.getElementById('footerEmail').href=s.email?`mailto:${s.email}`:'#';document.getElementById('footerPhone').textContent=s.phone||'';document.getElementById('year').textContent=new Date().getFullYear();
   ['navWhatsapp','floatingWa','footerWhatsapp','financeWhatsapp'].forEach(id=>{const a=document.getElementById(id);if(a){a.href=whatsappLink();a.target='_blank'}});
-  if(fp){document.getElementById('heroPhoto').style.backgroundImage=`url("${heroCoverHD(fp)}")`;document.getElementById('heroPropertyInfo').innerHTML=`<div><small>${safe(fp.district||fp.city)} · ${safe(fp.id)}</small><h2>${safe(fp.title)}</h2></div><div class="hero-property-price">${money(fp.price)}</div>`;document.getElementById('heroOpen').dataset.id=fp.id;document.getElementById('experienceImage').style.backgroundImage=`url("${cover(catalog.properties[1]||fp)}")`}
+  const heroPhoto=document.getElementById('heroPhoto');
+  const heroInfo=document.getElementById('heroPropertyInfo');
+  const heroOpen=document.getElementById('heroOpen');
+  const experienceImage=document.getElementById('experienceImage');
+  const featuredCover=fp?heroCoverHD(fp):'';
+  if(heroPhoto) heroPhoto.style.backgroundImage=`url("${featuredCover||AG_DEFAULT_HERO}")`;
+  if(experienceImage){
+    const expProperty=(catalog.properties||[])[1]||fp;
+    experienceImage.style.backgroundImage=`url("${(expProperty&&cover(expProperty))||AG_DEFAULT_HERO}")`;
+  }
+  if(fp){
+    if(heroInfo) heroInfo.innerHTML=`<div><small>${safe(fp.district||fp.city)} · ${safe(fp.id)}</small><h2>${safe(fp.title)}</h2></div><div class="hero-property-price">${money(fp.price)}</div>`;
+    if(heroOpen){heroOpen.dataset.id=fp.id;heroOpen.disabled=false}
+  }else{
+    if(heroInfo) heroInfo.innerHTML='';
+    if(heroOpen){delete heroOpen.dataset.id;heroOpen.disabled=true}
+  }
   renderFavoriteCount();renderLocations();renderRecentlyViewed();calculateFinance();
 }
 
@@ -250,7 +264,7 @@ document.querySelectorAll('[data-quick]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-intent-purpose]').forEach(b=>b.addEventListener('click',()=>{filters.purpose=b.dataset.intentPurpose;document.getElementById('purpose').value=filters.purpose;renderProperties();scrollToCatalog()}));document.querySelectorAll('[data-intent-type]').forEach(b=>b.addEventListener('click',()=>{filters.type=b.dataset.intentType;document.getElementById('type').value=filters.type;renderProperties();scrollToCatalog()}));
 document.querySelectorAll('[data-nav-purpose],[data-footer-purpose]').forEach(b=>b.addEventListener('click',()=>{filters.purpose=b.dataset.navPurpose||b.dataset.footerPurpose;document.getElementById('purpose').value=filters.purpose;renderProperties();scrollToCatalog()}));
 document.getElementById('navProperties').addEventListener('click',scrollToCatalog);document.getElementById('footerProperties').addEventListener('click',scrollToCatalog);document.getElementById('navExperience').addEventListener('click',()=>document.getElementById('experience').scrollIntoView({behavior:'smooth'}));
-document.getElementById('heroOpen').addEventListener('click',()=>openProperty(document.getElementById('heroOpen').dataset.id));document.getElementById('mobileSearchBtn').addEventListener('click',()=>document.getElementById('searchDock').scrollIntoView({behavior:'smooth',block:'center'}));
+document.getElementById('heroOpen').addEventListener('click',()=>{const id=document.getElementById('heroOpen').dataset.id;if(id)openProperty(id)});document.getElementById('mobileSearchBtn').addEventListener('click',()=>document.getElementById('searchDock').scrollIntoView({behavior:'smooth',block:'center'}));
 document.getElementById('loadMore').addEventListener('click',()=>{visibleLimit+=6;renderProperties()});
 document.getElementById('openFavorites').addEventListener('click',openFavorites);document.getElementById('closeFavorites').addEventListener('click',closeFavorites);document.getElementById('favoriteDrawerBg').addEventListener('click',e=>{if(e.target===e.currentTarget)closeFavorites()});
 document.getElementById('openCompare').addEventListener('click',openCompare);document.getElementById('closeCompare').addEventListener('click',closeCompare);document.getElementById('compareBg').addEventListener('click',e=>{if(e.target===e.currentTarget)closeCompare()});
