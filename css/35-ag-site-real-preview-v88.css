@@ -1,0 +1,12 @@
+/* AG CRM V88 — prévia carrega o AG_SITE real, sem reconstrução simplificada */
+.site-preview-column{overflow:hidden!important}
+.site-preview-frame{
+  display:block!important;
+  width:100%!important;
+  height:clamp(680px,78vh,980px)!important;
+  border:0!important;
+  border-radius:15px!important;
+  background:#f7f3ea!important;
+}
+@media(max-width:1050px){.site-preview-frame{height:760px!important}}
+@media(max-width:680px){.site-preview-frame{height:680px!important}}
