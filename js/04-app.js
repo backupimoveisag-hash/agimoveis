@@ -566,7 +566,7 @@ if(!enabled){
   });
   renderPermissionChecks($('#adminCreatePermissions'),ROLE_DEFAULTS.Corretor);
 
-  const PRODUCTION_RESET_VERSION=71;
+  const PRODUCTION_RESET_VERSION=82;
   function productionEmptyState(){
     const current=bridge.getState()||{};
     return {
@@ -576,7 +576,7 @@ if(!enabled){
       automation:{roundRobin:true,rrIndex:0,slaMinutes:15,followupHours:24}
     };
   }
-  async function ensureProductionResetV71(){
+  async function ensureProductionResetV82(){
     if(!isAdmin()||!auth.currentUser)return;
     let remoteSettings={exists:false,data:null};
     try{
@@ -601,11 +601,11 @@ if(!enabled){
 
   let authProcessing=false;
   async function completeAuthenticatedSession(user){
-    if(!user||authProcessing)return;authProcessing=true;hideFirestoreRecoveryUI();setRegisterBusy(false);setLoginMessage(`Autenticação concluída. Conectando ao Firestore · banco ${firestoreDatabaseId} · HTTPS v71…`,'pending');
+    if(!user||authProcessing)return;authProcessing=true;hideFirestoreRecoveryUI();setRegisterBusy(false);setLoginMessage(`Autenticação concluída. Conectando ao Firestore · banco ${firestoreDatabaseId} · HTTPS v82…`,'pending');
     try{
       roleProfile=await withTimeout(ensureProfile(user),12500,'Inicialização do perfil');pendingRegisterName='';if(roleProfile.active===false)throw new Error('Acesso inativo. Fale com o administrador.');
       localStorage.setItem('nexoSessionV1',JSON.stringify({email:user.email,name:roleProfile.name||user.displayName||user.email,role:roleProfile.role,uid:user.uid,at:new Date().toISOString()}));
-      bridge.setLoginVisible(false);if($('#cloudUser'))$('#cloudUser').textContent=user.email||user.uid;applyProfileAccess(roleProfile);setAuthNote(`Firebase online · ${roleProfile.role}${firestoreTransport==='rest'?' · HTTPS':''}`);status(firestoreTransport==='rest'?'Online via HTTPS':'Online','online');await ensureProductionResetV71();ensureRosterLink(user,roleProfile);startStateListener();startLeadListener();queueCatalogSync();startAdminConsole();setLoginMessage('','');$('#loginError').textContent='';
+      bridge.setLoginVisible(false);if($('#cloudUser'))$('#cloudUser').textContent=user.email||user.uid;applyProfileAccess(roleProfile);setAuthNote(`Firebase online · ${roleProfile.role}${firestoreTransport==='rest'?' · HTTPS':''}`);status(firestoreTransport==='rest'?'Online via HTTPS':'Online','online');await ensureProductionResetV82();ensureRosterLink(user,roleProfile);startStateListener();startLeadListener();queueCatalogSync();startAdminConsole();setLoginMessage('','');$('#loginError').textContent='';
       ownProfileUnsub?.();if(firestoreTransport==='sdk')ownProfileUnsub=onSnapshot(doc(fs,'users',user.uid),async snap=>{if(!snap.exists())return;const next=snap.data();if(next.active===false){bridge.toast('Seu acesso foi desativado.');await signOut(auth);return}roleProfile=next;applyProfileAccess(roleProfile);startLeadListener();startAdminConsole()},err=>{console.warn('Perfil em tempo real',err);if(isFirestoreConnectivityError(err)){firestoreTransport='rest';startStateListener();startAdminConsole()}});
     }catch(err){
       console.error('Finalização de acesso',err);setRegisterBusy(false);

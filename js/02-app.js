@@ -55,27 +55,48 @@ function renderKPIs(){
 }
 function renderActivities(){$('#activityList').innerHTML=db.activities.slice(0,6).map(a=>`<div class="activity-item"><div class="activity-icon">${a.icon}</div><div><b>${safe(a.title)}</b><p>${safe(a.text)}</p></div><time>${safe(a.time)}</time></div>`).join('')||'<div class="empty">Nenhuma atividade.</div>'}
 function propertyImage(p){
- const byId={
-  IM001:'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=82',
-  IM002:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=82',
-  IM003:'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=900&q=82',
-  IM004:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=82',
-  IM005:'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=82'
- };
- const byType={Apartamento:byId.IM001,Casa:byId.IM002,Terreno:byId.IM004,Comercial:byId.IM005,Rural:byId.IM004};
- return p.image||byId[p.id]||byType[p.type]||byId.IM001;
+ const direct=String(p?.image||'').trim();
+ if(direct)return direct;
+ const photos=Array.isArray(p?.photos)?p.photos:[];
+ const cover=photos.find(ph=>ph.id===p?.coverPhoto)||photos[0];
+ return String(cover?.src||'').trim();
 }
 function renderDashboardLists(){
  const now=todayISO();
  const ap=[...db.appointments].filter(a=>a.date>=now).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4);
- $('#nextVisits').innerHTML=ap.map(a=>{const p=db.properties.find(x=>x.id===a.property);return `<div class="mini-item"><div class="thumb" ${p?`style="background-image:linear-gradient(rgba(10,35,31,.08),rgba(10,35,31,.12)),url('${propertyImage(p)}')"`:''}>${p?'':'□'}</div><div><b>${safe(a.title)}</b><small>${brDate(a.date)} às ${safe(a.time)} · ${safe(a.client)}</small></div><div class="right"><span class="status ${a.type==='Visita'?'warn':'info'}">${safe(a.type)}</span></div></div>`}).join('')||'<div class="empty">Sem compromissos futuros.</div>';
+ $('#nextVisits').innerHTML=ap.map(a=>{const p=db.properties.find(x=>x.id===a.property),img=p?propertyImage(p):'';return `<div class="mini-item"><div class="thumb" ${img?`style="background-image:linear-gradient(rgba(10,35,31,.08),rgba(10,35,31,.12)),url('${img}')"`:''}>${img?'':'□'}</div><div><b>${safe(a.title)}</b><small>${brDate(a.date)} às ${safe(a.time)} · ${safe(a.client)}</small></div><div class="right"><span class="status ${a.type==='Visita'?'warn':'info'}">${safe(a.type)}</span></div></div>`}).join('')||'<div class="empty">Sem compromissos futuros.</div>';
  const fp=db.properties.filter(x=>x.featured).slice(0,4);
- $('#featuredProperties').innerHTML=fp.map(p=>`<div class="mini-item"><div class="thumb" style="background-image:linear-gradient(rgba(10,35,31,.05),rgba(10,35,31,.10)),url('${propertyImage(p)}')"></div><div><b>${safe(p.title)}</b><small>${safe(p.address)}</small></div><div class="right"><b>${money(p.price)}</b><small>${safe(p.purpose)}</small></div></div>`).join('');
+ $('#featuredProperties').innerHTML=fp.map(p=>{const img=propertyImage(p);return `<div class="mini-item"><div class="thumb" ${img?`style="background-image:linear-gradient(rgba(10,35,31,.05),rgba(10,35,31,.10)),url('${img}')"`:''}></div><div><b>${safe(p.title)}</b><small>${safe(p.address)}</small></div><div class="right"><b>${money(p.price)}</b><small>${safe(p.purpose)}</small></div></div>`}).join('')||'<div class="empty">Nenhum imóvel em destaque.</div>';
+ const hero=$('#dashboardSpotlight');
+ if(hero){
+   const featured=db.properties.find(p=>p.featured)||db.properties[0]||null;
+   if(!featured){
+     hero.classList.add('spotlight-empty');
+     hero.style.backgroundImage='none';
+     hero.querySelector('.spotlight-index').textContent='—';
+     hero.querySelector('.spotlight-copy').innerHTML='<small>Carteira</small><h3>Nenhum imóvel em destaque</h3><div class="spotlight-meta"><span>Cadastre um imóvel e marque como destaque para exibi-lo aqui.</span><strong></strong></div>';
+   }else{
+     const img=propertyImage(featured);
+     hero.classList.toggle('spotlight-empty',!img);
+     hero.style.backgroundImage=img?`url('${img}')`:'none';
+     hero.querySelector('.spotlight-index').textContent='01';
+     const loc=[featured.district,featured.city].filter(Boolean).join(' / ')||featured.address||'Carteira';
+     const specs=[];
+     if(featured.area)specs.push(`${Number(featured.area).toLocaleString('pt-BR')} m²`);
+     if(featured.suites)specs.push(`${featured.suites} suíte${Number(featured.suites)===1?'':'s'}`);
+     else if(featured.beds)specs.push(`${featured.beds} quarto${Number(featured.beds)===1?'':'s'}`);
+     hero.querySelector('.spotlight-copy').innerHTML=`<small>${safe(loc)}</small><h3>${safe(featured.title||'Imóvel')}</h3><div class="spotlight-meta"><span>${safe(specs.join(' · ')||featured.purpose||'')}</span><strong>${featured.price?money(featured.price):''}</strong></div>`;
+   }
+ }
 }
 function drawChart(){
  const c=$('#salesChart');if(!c)return;const dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;if(!w||!h)return;c.width=w*dpr;c.height=h*dpr;
  const x=c.getContext('2d');x.scale(dpr,dpr);x.clearRect(0,0,w,h);
- const labels=['Mar','Abr','Mai','Jun','Jul','Ago'],leads=[18,24,21,31,29,37],sales=[10,15,10,20,25,30],pad=30,max=40;
+ const now=new Date(),months=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({y:d.getFullYear(),m:d.getMonth(),label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')})}
+ const monthKey=d=>{const dt=new Date(d);return Number.isNaN(dt.getTime())?'':`${dt.getFullYear()}-${dt.getMonth()}`};
+ const leads=months.map(mm=>(db.leads||[]).filter(l=>monthKey(l.created||l.date||l.last)===`${mm.y}-${mm.m}`).length);
+ const sales=months.map(mm=>(db.leads||[]).filter(l=>l.stage==='Fechado'&&monthKey(l.closedAt||l.updatedAt||l.created||l.date||l.last)===`${mm.y}-${mm.m}`).length);
+ const labels=months.map(mm=>mm.label),pad=30,max=Math.max(4,...leads,...sales);
  x.lineWidth=1;x.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--line').trim()||'#e5e9e6';x.globalAlpha=.7;
  for(let i=0;i<5;i++){const y=pad+(h-pad*2)*i/4;x.beginPath();x.moveTo(pad,y);x.lineTo(w-pad,y);x.stroke()}
  x.globalAlpha=1;labels.forEach((l,i)=>{const px=pad+(w-pad*2)*i/(labels.length-1);x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--muted').trim()||'#7d8991';x.font='500 9px Manrope, Arial';x.textAlign='center';x.fillText(l,px,h-7)});
