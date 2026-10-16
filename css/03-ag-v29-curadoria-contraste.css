@@ -1,0 +1,11 @@
+.preference-band{background:linear-gradient(135deg,#14253F 0%,#203A5C 100%)!important;color:#fff!important}
+  .preference-copy h2{color:#fff!important;text-shadow:0 2px 16px rgba(0,0,0,.14)!important}
+  .preference-copy p{color:rgba(255,255,255,.88)!important}
+  .preference-band .eyebrow{color:#EAC686!important}
+  .pref-field{background:rgba(255,255,255,.13)!important;border-color:rgba(255,255,255,.26)!important}
+  .pref-field label{color:rgba(255,255,255,.82)!important}
+  .pref-field input,.pref-field select{color:#fff!important}
+  .pref-field input::placeholder{color:rgba(255,255,255,.72)!important}
+  .preference-submit{background:#EAC686!important;color:#14253F!important;border:1px solid rgba(255,255,255,.12)!important}
+  .pref-status{color:rgba(255,255,255,.88)!important}
+  @media(max-width:860px){.preference-copy h2{font-size:clamp(36px,9vw,52px)!important;line-height:1.02!important}.preference-copy p{font-size:12px!important;line-height:1.7!important}}
