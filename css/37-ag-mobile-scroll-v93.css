@@ -1,0 +1,129 @@
+/* AG CRM V93 — restaura scroll global no mobile e corrige bottom sheets */
+@media (max-width:900px){
+  :root{
+    --ag-modal-nav-space:calc(var(--ag-mobile-nav-core,62px) + var(--ag-safe-bottom-effective, env(safe-area-inset-bottom,0px)));
+  }
+
+  /* O CRM inteiro volta a rolar verticalmente. */
+  html{
+    height:auto!important;
+    min-height:100%!important;
+    min-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  body:not(.auth-required):not(.drawer-open){
+    position:static!important;
+    height:auto!important;
+    min-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+  }
+  body:not(.auth-required) .app{
+    height:auto!important;
+    min-height:100dvh!important;
+    overflow:visible!important;
+  }
+  body:not(.auth-required) .main{
+    height:auto!important;
+    min-height:calc(100dvh - var(--ag-modal-nav-space))!important;
+    overflow:visible!important;
+  }
+
+  /* Backdrop termina acima da tab bar. Assim nenhum modal fica escondido atrás dela. */
+  .modal-backdrop{
+    top:0!important;
+    right:0!important;
+    bottom:var(--ag-modal-nav-space)!important;
+    left:0!important;
+    inset:auto 0 var(--ag-modal-nav-space) 0!important;
+    width:100%!important;
+    height:auto!important;
+    max-height:none!important;
+    padding:0!important;
+    align-items:flex-end!important;
+    overflow:hidden!important;
+    overscroll-behavior:contain!important;
+  }
+
+  #modal.modal,
+  .modal{
+    width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    max-height:calc(100dvh - var(--ag-modal-nav-space) - env(safe-area-inset-top,0px) - 8px)!important;
+    min-height:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+    border-radius:24px 24px 0 0!important;
+  }
+
+  .modal-head{
+    flex:0 0 auto!important;
+  }
+  .modal-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+    touch-action:pan-y!important;
+    padding-bottom:22px!important;
+  }
+  .modal-foot{
+    flex:0 0 auto!important;
+    padding-bottom:12px!important;
+  }
+
+  /* "Criar novo" é um sheet compacto, sem invadir a barra inferior. */
+  #modal.quick-create-modal{
+    max-height:min(66dvh,620px)!important;
+  }
+  #modal.quick-create-modal .modal-head{
+    min-height:58px!important;
+  }
+  #modal.quick-create-modal .modal-body{
+    padding:12px 14px 18px!important;
+  }
+  #modal.quick-create-modal .modal-body>.grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  #modal.quick-create-modal .modal-body>.grid>.card{
+    min-height:118px!important;
+    padding:18px 10px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    font-size:24px!important;
+    text-align:center!important;
+  }
+  #modal.quick-create-modal .modal-body>.grid>.card b{
+    font-size:15px!important;
+    line-height:1.2!important;
+  }
+}
+
+@media (max-width:390px){
+  #modal.quick-create-modal .modal-body>.grid>.card{
+    min-height:104px!important;
+    padding:14px 8px!important;
+  }
+}
+
+/* Em desktop também garantimos que modais longos tenham miolo rolável. */
+@media (min-width:901px){
+  .modal-body{
+    min-height:0!important;
+    overflow-y:auto!important;
+  }
+}

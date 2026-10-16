@@ -1,11 +1,19 @@
-/* AG CRM V85 — iPhone/PWA: login cobre também a faixa física inferior */
+/* AG CRM V93 — login fullscreen no iPhone sem bloquear o scroll do CRM */
 @media (max-width: 900px){
   :root{
     --ag-login-overscan-bottom:max(env(safe-area-inset-bottom,0px), 44px);
   }
 
-  html,
-  body,
+  /* IMPORTANTE: não bloquear html/body globalmente. O scroll só é travado enquanto o login está aberto. */
+  html{
+    margin:0!important;
+    width:100%!important;
+    min-height:100%!important;
+    min-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+
   body.auth-required{
     margin:0!important;
     width:100%!important;
@@ -15,14 +23,21 @@
     min-height:100lvh!important;
     min-height:100dvh!important;
     overflow:hidden!important;
+    overscroll-behavior:none!important;
     background:
       linear-gradient(180deg,rgba(0,0,0,.36),rgba(0,0,0,.60)),
       url('../assets/login-luxury-bg-mobile.jpg') center center / cover no-repeat!important;
     background-color:#05080d!important;
   }
 
-  body.auth-required{
-    overscroll-behavior:none!important;
+  /* Fora do login, o documento volta a rolar normalmente. */
+  body:not(.auth-required):not(.drawer-open){
+    height:auto!important;
+    min-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:auto!important;
+    touch-action:pan-y!important;
   }
 
   /* Nunca deixa a navegação inferior do CRM aparecer por baixo do login. */
@@ -56,10 +71,7 @@
   #loginScreen .login-bg{
     position:absolute!important;
     z-index:0!important;
-    top:0!important;
-    left:0!important;
-    right:0!important;
-    bottom:0!important;
+    inset:0!important;
     width:100%!important;
     height:100%!important;
     min-height:100%!important;
@@ -91,13 +103,13 @@
     box-sizing:border-box!important;
     padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + env(safe-area-inset-bottom,0px))!important;
     overflow:auto!important;
+    -webkit-overflow-scrolling:touch!important;
     display:flex!important;
     align-items:center!important;
     justify-content:center!important;
     background:transparent!important;
   }
 
-  /* Desliga definitivamente os preenchimentos azuis legados durante o login. */
   body.auth-required::before,
   body.auth-required::after{
     display:none!important;
