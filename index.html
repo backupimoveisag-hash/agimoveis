@@ -91,6 +91,7 @@
 <link rel="stylesheet" id="ag-leads-mobile-cards-v96" href="./css/40-ag-leads-mobile-cards-v96.css?v=96">
 <link rel="stylesheet" id="ag-properties-leads-reorg-v98" href="./css/41-ag-properties-leads-reorg-v98.css?v=98">
 <link rel="stylesheet" id="ag-property-admin-watermark-v99" href="./css/42-ag-property-admin-watermark-v99.css?v=100">
+<link rel="stylesheet" id="ag-keys-v102" href="./css/43-ag-keys-v102.css?v=102">
 </head>
 <body class="auth-required">
 
@@ -138,6 +139,7 @@
       <button class="nav-heart" data-page="match" title="Match inteligente" aria-label="Match inteligente"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/></svg></span></button>
       <button data-page="clientes" title="Pessoas"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 5.5a3 3 0 0 1 0 5.8M17 15a5 5 0 0 1 4.5 5"/></svg></span>Pessoas</button>
       <button data-page="proprietarios" title="Proprietários"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V9l8-6 8 6v12M8 21v-7h8v7"/><path d="M17 7.2V4h2v4.7"/></svg></span>Propriet.</button>
+      <button data-page="chaves" title="Chaves"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8 2 2-2 2 2 2-3 3-2-2-3 3"/></svg></span>Chaves</button>
       <button data-page="agenda" title="Agenda"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Agenda</button>
       <button data-page="propostas" title="Documentos"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6zM14 2v6h6M9 13h7M9 17h5"/></svg></span>Docs</button>
       <button data-page="financeiro" title="Financeiro"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="M7 15l4-4 3 2 5-7"/></svg></span>Financeiro</button>
@@ -255,6 +257,16 @@
       <div class="page-head"><div><h1>Proprietários</h1><p>Captação, exclusividade, carteira vinculada, relacionamento e dados essenciais de cada proprietário.</p></div><div class="head-actions"><button class="btn primary" data-open="owner">＋ Novo proprietário</button></div></div>
       <div class="toolbar"><input class="field" id="ownerSearch" placeholder="Nome, documento, telefone ou imóvel..."><select class="select" id="ownerExclusivityFilter"><option value="">Todas as captações</option><option>Exclusivo</option><option>Não exclusivo</option></select></div>
       <div class="v5-owner-grid" id="ownerGrid"></div>
+    </section>
+
+    <section class="page" id="page-chaves">
+      <div class="page-head"><div><h1>Chaves</h1><p>Controle em tempo real onde está cada chave da carteira e quem é o responsável pela retirada.</p></div><div class="head-actions"><button class="btn primary" id="newKeyBtn">＋ Cadastrar chave</button></div></div>
+      <div class="key-summary" id="keySummary"></div>
+      <div class="key-toolbar">
+        <div class="search key-search"><span>⌕</span><input id="keySearch" placeholder="Buscar por imóvel, código da chave ou corretor"></div>
+        <select class="select" id="keyStatusFilter"><option value="">Todas as situações</option><option>Disponível</option><option>Com corretor</option><option>Atrasada</option></select>
+      </div>
+      <div class="key-grid" id="keyGrid"></div>
     </section>
 
     <section class="page" id="page-agenda">
@@ -431,5 +443,6 @@
 <script src="./js/11-ag-mobile-viewport-v81.js?v=85"></script>
 <script src="./js/13-ag-properties-leads-reorg-v98.js?v=98"></script>
 <script src="./js/14-ag-property-admin-watermark-v99.js?v=100"></script>
+<script src="./js/15-ag-keys-v102.js?v=102"></script>
 </body>
 </html>
