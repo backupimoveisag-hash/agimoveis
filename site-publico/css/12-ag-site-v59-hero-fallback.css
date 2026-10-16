@@ -1,0 +1,14 @@
+/* AG SITE V59 — imagem principal sempre disponível */
+#heroPhoto{
+  background-image:url('../assets/login-luxury-bg.jpg');
+  background-position:center center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  background-color:#14253f;
+}
+#experienceImage{
+  background-image:url('../assets/login-luxury-bg.jpg');
+  background-position:center center;
+  background-size:cover;
+  background-repeat:no-repeat;
+}
