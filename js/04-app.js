@@ -9,18 +9,18 @@ if($('#cloudProject'))$('#cloudProject').textContent=cfg.projectId||'—';
 
 const PAGE_DEFS=[
   ['dashboard','Visão geral'],['imoveis','Imóveis'],['leads','Leads'],['atendimento','Atendimento'],['funil','Jornada'],
-  ['agenda','Agenda'],['clientes','Clientes'],['match','Match'],['proprietarios','Proprietários'],['propostas','Propostas'],
+  ['agenda','Agenda'],['chaves','Chaves'],['clientes','Clientes'],['match','Match'],['proprietarios','Proprietários'],['propostas','Propostas'],
   ['financeiro','Financeiro'],['relatorios','Relatórios'],['equipe','Equipe'],['site','Site público'],['configuracoes','Ajustes']
 ];
 const ALL_PAGES=PAGE_DEFS.map(x=>x[0]);
 const ROLE_DEFAULTS={
   Administrador:[...ALL_PAGES],
   Gerente:[...ALL_PAGES],
-  Corretor:['dashboard','imoveis','leads','atendimento','funil','agenda','clientes','match','proprietarios','propostas'],
-  Corretora:['dashboard','imoveis','leads','atendimento','funil','agenda','clientes','match','proprietarios','propostas'],
+  Corretor:['dashboard','imoveis','leads','atendimento','funil','agenda','chaves','clientes','match','proprietarios','propostas'],
+  Corretora:['dashboard','imoveis','leads','atendimento','funil','agenda','chaves','clientes','match','proprietarios','propostas'],
   Financeiro:['dashboard','propostas','financeiro','relatorios'],
   Marketing:['dashboard','imoveis','leads','site','relatorios'],
-  Atendimento:['dashboard','imoveis','leads','atendimento','agenda','clientes']
+  Atendimento:['dashboard','imoveis','leads','atendimento','agenda','chaves','clientes']
 };
 const ROLES=Object.keys(ROLE_DEFAULTS);
 const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -188,7 +188,7 @@ if(!enabled){
   function permissionsForProfile(profile){
     if(!profile)return [];
     if(profile.role==='Administrador')return [...ALL_PAGES];
-    if(Array.isArray(profile.permissions)&&profile.permissions.length)return [...new Set(profile.permissions.filter(p=>ALL_PAGES.includes(p)))];
+    if(Array.isArray(profile.permissions)&&profile.permissions.length){const perms=[...new Set(profile.permissions.filter(p=>ALL_PAGES.includes(p)))];if(['Corretor','Corretora','Gerente','Atendimento'].includes(profile.role)&&!perms.includes('chaves'))perms.push('chaves');return perms;}
     return ROLE_DEFAULTS[profile.role]?[...ROLE_DEFAULTS[profile.role]]:['dashboard'];
   }
   function canPage(page){return permissionsForProfile(roleProfile).includes(page)}
@@ -204,7 +204,7 @@ if(!enabled){
     renderCurrentAccessSummary();
   }
   function sectionPermission(key){
-    const map={settings:'configuracoes',properties:'imoveis',prospectings:'imoveis',owners:'proprietarios',leads:'leads',tasks:'atendimento',siteEvents:'atendimento',automation:'configuracoes',clients:'clientes',appointments:'agenda',proposals:'propostas',contracts:'propostas',commissions:'financeiro',finance:'financeiro',users:'equipe'};
+    const map={settings:'configuracoes',properties:'imoveis',prospectings:'imoveis',owners:'proprietarios',leads:'leads',tasks:'atendimento',siteEvents:'atendimento',automation:'configuracoes',clients:'clientes',appointments:'agenda',proposals:'propostas',contracts:'propostas',commissions:'financeiro',finance:'financeiro',users:'equipe',keys:'chaves',keyMovements:'chaves'};
     return map[key]||null;
   }
   function canWriteSection(key){

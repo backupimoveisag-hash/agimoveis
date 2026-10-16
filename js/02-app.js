@@ -207,7 +207,12 @@ if(type==='user'){title=data.id?'Editar usuário':'Novo usuário';body=`<form id
 showModal(title,body,'Salvar')}
 function showModal(title,body,saveLabel){const modal=$('#modal');modal.classList.toggle('quick-create-modal',editing?.type==='quick');modal.innerHTML=`<div class="modal-head"><h2>${title}</h2><button class="close" onclick="closeModal()">×</button></div><div class="modal-body">${body}</div>${saveLabel?`<div class="modal-foot"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="saveModal()">${saveLabel}</button></div>`:''}`;$('#modalBackdrop').classList.add('show')}
 function closeModal(){$('#modalBackdrop').classList.remove('show');$('#modal')?.classList.remove('quick-create-modal');editing={type:null,id:null}}
-$('#modalBackdrop').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+$('#modalBackdrop').addEventListener('click',e=>{
+  if(e.target!==e.currentTarget)return;
+  /* V101: formulários/cadastros não fecham ao tocar fora. */
+  if(editing?.type)return;
+  closeModal();
+});
 function saveModal(){const form=$('#modalForm');if(!form.reportValidity())return;const type=editing.type,key=findType(type);let fd=Object.fromEntries(new FormData(form).entries());if(type==='prospecting'){fd={};const raw=new FormData(form);for(const [k,v] of raw.entries())fd[k]=v;form.querySelectorAll('input[type="checkbox"]').forEach(ch=>{fd[ch.name]=ch.checked?'on':''});}
 if(['property','lead','finance','user','prospecting'].includes(type)){['price','beds','baths','area','value','closed','pipeline','entryValue','debtBalance','condoFee','landArea','builtArea','yearBuilt','garageCovered','garageUncovered','garageIndependent','bedrooms','suites','commission'].forEach(k=>{if(k in fd && fd[k]!=='' && !isNaN(fd[k]))fd[k]=Number(fd[k]||0)})}
 if(type==='property')fd.featured=fd.featured==='Sim';if(type==='user')fd.active=fd.active==='Ativo';if(type==='lead'&&!editing.id)fd.id='L'+uid().slice(-6).toUpperCase();if(type==='prospecting'&&!editing.id)fd.id='PR'+uid().slice(-6).toUpperCase();if(type==='client'&&!editing.id)fd.id='C'+uid().slice(-6).toUpperCase();if(type==='appointment'&&!editing.id)fd.id='A'+uid().slice(-6).toUpperCase();if(type==='finance'&&!editing.id)fd.id='F'+uid().slice(-6).toUpperCase();if(type==='user'&&!editing.id)fd.id='U'+uid().slice(-6).toUpperCase();if(editing.id){const i=db[key].findIndex(x=>x.id===editing.id);if(i>=0)db[key][i]={...db[key][i],...fd}}else db[key].push(fd);pushActivity('＋','Registro atualizado',`${type} · ${fd.name||fd.ownerName||fd.propertyTitle||fd.title||fd.desc||fd.id}`);closeModal();saveDB();toast(type==='prospecting'?'Prospecção salva com sucesso.':'Dados salvos com sucesso.')}
