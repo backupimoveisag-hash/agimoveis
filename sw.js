@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ag-crm-v95-shell';
+const CACHE_NAME = 'ag-crm-v96-shell';
 const APP_SHELL = [
   './', './index.html', './manifest.webmanifest', './firebase-config.js',
   './assets/ag-logo.png', './assets/login-luxury-bg.jpg', './assets/login-luxury-bg-mobile.jpg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png',
@@ -8,7 +8,7 @@ const APP_SHELL = [
   './css/13-ag-v39-navy-accent.css', './css/14-ag-v40-dashboard-navy-data.css', './css/15-ag-v40b-blue-cards-fix.css', './css/16-ag-v43-dashboard-cards-refined.css',
   './css/17-ag-v44-journey-interactions.css', './css/18-ag-v46-property-media.css', './css/19-ag-v47-media-visible-fix.css', './css/20-ag-readable-typography.css',
   './css/23-ag-settings-automation-v55.css', './css/24-ag-auth-users-v56.css', './css/25-ag-mobile-pwa-v72.css', './css/26-ag-mobile-overflow-v73.css', './css/27-ag-mobile-menu-v74.css', './css/28-ag-login-logo-mobile-v75.css',
-  './css/29-ag-mobile-redesign-v77.css', './css/30-ag-mobile-ux-v78.css', './css/31-ag-mobile-safe-top-v79.css', './css/32-ag-mobile-bottom-v80.css', './css/33-ag-mobile-fullscreen-v81.css', './css/34-ag-login-background-full-v82.css', './css/35-ag-site-real-preview-v88.css', './css/36-ag-modal-scroll-v89.css', './css/37-ag-mobile-scroll-v93.css', './css/38-ag-prospecting-checks-v94.css', './css/39-ag-agenda-mobile-v95.css',
+  './css/29-ag-mobile-redesign-v77.css', './css/30-ag-mobile-ux-v78.css', './css/31-ag-mobile-safe-top-v79.css', './css/32-ag-mobile-bottom-v80.css', './css/33-ag-mobile-fullscreen-v81.css', './css/34-ag-login-background-full-v82.css', './css/35-ag-site-real-preview-v88.css', './css/36-ag-modal-scroll-v89.css', './css/37-ag-mobile-scroll-v93.css', './css/38-ag-prospecting-checks-v94.css', './css/39-ag-agenda-mobile-v95.css', './css/40-ag-leads-mobile-cards-v96.css',
   './js/01-ag-light-only.js', './js/02-app.js', './js/03-app.js', './js/04-app.js', './js/05-ag-v46-property-media-js.js',
   './js/06-ag-settings-automation-v55.js', './js/07-login-ui-v57.js', './js/08-ag-pwa-v72.js', './js/09-ag-mobile-menu-v74.js', './js/10-ag-mobile-ux-v78.js', './js/11-ag-mobile-viewport-v81.js','./js/12-ag-site-preview-embedded-v92.js'
 ];
