@@ -526,7 +526,7 @@ function renderSiteManager(){
   $('#siteBrandInput').value=db.settings.siteBrand||'';$('#siteTaglineInput').value=db.settings.siteTagline||'';$('#siteWhatsappInput').value=db.settings.siteWhatsapp||'';$('#siteRegionInput').value=db.settings.siteRegion||'';
   const published=db.properties.filter(p=>p.published).length;$('#sitePublishedCount').textContent=published;const last=localStorage.getItem('nexoPublicLastSync');$('#siteLastSync').textContent=last?new Date(last).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'agora';
   $('#sitePropertyPublishList').innerHTML=db.properties.map(p=>`<div class="site-publish-row"><div class="site-publish-thumb" style="background-image:url('${propertyImage(p)}')"></div><div class="site-publish-copy"><b>${safe(p.title)}</b><span>${safe(p.id)} · ${safe(p.status)} · ${money(p.price)}</span></div><label class="site-toggle" title="${p.published?'Publicado':'Não publicado'}"><input type="checkbox" data-site-publish="${p.id}" ${p.published?'checked':''}><i></i></label></div>`).join('')||'<div class="site-empty">Nenhum imóvel cadastrado.</div>';
-  const frame=$('#sitePreviewFrame');if(frame){frame.removeAttribute('srcdoc');const next='./site-publico/index.html?crmPreview=1&v=58';if(frame.getAttribute('src')!==next)frame.setAttribute('src',next);}
+  const frame=$('#sitePreviewFrame');if(frame)frame.srcdoc=buildSitePreviewHTML(getPublicCatalog());
 }
 function setPropertyPublication(id,value){const p=db.properties.find(x=>x.id===id);if(!p)return;p.published=!!value;localStorage.setItem('atlasImobCRM',JSON.stringify(db));syncPublicCatalog();renderSiteManager();renderProperties();toast(value?'Imóvel publicado no site.':'Imóvel removido do site.')}
 function initSiteEvents(){
