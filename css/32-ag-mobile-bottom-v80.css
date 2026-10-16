@@ -46,7 +46,7 @@
   #mobileBottom.mobile-bottom #mobileMoreBtn{color:rgba(255,255,255,.68)!important}
 
   /* Evita qualquer faixa branca causada pela safe area inferior no modo instalado. */
-  body::after{
+  body:not(.auth-required)::after{
     content:"";
     position:fixed;
     left:0;right:0;bottom:0;

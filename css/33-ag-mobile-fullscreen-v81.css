@@ -53,7 +53,7 @@
 
   /* Reforço visual sob a barra para impedir que o root branco apareça durante
      resize/rotação/abertura do teclado no iOS. */
-  body::after{
+  body:not(.auth-required)::after{
     content:""!important;
     position:fixed!important;
     z-index:158!important;
