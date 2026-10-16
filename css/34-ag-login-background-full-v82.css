@@ -1,0 +1,58 @@
+/* AG CRM V82 — fundo da tela de entrada ocupa 100% da tela mobile */
+@media (max-width: 900px){
+  /* Enquanto o login estiver visível, o próprio fundo cobre também a safe area inferior. */
+  body.auth-required{
+    min-height:100vh!important;
+    min-height:100dvh!important;
+    background:
+      linear-gradient(180deg,rgba(10,22,38,.54),rgba(5,10,18,.78)),
+      url('../assets/login-luxury-bg.jpg') center center / cover no-repeat fixed!important;
+  }
+
+  #loginScreen.login-screen{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    height:100vh!important;
+    height:100dvh!important;
+    min-height:100vh!important;
+    min-height:100dvh!important;
+    background:#0d1624!important;
+    overflow:hidden!important;
+  }
+
+  #loginScreen .login-bg{
+    position:fixed!important;
+    inset:-3px!important;
+    width:calc(100% + 6px)!important;
+    height:calc(100vh + 6px)!important;
+    height:calc(100dvh + 6px)!important;
+    min-height:calc(100dvh + 6px)!important;
+    background-image:
+      linear-gradient(180deg,rgba(0,0,0,.36),rgba(0,0,0,.58)),
+      url('../assets/login-luxury-bg.jpg')!important;
+    background-position:center center!important;
+    background-size:cover!important;
+    background-repeat:no-repeat!important;
+  }
+
+  #loginScreen .login-overlay{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    height:100dvh!important;
+  }
+
+  #loginScreen .login-panel{
+    width:100%!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    box-sizing:border-box!important;
+  }
+
+  /* V80/V81 criavam uma faixa sólida na parte inferior. No login ela não deve existir. */
+  body.auth-required::after{
+    display:none!important;
+    content:none!important;
+  }
+}
