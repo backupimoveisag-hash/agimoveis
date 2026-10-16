@@ -1,0 +1,46 @@
+.v5-management,
+  .v5-alert-card,
+  .v25-attention-card{
+    background:#14253F !important;
+    border-color:rgba(20,37,63,.96) !important;
+    box-shadow:0 18px 48px rgba(20,37,63,.16) !important;
+  }
+  .v5-management .card-head,
+  .v5-alert-card .card-head{
+    border-bottom-color:rgba(255,255,255,.12) !important;
+    background:transparent !important;
+  }
+  .v5-management .card-head h3,
+  .v5-alert-card .card-head h3,
+  .v25-attention-head h2,
+  .v5-health-grid strong,
+  .v25-attention-card strong,
+  .v5-alert b,
+  .v5-live{
+    color:#ffffff !important;
+  }
+  .v5-management .v5-kicker,
+  .v5-alert-card .v5-kicker,
+  .v25-attention-head .v5-kicker,
+  .v5-health-grid span,
+  .v5-health-grid small,
+  .v25-attention-head p,
+  .v25-attention-card small,
+  .v25-attention-card span,
+  .v5-alert p{
+    color:rgba(255,255,255,.72) !important;
+  }
+  .v5-health-grid{background:transparent !important;border-top-color:rgba(255,255,255,.12) !important}
+  .v5-health-grid>div{border-right-color:rgba(255,255,255,.12) !important}
+  .v5-alert{border-color:rgba(255,255,255,.12) !important}
+  .v5-alert-icon{background:rgba(234,198,134,.14) !important;color:#EAC686 !important}
+  .v5-alert .btn,
+  .v5-management .btn.small{
+    background:rgba(255,255,255,.08) !important;
+    border-color:rgba(255,255,255,.14) !important;
+    color:#ffffff !important;
+  }
+  .v5-alert .btn:hover,
+  .v5-management .btn.small:hover{background:rgba(255,255,255,.14) !important}
+  .v25-attention-card:after{color:#EAC686 !important}
+  .v25-attention-card:hover{border-color:#EAC686 !important;box-shadow:0 18px 48px rgba(20,37,63,.26) !important}

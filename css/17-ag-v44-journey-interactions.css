@@ -1,0 +1,12 @@
+.journey-last{margin:11px 0 0;padding:9px 10px;border-radius:12px;background:#f7f7f4;border:1px solid #e9e7e1;font-size:8px;line-height:1.45;color:#6f706b}
+  .journey-last b{display:block;color:#14253F;font-size:8px;margin-bottom:2px}
+  .journey-actions{display:flex;gap:7px;align-items:center;margin-top:11px}
+  .journey-actions .btn{height:32px!important;padding:0 10px!important;border-radius:10px!important;font-size:8px!important}
+  .journey-actions .interaction-btn{background:#14253F!important;border-color:#14253F!important;color:#fff!important;flex:1}
+  .journey-actions .interaction-btn:hover{background:#1b3154!important}
+  .journey-actions .timeline-btn{width:34px;padding:0!important;color:#14253F!important}
+  .journey-status-banner{grid-column:1/-1;padding:13px 15px;border-radius:15px;background:#14253F;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .journey-status-banner span{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.7)}
+  .journey-status-banner b{font-size:14px;color:#EAC686}
+  .journey-help{grid-column:1/-1;margin:-2px 0 2px;font-size:9px;color:var(--muted);line-height:1.55}
+  @media(max-width:620px){.journey-actions{display:grid;grid-template-columns:1fr 38px}.journey-last{font-size:9px}}
