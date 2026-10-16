@@ -1,0 +1,27 @@
+/* AG CRM V102 — Controle de chaves */
+.key-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.key-stat{padding:17px 18px;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--shadow)}
+.key-stat span{display:block;font-size:8px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.key-stat strong{display:block;margin-top:7px;font-size:28px;letter-spacing:-.045em;color:var(--ink)}
+.key-stat small{display:block;margin-top:3px;font-size:8px;color:var(--muted)}
+.key-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:10px;margin-bottom:14px;align-items:center}
+.key-search{width:100%!important;max-width:none!important}
+.key-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.key-card{position:relative;display:flex;flex-direction:column;min-width:0;padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:0 10px 30px rgba(20,37,63,.055)}
+.key-card.is-out{border-color:rgba(234,198,134,.58)}
+.key-card.is-overdue{border-color:rgba(193,69,69,.34);box-shadow:0 12px 34px rgba(193,69,69,.08)}
+.key-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.key-code{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:850;color:var(--ag-navy,#14253f);letter-spacing:.04em}.key-code:before{content:'⌕';font-size:14px;color:var(--ag-gold,#eac686)}
+.key-state{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;font-size:8px;font-weight:850;white-space:nowrap;background:#eef6f1;color:#267451}.key-state.out{background:#fff6e7;color:#9a6818}.key-state.overdue{background:#fff0f0;color:#a53e3e}
+.key-card h3{font-size:17px;line-height:1.2;margin:12px 0 4px;letter-spacing:-.035em}.key-card .key-address{font-size:9px;color:var(--muted);line-height:1.45;min-height:27px}
+.key-location{margin-top:14px;padding:12px;border-radius:14px;background:#f6f7f6;border:1px solid rgba(20,37,63,.06)}
+.key-location span{display:block;font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}.key-location strong{display:block;margin-top:4px;font-size:13px;color:var(--ink)}.key-location small{display:block;margin-top:3px;font-size:8px;color:var(--muted)}
+.key-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.key-meta>div{padding:9px 10px;border:1px solid var(--line);border-radius:12px}.key-meta span{display:block;font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.key-meta b{display:block;margin-top:3px;font-size:9px;line-height:1.3}
+.key-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:14px}.key-actions .btn{flex:1;min-width:80px}.key-empty{grid-column:1/-1;padding:34px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted);font-size:10px}
+.key-history{display:grid;gap:10px}.key-history-item{display:grid;grid-template-columns:90px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.key-history-item:last-child{border-bottom:0}.key-history-item time{font-size:8px;color:var(--muted)}.key-history-item b{font-size:10px}.key-history-item p{margin:4px 0 0;font-size:9px;color:var(--muted);line-height:1.5}
+.key-current-person{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:11px;border-radius:14px;background:#f6f7f6}.key-current-person .avatar{flex:0 0 34px}.key-current-person b{font-size:11px}.key-current-person small{display:block;margin-top:2px;font-size:8px;color:var(--muted)}
+@media(max-width:1180px){.key-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.key-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+  #page-chaves .page-head{gap:12px!important}#page-chaves .head-actions,#page-chaves .head-actions .btn{width:100%!important}
+  .key-summary{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.key-stat{padding:13px}.key-stat strong{font-size:23px}.key-toolbar{grid-template-columns:1fr;gap:8px}.key-toolbar .select{width:100%!important}.key-grid{grid-template-columns:1fr;gap:10px}.key-card{padding:15px;border-radius:17px}.key-card h3{font-size:16px}.key-meta{grid-template-columns:1fr 1fr}.key-actions .btn{min-height:42px}.key-history-item{grid-template-columns:76px 1fr}
+}
