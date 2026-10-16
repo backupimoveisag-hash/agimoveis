@@ -1,0 +1,85 @@
+/* V41 — Concierge AG: conversa automática para captação */
+.floating-wa{display:none!important}
+.ag-concierge-launcher{
+  position:fixed;right:22px;bottom:22px;z-index:122;
+  width:58px;height:58px;border-radius:50%;border:1px solid rgba(234,198,134,.42);
+  background:#14253F;color:#fff;display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 18px 50px rgba(20,37,63,.28);transition:.22s ease;
+}
+.ag-concierge-launcher:hover{transform:translateY(-2px);background:#0d1b2f;color:#EAC686}
+.ag-concierge-launcher svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ag-concierge-launcher .dot{
+  position:absolute;right:1px;top:2px;width:12px;height:12px;border-radius:50%;
+  background:#EAC686;box-shadow:0 0 0 4px rgba(234,198,134,.16)
+}
+.ag-concierge-teaser{
+  position:fixed;right:92px;bottom:30px;z-index:121;max-width:280px;
+  background:#fff;color:#14253F;border:1px solid rgba(20,37,63,.10);border-radius:18px;
+  padding:13px 16px;box-shadow:0 18px 50px rgba(20,37,63,.16);
+  font-size:11px;line-height:1.5;opacity:0;transform:translateY(8px);pointer-events:none;transition:.25s ease;
+}
+.ag-concierge-teaser.show{opacity:1;transform:none;pointer-events:auto}
+.ag-concierge-teaser b{display:block;font-size:11px;margin-bottom:3px}
+.ag-concierge-teaser span{color:#6f7a8c}
+
+.ag-concierge{
+  position:fixed;right:22px;bottom:92px;z-index:123;width:min(390px,calc(100vw - 28px));
+  height:min(620px,calc(100dvh - 120px));background:#F7F4EE;border:1px solid rgba(20,37,63,.12);
+  border-radius:24px;box-shadow:0 30px 90px rgba(7,16,29,.30);overflow:hidden;
+  opacity:0;transform:translateY(16px) scale(.985);pointer-events:none;transition:.25s cubic-bezier(.2,.75,.25,1);
+  display:flex;flex-direction:column;
+}
+.ag-concierge.open{opacity:1;transform:none;pointer-events:auto}
+.ag-chat-head{
+  min-height:76px;background:#14253F;color:#fff;display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)
+}
+.ag-chat-avatar{
+  width:42px;height:42px;border-radius:50%;background:rgba(234,198,134,.12);border:1px solid rgba(234,198,134,.35);
+  display:grid;place-items:center;color:#EAC686;font-family:Georgia,serif;font-size:17px;font-weight:700
+}
+.ag-chat-head-copy{min-width:0;flex:1}.ag-chat-head-copy strong{display:block;font-size:13px}.ag-chat-head-copy span{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:9px;color:rgba(255,255,255,.65)}
+.ag-chat-head-copy span i{width:6px;height:6px;border-radius:50%;background:#EAC686;display:inline-block}
+.ag-chat-close{width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:20px;cursor:pointer}
+.ag-chat-body{flex:1;overflow:auto;padding:18px 16px 14px;scroll-behavior:smooth}
+.ag-chat-day{text-align:center;color:#98a0ad;font-size:8px;text-transform:uppercase;letter-spacing:.11em;margin-bottom:16px}
+.ag-msg-row{display:flex;margin:8px 0}.ag-msg-row.user{justify-content:flex-end}.ag-msg{
+  max-width:84%;padding:11px 13px;border-radius:17px 17px 17px 5px;background:#fff;color:#23364f;
+  box-shadow:0 8px 22px rgba(20,37,63,.07);font-size:11px;line-height:1.55
+}
+.ag-msg-row.user .ag-msg{background:#14253F;color:#fff;border-radius:17px 17px 5px 17px;box-shadow:none}
+.ag-msg small{display:block;margin-top:5px;font-size:7px;opacity:.55;text-align:right}
+.ag-typing{display:inline-flex;gap:4px;align-items:center;padding:12px 14px;border-radius:17px 17px 17px 5px;background:#fff;box-shadow:0 8px 22px rgba(20,37,63,.07)}
+.ag-typing i{width:5px;height:5px;border-radius:50%;background:#9fa7b3;animation:agDot 1.15s infinite ease-in-out}.ag-typing i:nth-child(2){animation-delay:.14s}.ag-typing i:nth-child(3){animation-delay:.28s}@keyframes agDot{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-3px);opacity:1}}
+.ag-chat-actions{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 4px}
+.ag-chat-chip{
+  border:1px solid rgba(20,37,63,.16);background:#fff;color:#14253F;border-radius:999px;
+  padding:9px 12px;font-size:10px;font-weight:700;cursor:pointer;transition:.18s ease
+}
+.ag-chat-chip:hover{border-color:#EAC686;background:#fffaf0;transform:translateY(-1px)}
+.ag-chat-form{display:grid;gap:8px;margin-top:10px}.ag-chat-form label{font-size:8px;text-transform:uppercase;letter-spacing:.10em;color:#7e8796;font-weight:800}
+.ag-chat-input{
+  width:100%;height:46px;border:1px solid rgba(20,37,63,.13);border-radius:14px;background:#fff;color:#14253F;
+  padding:0 13px;outline:0;font:inherit;font-size:11px
+}
+.ag-chat-input:focus{border-color:#EAC686;box-shadow:0 0 0 3px rgba(234,198,134,.16)}
+.ag-chat-continue{
+  height:44px;border:0;border-radius:14px;background:#14253F;color:#fff;font-size:10px;font-weight:800;cursor:pointer
+}
+.ag-chat-continue:hover{background:#0d1b2f}.ag-chat-error{font-size:9px;color:#a9444c;min-height:14px}
+.ag-chat-consent{font-size:8px;line-height:1.45;color:#808895;margin-top:1px}
+.ag-chat-success{
+  margin-top:10px;padding:13px;border-radius:16px;background:#fff;border:1px solid rgba(20,37,63,.10);font-size:10px;line-height:1.55;color:#4d5b6d
+}
+.ag-chat-success-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.ag-chat-success-actions button,.ag-chat-success-actions a{
+  height:42px;border-radius:12px;border:1px solid rgba(20,37,63,.14);display:flex;align-items:center;justify-content:center;
+  text-decoration:none;font-size:9px;font-weight:800;cursor:pointer
+}
+.ag-chat-success-actions .primary{background:#14253F;color:#fff;border-color:#14253F}.ag-chat-success-actions .secondary{background:#fff;color:#14253F}
+.ag-chat-foot{padding:9px 14px;border-top:1px solid rgba(20,37,63,.08);background:#fff;color:#9198a4;font-size:7px;text-align:center}
+@media(max-width:620px){
+  .ag-concierge-launcher{right:14px;bottom:14px;width:54px;height:54px}.ag-concierge-teaser{right:76px;bottom:20px;max-width:230px}
+  .ag-concierge{right:10px;left:10px;bottom:78px;width:auto;height:min(610px,calc(100dvh - 94px));border-radius:20px}
+  .ag-chat-head{min-height:70px}.ag-chat-body{padding:15px 13px}.ag-msg{max-width:88%}
+}
