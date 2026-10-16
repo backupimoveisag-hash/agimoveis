@@ -89,6 +89,8 @@
 <link rel="stylesheet" id="ag-prospecting-checks-v94" href="./css/38-ag-prospecting-checks-v94.css?v=94">
 <link rel="stylesheet" id="ag-agenda-mobile-v95" href="./css/39-ag-agenda-mobile-v95.css?v=95">
 <link rel="stylesheet" id="ag-leads-mobile-cards-v96" href="./css/40-ag-leads-mobile-cards-v96.css?v=96">
+<link rel="stylesheet" id="ag-properties-leads-reorg-v98" href="./css/41-ag-properties-leads-reorg-v98.css?v=98">
+<link rel="stylesheet" id="ag-property-admin-watermark-v99" href="./css/42-ag-property-admin-watermark-v99.css?v=100">
 </head>
 <body class="auth-required">
 
@@ -158,7 +160,7 @@
     <section class="page active" id="page-dashboard">
       <div class="dashboard-intro">
         <div><div class="eyebrow">Visão geral</div><h1>Bem-vindo. <em>A operação começa limpa.</em></h1></div>
-        <div class="intro-actions"><button class="btn primary" data-open="prospecting">＋ Nova oportunidade</button><button class="btn" data-pagejump="imoveis">Explorar carteira</button><button class="btn" id="exportBtn">Backup ↘</button></div>
+        <div class="intro-actions"><button class="btn primary" data-open="lead">＋ Novo contato</button><button class="btn" data-pagejump="imoveis">Explorar carteira</button><button class="btn" id="exportBtn">Backup ↘</button></div>
       </div>
       <div class="dashboard-stage">
         <article class="operation-pulse">
@@ -202,15 +204,15 @@
     </section>
 
     <section class="page" id="page-imoveis">
-      <div class="page-head"><div><h1>Imóveis</h1><p>Gerencie toda a carteira, disponibilidade, proprietários e condições comerciais.</p></div><div class="head-actions"><button class="btn primary" data-open="property">＋ Novo imóvel</button></div></div>
+      <div class="page-head"><div><h1>Imóveis</h1><p>Gerencie toda a carteira, disponibilidade, proprietários e condições comerciais.</p></div><div class="head-actions"><button class="btn primary" data-open="property">＋ Cadastrar imóvel</button></div></div>
       <div class="toolbar"><input class="field" id="propertySearch" placeholder="Código, endereço, proprietário..."><select class="select" id="propertyTypeFilter"><option value="">Todos os tipos</option><option>Apartamento</option><option>Casa</option><option>Terreno</option><option>Comercial</option><option>Rural</option></select><select class="select" id="propertyPurposeFilter"><option value="">Venda + locação</option><option>Venda</option><option>Locação</option></select><div class="spacer"></div><button class="btn" id="clearPropertyFilters">Zerar filtros</button></div>
       <div class="grid property-grid" id="propertyGrid"></div>
     </section>
 
     <section class="page" id="page-leads">
-      <div class="page-head"><div><h1>Oportunidades.</h1><p>Contato, contexto e próximo movimento em um só lugar.</p></div><div class="head-actions"><button class="btn primary" onclick="openModal('prospecting')">＋ Prospecção</button></div></div>
-      <div class="toolbar"><input class="field" id="leadSearch" placeholder="Nome, telefone ou e-mail"><select class="select" id="leadSourceFilter"><option value="">Todas as origens</option><option>Site</option><option>Instagram</option><option>Indicação</option><option>WhatsApp</option><option>Portal</option><option>Plantão</option></select><select class="select" id="leadStatusFilter"><option value="">Todas as etapas</option><option>Novo</option><option>Contato</option><option>Visita</option><option>Proposta</option><option>Fechado</option></select></div>
-      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contato</th><th>Interesse</th><th>Origem</th><th>Momento</th><th>Corretor</th><th>Potencial</th><th></th></tr></thead><tbody id="leadTable"></tbody></table></div></article>
+      <div class="page-head"><div><h1>Leads.</h1><p>Contatos simples para compra, locação ou captação de imóveis.</p></div><div class="head-actions"><button class="btn primary" data-open="lead">＋ Novo contato</button></div></div>
+      <div class="toolbar"><input class="field" id="leadSearch" placeholder="Nome, telefone ou e-mail"><select class="select" id="leadSourceFilter"><option value="">Todos os interesses</option><option>Quero comprar um imóvel</option><option>Quero alugar um imóvel</option><option>Tenho imóvel para vender</option><option>Tenho imóvel para alugar</option></select><select class="select" id="leadStatusFilter" aria-label="Filtro interno"><option value=""></option></select></div>
+      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contato</th><th>E-mail</th><th>Interesse</th><th></th></tr></thead><tbody id="leadTable"></tbody></table></div></article>
     </section>
 
     <section class="page" id="page-atendimento">
@@ -427,5 +429,7 @@
 <script src="./js/09-ag-mobile-menu-v74.js?v=85"></script>
 <script src="./js/10-ag-mobile-ux-v78.js?v=85"></script>
 <script src="./js/11-ag-mobile-viewport-v81.js?v=85"></script>
+<script src="./js/13-ag-properties-leads-reorg-v98.js?v=98"></script>
+<script src="./js/14-ag-property-admin-watermark-v99.js?v=100"></script>
 </body>
 </html>
