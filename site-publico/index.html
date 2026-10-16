@@ -39,6 +39,7 @@
 <link rel="stylesheet" id="ag-readable-typography-v53" href="./css/11-ag-readable-typography.css">
 <link rel="stylesheet" id="ag-site-v59-hero-fallback" href="./css/12-ag-site-v59-hero-fallback.css?v=60">
 
+<link rel="stylesheet" href="./css/13-ag-exit-intent.css?v=63">
 </head>
 <body>
 <header class="site-nav" id="siteNav">
@@ -325,5 +326,18 @@
 
 
 <script id="ag-site-v43-brand-lock" src="./js/08-ag-site-v43-brand-lock.js"></script>
+<!-- Popup de intenção de saída: apenas desktop -->
+<div class="ag-exit-overlay" id="agExitOverlay" aria-hidden="true">
+  <section class="ag-exit-dialog" id="agExitDialog" role="dialog" aria-modal="true" aria-labelledby="agExitTitle" aria-describedby="agExitDescription">
+    <button class="ag-exit-close" id="agExitClose" type="button" aria-label="Fechar janela">×</button>
+    <img class="ag-exit-logo" src="./assets/ag-logo.png" alt="AG Imobiliária">
+    <p class="ag-exit-kicker">Seu próximo imóvel começa aqui</p>
+    <h2 id="agExitTitle">Não vá embora!</h2>
+    <p class="ag-exit-copy" id="agExitDescription">Converse com um dos nossos corretores e encontre o imóvel que você procura. Estamos aqui para ajudar você a fazer a escolha certa.</p>
+    <button class="ag-exit-primary" id="agExitContact" type="button">Falar com um corretor →</button>
+    <button class="ag-exit-secondary" id="agExitDismiss" type="button">Continuar navegando</button>
+  </section>
+</div>
+<script src="./js/09-ag-exit-intent.js?v=63" defer></script>
 </body>
 </html>
