@@ -1,0 +1,21 @@
+/* V38 — logo maior e busca levemente mais baixa */
+.site-nav .brand-logo-img{
+  height:78px!important;
+  width:auto!important;
+  max-width:220px!important;
+}
+.concept-hero-center{
+  top:55%!important;
+}
+@media(max-width:1080px){
+  .site-nav .brand-logo-img{height:68px!important;max-width:190px!important}
+  .concept-hero-center{top:54%!important}
+}
+@media(max-width:760px){
+  .site-nav .brand-logo-img{height:58px!important;max-width:165px!important}
+  .concept-hero-center{top:50%!important}
+}
+@media(max-width:520px){
+  .site-nav .brand-logo-img{height:52px!important;max-width:150px!important}
+  .concept-hero-center{top:48%!important}
+}

@@ -1,0 +1,17 @@
+/* AG Imobiliária — intenção de saída no desktop */
+.ag-exit-overlay{position:fixed;inset:0;z-index:2147483000;background:rgba(16,21,20,.69);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
+.ag-exit-overlay.is-visible{display:flex;animation:agExitFade .22s ease both}
+.ag-exit-dialog{position:relative;box-sizing:border-box;width:min(100%,480px);padding:42px 42px 38px;border-radius:20px;background:#fff;color:#252925;box-shadow:0 25px 85px rgba(0,0,0,.28);text-align:center;animation:agExitRise .28s ease both;font-family:Manrope,Arial,sans-serif}
+.ag-exit-close{position:absolute;right:16px;top:13px;display:grid;place-items:center;width:36px;height:36px;border:0;background:transparent;border-radius:50%;font-size:27px;cursor:pointer;color:#777}
+.ag-exit-close:hover,.ag-exit-close:focus-visible{background:#f1f2ef;color:#222}
+.ag-exit-logo{display:block;width:100px;max-height:64px;object-fit:contain;margin:0 auto 24px}
+.ag-exit-kicker{margin:0 0 10px;font-size:11px;letter-spacing:.22em;font-weight:800;color:#8d8064;text-transform:uppercase}
+.ag-exit-dialog h2{font-size:clamp(30px,3vw,40px);letter-spacing:-.055em;line-height:1.12;margin:0 0 18px;font-weight:800}
+.ag-exit-dialog p.ag-exit-copy{font-size:15px;line-height:1.75;margin:0 0 28px;color:#565d58}
+.ag-exit-primary{border:0;background:#242e28;color:#fff;border-radius:10px;padding:16px 22px;font:700 13px Manrope,Arial,sans-serif;width:100%;cursor:pointer;transition:background .2s,transform .2s}
+.ag-exit-primary:hover{background:#3b4c40;transform:translateY(-1px)}
+.ag-exit-secondary{display:inline-block;margin-top:18px;border:0;background:transparent;color:#777e77;font:600 12px Manrope,Arial,sans-serif;cursor:pointer;padding:8px}
+.ag-exit-secondary:hover{text-decoration:underline}
+@keyframes agExitFade{from{opacity:0}to{opacity:1}}@keyframes agExitRise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(max-width:1024px),(hover:none),(pointer:coarse){.ag-exit-overlay{display:none!important}}
+@media(prefers-reduced-motion:reduce){.ag-exit-overlay,.ag-exit-dialog{animation:none!important}}
