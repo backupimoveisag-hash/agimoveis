@@ -263,7 +263,3 @@ input,select,textarea,button{min-width:0;max-width:100%}
 
 .lead-capture-context{padding:12px 13px;border-radius:14px;background:#efeee9;color:#4f514b;font-size:9px;line-height:1.5;border:1px solid var(--line)}
 .lead-capture-context b{color:var(--ink)}.lead-capture-status{font-size:9px;color:#ad3e45;min-height:16px}.lead-capture-modal .visit-submit{margin-top:2px}
-
-/* V62 — confirmação visual de match */
-.ag-match-toast{position:fixed;left:50%;bottom:28px;z-index:260;min-width:min(420px,calc(100vw - 28px));max-width:520px;transform:translate(-50%,24px);opacity:0;pointer-events:none;background:#14253f;color:#fff;border:1px solid rgba(234,198,134,.35);border-radius:18px;padding:14px 18px;box-shadow:0 18px 55px rgba(0,0,0,.22);transition:.25s}.ag-match-toast.show{opacity:1;transform:translate(-50%,0)}.ag-match-toast b,.ag-match-toast span{display:block}.ag-match-toast b{font-size:12px;color:#eac686}.ag-match-toast span{margin-top:3px;font-size:10px;color:rgba(255,255,255,.82)}
-@media(max-width:620px){.ag-match-toast{bottom:16px}}
