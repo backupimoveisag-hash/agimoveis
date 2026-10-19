@@ -92,6 +92,7 @@
 <link rel="stylesheet" id="ag-properties-leads-reorg-v98" href="./css/41-ag-properties-leads-reorg-v98.css?v=98">
 <link rel="stylesheet" id="ag-property-admin-watermark-v99" href="./css/42-ag-property-admin-watermark-v99.css?v=100">
 <link rel="stylesheet" id="ag-keys-v102" href="./css/43-ag-keys-v102.css?v=104">
+<link rel="stylesheet" id="ag-drive-backup-v105" href="./css/44-ag-drive-backup-v105.css?v=105">
 </head>
 <body class="auth-required">
 
@@ -354,7 +355,23 @@
             <span><b>Time</b><small>Usuários, acessos e equipe comercial</small></span><i>→</i>
           </button>
         </div>
-        <div class="grid settings-grid"><article class="card settings-card"><h3>Identidade da imobiliária</h3><div class="form-grid"><div class="form-group"><label>Nome fantasia</label><input class="form-control" id="cfgName"></div><div class="form-group"><label>CNPJ</label><input class="form-control" id="cfgCnpj"></div><div class="form-group"><label>Telefone</label><input class="form-control" id="cfgPhone"></div><div class="form-group"><label>E-mail</label><input class="form-control" id="cfgEmail"></div><div class="form-group full"><label>Endereço</label><input class="form-control" id="cfgAddress"></div></div><div style="margin-top:14px"><button class="btn primary" id="saveSettings">Salvar identidade</button></div></article><article class="card settings-card cloud-card"><h3>Firebase · operação online</h3><div class="cloud-status-row"><div class="cloud-pill" id="cloudStatus">Não configurado</div><button class="btn small" id="cloudTestBtn">Testar</button></div><div class="cloud-grid"><div class="cloud-metric"><span>Projeto</span><b id="cloudProject">—</b></div><div class="cloud-metric"><span>Usuário</span><b id="cloudUser">—</b></div><div class="cloud-metric"><span>Perfil</span><b id="cloudRole">—</b></div><div class="cloud-metric"><span>Última sincronização</span><b id="cloudLastSync">—</b></div></div><div class="cloud-actions"><button class="btn primary" id="cloudPushBtn">Enviar local → nuvem</button><button class="btn" id="cloudPullBtn">Atualizar da nuvem</button></div><p class="cloud-help">Configuração central em <b>firebase-config.js</b>. Quando ativado, CRM, catálogo, leads e usuários sincronizam entre dispositivos. Fotos e documentos serão ligados ao Google Drive posteriormente.</p></article><article class="card settings-card"><h3>Dados e portabilidade</h3><p class="ag-settings-support-copy">O navegador funciona como cache e fallback. Com Firebase ativo, a nuvem passa a ser a fonte compartilhada da operação.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="backupBtn">Baixar JSON ↓</button><label class="btn" for="importFile">Importar ↑</label><input type="file" id="importFile" accept="application/json" hidden><button class="btn danger" id="resetBtn">Reiniciar cache local</button></div></article></div>
+        <div class="grid settings-grid"><article class="card settings-card"><h3>Identidade da imobiliária</h3><div class="form-grid"><div class="form-group"><label>Nome fantasia</label><input class="form-control" id="cfgName"></div><div class="form-group"><label>CNPJ</label><input class="form-control" id="cfgCnpj"></div><div class="form-group"><label>Telefone</label><input class="form-control" id="cfgPhone"></div><div class="form-group"><label>E-mail</label><input class="form-control" id="cfgEmail"></div><div class="form-group full"><label>Endereço</label><input class="form-control" id="cfgAddress"></div></div><div style="margin-top:14px"><button class="btn primary" id="saveSettings">Salvar identidade</button></div></article><article class="card settings-card cloud-card"><h3>Firebase · operação online</h3><div class="cloud-status-row"><div class="cloud-pill" id="cloudStatus">Não configurado</div><button class="btn small" id="cloudTestBtn">Testar</button></div><div class="cloud-grid"><div class="cloud-metric"><span>Projeto</span><b id="cloudProject">—</b></div><div class="cloud-metric"><span>Usuário</span><b id="cloudUser">—</b></div><div class="cloud-metric"><span>Perfil</span><b id="cloudRole">—</b></div><div class="cloud-metric"><span>Última sincronização</span><b id="cloudLastSync">—</b></div></div><div class="cloud-actions"><button class="btn primary" id="cloudPushBtn">Enviar local → nuvem</button><button class="btn" id="cloudPullBtn">Atualizar da nuvem</button></div><p class="cloud-help">Configuração central em <b>firebase-config.js</b>. Quando ativado, CRM, catálogo, leads e usuários sincronizam entre dispositivos. O backup JSON pode ser enviado ao Google Drive pelo painel abaixo. Fotos e documentos continuam fora do Firebase Storage.</p></article><article class="card settings-card"><h3>Dados e portabilidade</h3><p class="ag-settings-support-copy">O navegador funciona como cache e fallback. Com Firebase ativo, a nuvem passa a ser a fonte compartilhada da operação.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="backupBtn">Baixar JSON ↓</button><label class="btn" for="importFile">Importar ↑</label><input type="file" id="importFile" accept="application/json" hidden><button class="btn danger" id="resetBtn">Reiniciar cache local</button></div></article>
+<article class="card settings-card ag-drive-card" id="agDriveBackupCard">
+  <div class="ag-drive-head"><div><span class="v5-kicker">BACKUP EXTERNO</span><h3>Google Drive · JSON</h3></div><span class="ag-drive-state" id="agDriveState" data-state="off">Não conectado</span></div>
+  <p class="ag-settings-support-copy">Salva uma cópia completa dos dados do CRM em uma pasta exclusiva <b>AG CRM Backups</b> no Google Drive autorizado pelo administrador.</p>
+  <div class="ag-drive-grid">
+    <div class="ag-drive-metric"><span>Conta</span><b id="agDriveAccount">—</b></div>
+    <div class="ag-drive-metric"><span>Último backup</span><b id="agDriveLastBackup">Nunca</b></div>
+    <div class="ag-drive-metric"><span>Pasta</span><b id="agDriveFolder">AG CRM Backups</b></div>
+    <div class="ag-drive-metric"><span>Automático</span><b id="agDriveAutoLabel">Desativado</b></div>
+  </div>
+  <div class="ag-drive-actions">
+    <button class="btn primary" id="agDriveConnectBtn" type="button">Conectar Google Drive</button>
+    <button class="btn" id="agDriveBackupNowBtn" type="button" disabled>Fazer backup agora</button>
+    <label class="ag-drive-auto"><input type="checkbox" id="agDriveAutoToggle"><span>Backup automático enquanto o CRM estiver aberto</span></label>
+  </div>
+  <div class="ag-drive-message" id="agDriveMessage">Configure o OAuth Client ID em <b>google-drive-config.js</b> para ativar.</div>
+</article></div>
       </div>
 
       <div class="ag-settings-panel" data-settings-panel="automacoes">
@@ -444,5 +461,7 @@
 <script src="./js/13-ag-properties-leads-reorg-v98.js?v=98"></script>
 <script src="./js/14-ag-property-admin-watermark-v99.js?v=100"></script>
 <script src="./js/15-ag-keys-v102.js?v=104"></script>
+<script src="./google-drive-config.js?v=105"></script>
+<script src="./js/16-ag-drive-backup-v105.js?v=105"></script>
 </body>
 </html>
