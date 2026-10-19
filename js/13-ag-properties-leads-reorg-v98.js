@@ -178,10 +178,12 @@
         const saveBtn=$('#modalSave');if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Processando fotos…'}
         try{
           for(const file of files){
-            const src=await compressPropertyImage(file);
-            additions.push({id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src,name:file.name.replace(/\.[^.]+$/,''),created:todayISO(),watermarked:true,watermark:'AG'});
+            const processed=await compressPropertyImage(file);
+            if(!window.AGDriveGateway?.configured?.())throw new Error('Configure o Google Drive via Apps Script em Ajustes antes de enviar fotos.');
+            const stored=await window.AGDriveGateway.uploadImageData(processed,{propertyId:fd.id,fileName:file.name,room:'Capa'});
+            additions.push({id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:stored.url,driveFileId:stored.fileId||'',driveWebViewLink:stored.webViewLink||'',name:file.name.replace(/\.[^.]+$/,''),created:todayISO(),watermarked:true,watermark:'AG',storage:'google-drive'});
           }
-        }catch(e){console.error(e);toast('Não foi possível processar uma das fotos.');if(saveBtn){saveBtn.disabled=false;saveBtn.textContent=current?'Salvar alterações':'Cadastrar imóvel'}return}
+        }catch(e){console.error(e);toast(e?.message||'Não foi possível processar ou enviar uma das fotos ao Google Drive.');if(saveBtn){saveBtn.disabled=false;saveBtn.textContent=current?'Salvar alterações':'Cadastrar imóvel'}return}
       }
 
       const record={...(current||{}),...fd};
