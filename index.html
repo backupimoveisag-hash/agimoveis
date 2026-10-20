@@ -92,7 +92,7 @@
 <link rel="stylesheet" id="ag-properties-leads-reorg-v98" href="./css/41-ag-properties-leads-reorg-v98.css?v=98">
 <link rel="stylesheet" id="ag-property-admin-watermark-v99" href="./css/42-ag-property-admin-watermark-v99.css?v=100">
 <link rel="stylesheet" id="ag-keys-v102" href="./css/43-ag-keys-v102.css?v=104">
-<link rel="stylesheet" id="ag-drive-appscript-v106" href="./css/45-ag-drive-appscript-v106.css?v=106">
+<link rel="stylesheet" id="ag-drive-appscript-v107" href="./css/46-ag-drive-appscript-v107.css?v=107">
 </head>
 <body class="auth-required">
 
@@ -364,20 +364,25 @@
     <label>Chave de integração<div class="ag-drive-key-wrap"><input class="form-control" id="agDriveApiKey" type="password" autocomplete="off" placeholder="Chave gerada por AGCRM_CONFIGURAR()"><button class="btn" type="button" id="agDriveShowKeyBtn">Mostrar</button></div></label>
     <label>ID da pasta raiz<input class="form-control" id="agDriveRootFolderId" placeholder="Opcional"><small>Gerado pelo comando AGCRM_CONFIGURAR().</small></label>
     <label>Nome da pasta raiz<input class="form-control" id="agDriveRootFolderName" value="AG CRM"></label>
+    <label class="ag-drive-email">E-mail para notificações<input class="form-control" id="agDriveNotifyEmail" type="email" value="lucas@igenergia.com.br" placeholder="lucas@igenergia.com.br"><small>Recebe avisos de alterações salvas, novas imagens e backups concluídos.</small></label>
   </div>
   <div class="ag-drive-grid">
-    <div class="ag-drive-metric"><span>Último backup</span><b id="agDriveLastBackup">Nunca</b></div>
+    <div class="ag-drive-metric"><span>Último backup manual</span><b id="agDriveLastBackup">Nunca</b></div>
     <div class="ag-drive-metric"><span>Pasta raiz</span><b id="agDriveFolder">AG CRM</b></div>
     <div class="ag-drive-metric"><span>Fotos novas</span><b id="agDriveImageMode">Pendente</b></div>
-    <div class="ag-drive-metric"><span>Backup automático</span><b id="agDriveAutoLabel">Desativado</b></div>
+    <div class="ag-drive-metric"><span>Backup agendado</span><b id="agDriveScheduleLabel">Pendente</b></div>
+  </div>
+  <div class="ag-drive-grid">
+    <div class="ag-drive-metric"><span>E-mail de avisos</span><b id="agDriveEmailLabel">lucas@igenergia.com.br</b></div>
   </div>
   <div class="ag-drive-actions">
     <button class="btn primary" id="agDriveSaveBtn" type="button">Salvar credenciais</button>
     <button class="btn" id="agDriveTestBtn" type="button">Testar conexão</button>
     <button class="btn" id="agDriveBackupNowBtn" type="button">Fazer backup JSON agora</button>
-    <label class="ag-drive-auto"><input type="checkbox" id="agDriveAutoToggle"><span>Backup automático após alterações</span></label>
+    <button class="btn" id="agDriveInstallTriggerBtn" type="button">Ativar backup 2h</button>
   </div>
   <div class="ag-drive-storage-note"><b>Imagens no Drive:</b> o CRM aplica a marca d’água e envia a foto ao Apps Script antes de salvar o cadastro. O banco guarda somente a URL do arquivo no Drive.</div>
+  <div class="ag-drive-schedule-note"><b>Rotina automática:</b> após alterações relevantes, o CRM atualiza <code>AG CRM/Sistema/AG_CRM_LATEST.json</code>. O Apps Script cria um backup versionado desse estado a cada 2 horas e envia a confirmação por e-mail.</div>
   <div class="ag-drive-message" id="agDriveMessage">Cole as credenciais geradas pelo Apps Script.</div>
 </article></div>
       </div>
@@ -469,6 +474,6 @@
 <script src="./js/13-ag-properties-leads-reorg-v98.js?v=106"></script>
 <script src="./js/14-ag-property-admin-watermark-v99.js?v=100"></script>
 <script src="./js/15-ag-keys-v102.js?v=104"></script>
-<script src="./js/17-ag-drive-appscript-v106.js?v=106"></script>
+<script src="./js/18-ag-drive-appscript-v107.js?v=107"></script>
 </body>
 </html>
