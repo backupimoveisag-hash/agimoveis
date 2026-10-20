@@ -38,6 +38,8 @@
 <link rel="stylesheet" id="ag-v42-property-videos" href="./css/10-ag-v42-property-videos.css">
 <link rel="stylesheet" id="ag-readable-typography-v53" href="./css/11-ag-readable-typography.css">
 
+<link rel="stylesheet" href="./css/12-ag-mobile-hero-fix.css?v=108">
+<link rel="stylesheet" href="./css/13-ag-editorial-v109.css">
 </head>
 <body>
 <header class="site-nav" id="siteNav">
@@ -54,7 +56,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 20.7 4.95 13.9a4.95 4.95 0 0 1 0-7 4.8 4.8 0 0 1 6.86 0L12 8l.19-.18a4.8 4.8 0 0 1 6.86 0 4.95 4.95 0 0 1 0 7L12 20.7Z"/><path d="M12 8.1 10.8 6.94a4.8 4.8 0 0 0-6.86 0 4.95 4.95 0 0 0 0 7L12 21l8.06-7.06a4.95 4.95 0 0 0 0-7 4.8 4.8 0 0 0-6.86 0L12 8.1Z" opacity=".08"/></svg>
         <span class="fav-count hidden" id="favCount">0</span>
       </button>
-      <a class="nav-cta" id="navWhatsapp" href="#">Falar com especialista</a>
+      <a class="nav-cta" id="navWhatsapp" href="#">Falar com um corretor</a>
       <button class="icon-btn mobile-menu-btn" id="mobileSearchBtn" aria-label="Buscar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       </button>
@@ -73,6 +75,7 @@
     </div>
 
     <div class="concept-hero-center">
+      <div class="ag-hero-heading"><h1>Encontre o seu lugar.</h1><p>Cada conquista merece um endereço especial. Encontre seu imóvel em Jaraguá do Sul e região.</p></div>
       <div class="concept-purpose-tabs" role="tablist" aria-label="Objetivo">
         <button type="button" class="active" data-concept-purpose="Venda">Comprar</button>
         <button type="button" data-concept-purpose="Locação">Alugar</button>
@@ -117,15 +120,15 @@
     </div>
 
     <div class="concept-hero-footer">
-      <div class="concept-brand-line"><span>AG</span><b>Curadoria imobiliária</b></div>
+      <div class="concept-brand-line"><span>AG</span><b>Seu novo capítulo começa aqui</b></div>
       <div class="concept-scroll">Explore os imóveis <span>↓</span></div>
     </div>
   </section>
 
   <section class="explore shell">
     <div class="section-title-row reveal">
-      <div><div class="eyebrow">ENCONTRE DO SEU JEITO</div><h2>Comece pela intenção.</h2></div>
-      <p>Não precisa saber exatamente o que procura. Escolha um ponto de partida e refine conforme você explora.</p>
+      <div><div class="eyebrow">ENCONTRE DO SEU JEITO</div><h2>O imóvel ideal para cada momento da sua vida.</h2></div>
+      <p>Para morar, investir ou começar uma nova história, descubra oportunidades alinhadas ao seu momento.</p>
     </div>
     <div class="intent-strip reveal" id="intentStrip">
       <button class="intent-card" data-intent-purpose="Venda"><span class="intent-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h7"/><path d="m8 8 4 4-4 4"/><path d="M14 7h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-4"/></svg></span><div class="intent-copy"><strong>Quero comprar</strong><span id="buyCount">0 opções</span></div></button>
@@ -137,15 +140,15 @@
 
   <section class="location-explore shell" id="locations">
     <div class="section-title-row reveal">
-      <div><div class="eyebrow">EXPLORE POR LOCALIZAÇÃO</div><h2>Encontre pelo lugar.</h2></div>
-      <p>Veja os bairros e cidades com imóveis publicados e entre direto nas opções daquela região.</p>
+      <div><div class="eyebrow">EXPLORE POR LOCALIZAÇÃO</div><h2>O endereço certo transforma sua rotina.</h2></div>
+      <p>Explore imóveis em Jaraguá do Sul e região e encontre oportunidades perto de tudo o que importa para você.</p>
     </div>
     <div class="location-grid reveal" id="locationGrid"></div>
   </section>
 
   <section class="catalog shell" id="properties">
     <div class="catalog-head reveal">
-      <div class="catalog-title"><div class="eyebrow">CURADORIA ATUAL</div><h2>Imóveis disponíveis</h2><p id="resultCount">0 resultados</p></div>
+      <div class="catalog-title"><div class="eyebrow">OPORTUNIDADES PARA VOCÊ</div><h2>Encontre seu próximo imóvel.</h2><p id="resultCount">0 resultados</p></div>
       <div class="catalog-toolbar">
         <button class="filter-chip active" data-quick="all">Todos</button>
         <button class="filter-chip" data-quick="featured">Destaques</button>
@@ -161,7 +164,7 @@
   <section class="recent-section shell hidden" id="recentSection">
     <div class="section-title-row reveal">
       <div><div class="eyebrow">CONTINUE DE ONDE PAROU</div><h2>Vistos recentemente.</h2></div>
-      <p>Os últimos imóveis que você abriu ficam aqui para facilitar a comparação e a retomada da busca.</p>
+      <p>Revisite os imóveis que chamaram sua atenção e encontre o lugar perfeito com tranquilidade.</p>
     </div>
     <div class="recent-grid reveal" id="recentGrid"></div>
   </section>
@@ -169,19 +172,19 @@
   <section class="service-zone reveal" id="services">
     <article class="service-panel dark">
       <div class="eyebrow">ATENDIMENTO IMOBILIÁRIO</div>
-      <h2>Da busca até a chave.</h2>
-      <p>O site organiza a descoberta. Quando você quiser avançar, a equipe assume a jornada para reduzir fricção em visitas, proposta, documentação e fechamento.</p>
+      <h2>Do primeiro contato à entrega das chaves.</h2>
+      <p>Uma boa experiência imobiliária começa com confiança. Oferecemos atendimento próximo e orientação em cada etapa para ajudar você a fazer uma escolha segura.</p>
       <div class="service-steps">
-        <div class="service-step"><i>01</i><div><b>Curadoria</b><span>Refinamos opções conforme sua necessidade.</span></div><em>→</em></div>
-        <div class="service-step"><i>02</i><div><b>Visita</b><span>Agende o melhor horário para conhecer o imóvel.</span></div><em>→</em></div>
-        <div class="service-step"><i>03</i><div><b>Negociação</b><span>Apoio para proposta, contraproposta e condições.</span></div><em>→</em></div>
-        <div class="service-step"><i>04</i><div><b>Fechamento</b><span>Organização documental até a conclusão do negócio.</span></div><em>✓</em></div>
+        <div class="service-step"><i>01</i><div><b>Entendemos você</b><span>Conhecemos suas preferências para identificar as oportunidades ideais.</span></div><em>→</em></div>
+        <div class="service-step"><i>02</i><div><b>Apresentamos possibilidades</b><span>Selecionamos imóveis e organizamos visitas para você conhecer cada detalhe.</span></div><em>→</em></div>
+        <div class="service-step"><i>03</i><div><b>Conduzimos a negociação</b><span>Acompanhamos propostas e condições com clareza e transparência.</span></div><em>→</em></div>
+        <div class="service-step"><i>04</i><div><b>Acompanhamos a conclusão</b><span>Orientamos as etapas documentais até a entrega das chaves.</span></div><em>✓</em></div>
       </div>
     </article>
     <article class="service-panel" id="finance">
       <div class="eyebrow">SIMULAÇÃO RÁPIDA</div>
-      <h2>Planeje o financiamento.</h2>
-      <p>Faça uma estimativa inicial de parcela para entender a ordem de grandeza antes de conversar com a instituição financeira.</p>
+      <h2>Seu novo imóvel pode estar mais perto.</h2>
+      <p>Planejar a compra é o primeiro passo para realizar seu sonho. Simule uma estimativa de parcelas e conheça as possibilidades para seu orçamento.</p>
       <div class="finance-form">
         <div class="finance-field"><label for="financeValue">Valor do imóvel</label><input id="financeValue" type="number" min="0" step="1000" value="780000"></div>
         <div class="finance-field"><label for="financeDown">Entrada</label><input id="financeDown" type="number" min="0" step="1000" value="156000"></div>
@@ -195,7 +198,7 @@
   </section>
 
   <section class="preference-band reveal" id="preference">
-    <div class="preference-copy"><div class="eyebrow">CURADORIA PERSONALIZADA</div><h2>Seu próximo imóvel pode estar fora da vitrine.</h2><p>Conte o que você procura e deixe a AG fazer a curadoria por você. Sua preferência é enviada ao CRM, direcionada para um corretor e o atendimento continua pelo WhatsApp.</p></div>
+    <div class="preference-copy"><div class="eyebrow">BUSCA PERSONALIZADA</div><h2>O imóvel que você procura merece uma busca exclusiva.</h2><p>Conte o que é importante para você. Nossa equipe poderá selecionar imóveis conforme suas preferências, localização desejada e orçamento.</p></div>
     <div class="preference-form">
       <div class="pref-field"><label for="prefName">Seu nome</label><input id="prefName" placeholder="Como podemos chamar você?"></div>
       <div class="pref-field"><label for="prefPhone">Seu WhatsApp</label><input id="prefPhone" inputmode="tel" placeholder="(47) 99999-0000"></div>
@@ -204,27 +207,47 @@
       <div class="pref-field"><label for="prefType">Tipo</label><select id="prefType"><option>Casa</option><option>Apartamento</option><option>Terreno</option><option>Comercial</option><option>Rural</option><option>Estou aberto a opções</option></select></div>
       <div class="pref-field"><label for="prefBudget">Orçamento aproximado</label><input id="prefBudget" placeholder="Ex.: até R$ 900 mil"></div>
       <div class="pref-field"><label for="prefBeds">Dormitórios</label><select id="prefBeds"><option>Indiferente</option><option>1+</option><option>2+</option><option>3+</option><option>4+</option></select></div>
-      <button class="preference-submit" id="preferenceSubmit">Enviar minha busca para um especialista →</button>
+      <button class="preference-submit" id="preferenceSubmit">Quero encontrar meu imóvel →</button>
       <div class="pref-status" id="preferenceStatus"></div>
     </div>
   </section>
 
   <section class="experience-band reveal" id="experience">
     <div class="experience-copy">
-      <div class="eyebrow">UMA BUSCA MAIS HUMANA</div>
-      <h2>Escolher um imóvel não deveria parecer preencher uma planilha.</h2>
-      <p>Organizamos a informação para você comparar, favoritar e entender cada opção sem perder o contexto. Quando fizer sentido, nosso atendimento entra para simplificar o próximo passo.</p>
-      <div class="experience-points"><div><strong>Curadoria</strong><span>carteira organizada</span></div><div><strong>Contexto</strong><span>informação essencial</span></div><div><strong>Comparação</strong><span>lado a lado</span></div><div><strong>Atendimento</strong><span>sem fricção</span></div></div>
+      <div class="eyebrow">POR QUE ESCOLHER A AG</div>
+      <h2>Uma experiência imobiliária feita para você.</h2>
+      <p>Acreditamos que cada cliente tem uma história. Unimos atendimento personalizado, informações claras e tecnologia para tornar sua jornada mais prática e tranquila.</p>
+      <div class="experience-points"><div><strong>Atendimento</strong><span>feito para você</span></div><div><strong>Transparência</strong><span>em cada etapa</span></div><div><strong>Praticidade</strong><span>na busca</span></div><div><strong>Confiança</strong><span>para decidir</span></div></div>
     </div>
     <div class="experience-image" id="experienceImage"></div>
   </section>
 
+
+  <section class="ag-editorial-section shell" id="about">
+    <div class="ag-editorial-inner reveal">
+      <div class="eyebrow">NOSSA ESSÊNCIA · QUEM SOMOS</div>
+      <h2>Relações de confiança, escolhas que transformam.</h2>
+      <p>A AG Imobiliária nasceu com o propósito de oferecer uma experiência imobiliária mais próxima, transparente e personalizada. Sabemos que escolher um imóvel vai muito além de uma negociação: envolve conquistas, planejamento e novos começos.</p>
+      <p>Com atuação voltada a Jaraguá do Sul e região, buscamos compreender os objetivos de cada cliente e conectar pessoas a oportunidades de compra, venda e locação, com atenção aos detalhes e acompanhamento em cada etapa.</p>
+      <strong>Nosso compromisso é cuidar de cada negociação com a atenção que ela merece.</strong>
+    </div>
+  </section>
+  <section class="ag-editorial-section ag-editorial-owner shell" id="owners">
+    <div class="ag-editorial-inner reveal">
+      <div class="eyebrow">PARA PROPRIETÁRIOS</div>
+      <h2>Seu patrimônio merece atenção especial.</h2>
+      <p>Pensando em vender ou alugar seu imóvel? A AG Imobiliária conecta seu patrimônio às pessoas certas, com atenção à apresentação, divulgação e acompanhamento das oportunidades de negociação.</p>
+      <p>Converse com nossa equipe e descubra como podemos ajudar você a dar o próximo passo com tranquilidade.</p>
+      <a class="ag-owner-action" href="#preference">Conversar com a AG <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
   <section class="faq-section shell" id="faq">
     <div class="faq-layout">
-      <div class="faq-intro reveal"><div class="eyebrow">DÚVIDAS FREQUENTES</div><h2>Antes de avançar.</h2><p>Algumas respostas rápidas para tornar a busca e o contato mais transparentes.</p></div>
+      <div class="faq-intro reveal"><div class="eyebrow">DÚVIDAS FREQUENTES</div><h2>Suas dúvidas, nossas respostas.</h2><p>Encontre respostas sobre visitas, financiamento e escolha do imóvel ideal.</p></div>
       <div class="faq-list reveal">
-        <article class="faq-item"><button class="faq-question"><span>Os imóveis do site estão atualizados?</span><span>+</span></button><div class="faq-answer"><p>O catálogo é sincronizado com os imóveis marcados como publicados no CRM. Disponibilidade e condições podem mudar; confirme antes de formalizar proposta.</p></div></article>
-        <article class="faq-item"><button class="faq-question"><span>Posso agendar uma visita pelo site?</span><span>+</span></button><div class="faq-answer"><p>Sim. Abra qualquer imóvel e use “Agendar visita”. Você escolhe data e horário preferencial e o pedido é enviado organizado para o atendimento pelo WhatsApp.</p></div></article>
+        <article class="faq-item"><button class="faq-question"><span>Os imóveis do site estão atualizados?</span><span>+</span></button><div class="faq-answer"><p>As informações são atualizadas conforme os imóveis cadastrados. Valores, condições e disponibilidade podem mudar e devem ser confirmados com nossa equipe.</p></div></article>
+        <article class="faq-item"><button class="faq-question"><span>Posso agendar uma visita pelo site?</span><span>+</span></button><div class="faq-answer"><p>Sim. Escolha o imóvel e clique em “Agendar visita”. Informe o horário de preferência e nossa equipe entrará em contato para confirmar a disponibilidade.</p></div></article>
         <article class="faq-item"><button class="faq-question"><span>O simulador de financiamento é uma aprovação de crédito?</span><span>+</span></button><div class="faq-answer"><p>Não. Ele serve apenas como estimativa inicial. Condições reais dependem da instituição financeira, perfil do cliente, CET, seguros, tarifas e demais critérios.</p></div></article>
         <article class="faq-item"><button class="faq-question"><span>Posso comparar imóveis antes de falar com um corretor?</span><span>+</span></button><div class="faq-answer"><p>Sim. Use o botão de comparação nos cards para colocar até três imóveis lado a lado e avaliar preço, área, dormitórios, suítes, vagas e localização.</p></div></article>
         <article class="faq-item"><button class="faq-question"><span>Como salvo imóveis para ver depois?</span><span>+</span></button><div class="faq-answer"><p>Use o coração nos cards. Os favoritos ficam salvos neste navegador e podem ser acessados pelo ícone no topo da página.</p></div></article>
@@ -236,17 +259,17 @@
 <footer class="footer">
   <div class="shell">
     <div class="footer-grid">
-      <div class="footer-brand"><a href="#top" class="brand brand--logo" aria-label="AG"><img class="brand-logo-img" src="./assets/ag-logo.png" alt="AG"><span id="footerBrand" class="sr-only">AG</span></a><p id="footerTagline">Uma experiência imobiliária mais simples, clara e próxima.</p></div>
+      <div class="footer-brand"><a href="#top" class="brand brand--logo" aria-label="AG"><img class="brand-logo-img" src="./assets/ag-logo.png" alt="AG"><span id="footerBrand" class="sr-only">AG</span></a><p id="footerTagline">Mais do que imóveis, conexões que transformam histórias. Compra, venda e locação em Jaraguá do Sul e região.</p></div>
       <div><h4>Explorar</h4><button data-footer-purpose="Venda">Comprar</button><button data-footer-purpose="Locação">Alugar</button><button id="footerProperties">Todos os imóveis</button></div>
       <div><h4>Atendimento</h4><a id="footerWhatsapp" href="#">WhatsApp</a><a id="footerEmail" href="#">E-mail</a><span id="footerPhone" style="display:block;padding:4px 0;font-size:9px;color:#71726b"></span></div>
-      <div><h4>Região</h4><span id="footerRegion" style="display:block;padding:4px 0;font-size:9px;color:#71726b"></span><span style="display:block;padding:4px 0;font-size:9px;color:#71726b">Catálogo sincronizado com o CRM</span></div>
+      <div><h4>Sobre a AG</h4><a href="#about" style="display:block;padding:4px 0">Quem somos</a><a href="#owners" style="display:block;padding:4px 0">Anuncie seu imóvel</a><span id="footerRegion" style="display:block;padding:4px 0;font-size:9px;color:#71726b"></span><span style="display:block;padding:4px 0;font-size:9px;color:#71726b">Jaraguá do Sul e região</span></div>
     </div>
     <div class="footer-bottom"><span>© <span id="year"></span> <span id="copyrightBrand">AG</span></span><span id="syncText">Catálogo atualizado</span></div>
   </div>
 </footer>
 
 
-<div class="ag-concierge-teaser" id="agConciergeTeaser"><b>Posso ajudar na sua busca?</b><span>Responda 4 perguntas rápidas e eu direciono seu atendimento.</span></div>
+<div class="ag-concierge-teaser" id="agConciergeTeaser"><b>Vamos encontrar o imóvel ideal?</b><span>Conte o que procura e descubra como podemos ajudar.</span></div>
 <button class="ag-concierge-launcher" id="agConciergeLauncher" type="button" aria-label="Abrir assistente AG" aria-expanded="false">
   <span class="dot" aria-hidden="true"></span>
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3 1.7-5.1A7 7 0 0 1 3 12V9a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v6Z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>
@@ -275,7 +298,7 @@
 
 <div class="visit-modal-bg" id="leadCaptureBg">
   <div class="visit-modal lead-capture-modal">
-    <div class="visit-head"><div><div class="eyebrow">ATENDIMENTO PERSONALIZADO</div><h3 id="leadCaptureTitle">Falar com um especialista</h3></div><button class="visit-close" id="leadCaptureClose">×</button></div>
+    <div class="visit-head"><div><div class="eyebrow">ATENDIMENTO PERSONALIZADO</div><h3 id="leadCaptureTitle">Falar com um corretor</h3></div><button class="visit-close" id="leadCaptureClose">×</button></div>
     <div class="visit-form">
       <label class="visit-field"><span>Seu nome</span><input id="leadCaptureName" placeholder="Nome completo"></label>
       <label class="visit-field"><span>WhatsApp</span><input id="leadCapturePhone" inputmode="tel" placeholder="(47) 99999-0000"></label>
