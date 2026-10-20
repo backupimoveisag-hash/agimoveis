@@ -3,12 +3,47 @@
   const baseOpenModal = openModal;
   const baseSaveModal = saveModal;
 
+  // Incremental code independent of the length of the property list (which may have gaps).
+  function nextPropertyCode(){
+    const used=new Set((db.properties||[]).map(p=>String(p.id||'').trim().toUpperCase()));
+    const next=1+Math.max(0,...[...used].map(code=>/^IM\d+$/.test(code)?Number(code.slice(2)):0));
+    let candidate=next;
+    while(used.has(`IM${String(candidate).padStart(3,'0')}`))candidate++;
+    return `IM${String(candidate).padStart(3,'0')}`;
+  }
+
+  function normalizePropertyText(value){
+    return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+  }
+
+  function propertyDuplicate(candidate,editingId){
+    const code=normalizePropertyText(candidate.id);
+    const address=normalizePropertyText(candidate.address);
+    const unit=normalizePropertyText(candidate.unit);
+    const title=normalizePropertyText(candidate.title);
+    const owner=normalizePropertyText(candidate.owner);
+    const ownerPhone=String(candidate.ownerPhone1||'').replace(/\D/g,'');
+    const ownerCpf=String(candidate.ownerCpf||'').replace(/\D/g,'');
+    return (db.properties||[]).find(other=>{
+      if(editingId && String(other.id)===String(editingId))return false;
+      if(code && code===normalizePropertyText(other.id))return true;
+      if(!address || address!==normalizePropertyText(other.address) || unit!==normalizePropertyText(other.unit))return false;
+      if(normalizePropertyText(candidate.type)!==normalizePropertyText(other.type) ||
+         normalizePropertyText(candidate.purpose)!==normalizePropertyText(other.purpose))return false;
+      const sameOwner=owner && owner===normalizePropertyText(other.owner);
+      const sameCpf=ownerCpf && ownerCpf===String(other.ownerCpf||'').replace(/\D/g,'');
+      const samePhone=ownerPhone && ownerPhone===String(other.ownerPhone1||'').replace(/\D/g,'');
+      const sameTitle=title && title===normalizePropertyText(other.title);
+      return Boolean(sameOwner || sameCpf || samePhone || sameTitle);
+    })||null;
+  }
+
   function v98PropertyForm(data={}){
     const brokers=(db.users||[]).filter(u=>u.active).map(u=>u.name);
     const photoCount=Array.isArray(data.photos)?data.photos.length:0;
     return `<form id="modalForm" class="form-grid prospecting-grid v98-property-form">
       ${formDivider('Identificação do imóvel','Cadastro completo da captação e das informações comerciais.')}
-      ${field('id','Código',data.id||`IM${String((db.properties||[]).length+1).padStart(3,'0')}`,'text','required')}
+      ${field('id','Código',data.id||nextPropertyCode(),'text','required')}
       ${field('title','Título do imóvel',data.title||data.propertyTitle||'','text','required')}
       ${selectField('type','Tipo de imóvel',['Casa','Apartamento','Terreno','Sítio/Chácara','Comercial','Rural','Outro'],data.type||data.propertyType||'Casa')}
       ${selectField('purpose','Finalidade',['Venda','Locação'],data.purpose||'Venda')}
@@ -126,6 +161,7 @@
     return baseOpenModal(type,data);
   };
 
+  let propertySavePending=false;
   saveModal=async function(){
     if(editing.type==='lead'){
       const form=$('#modalForm');if(!form?.reportValidity())return;
@@ -150,7 +186,12 @@
     }
 
     if(editing.type==='property'){
-      const form=$('#modalForm');if(!form?.reportValidity())return;
+      const form=$('#modalForm');
+      if(!form?.reportValidity())return;
+      // Guard before any await (image compression/Drive upload). In V109 the button
+      // was not disabled and two clicks could insert the same property twice.
+      if(propertySavePending || form.dataset.agSaving==='1')return;
+      const oldId=editing.id;
       const raw=new FormData(form),fd={};
       for(const [k,v] of raw.entries()){if(!(v instanceof File))fd[k]=v}
       form.querySelectorAll('input[type="checkbox"][name]').forEach(ch=>{fd[ch.name]=ch.checked?'on':''});
@@ -169,38 +210,63 @@
       fd.propertyTitle=fd.title;
       fd.propertyType=fd.type;
 
-      const oldId=editing.id;
-      const current=oldId?(db.properties||[]).find(x=>x.id===oldId):null;
-      if(!current && (db.properties||[]).some(x=>x.id===fd.id)){toast('Já existe um imóvel com este código.');return}
-      const files=[...($('#propertyInitialPhotos')?.files||[])];
-      let additions=[];
-      if(files.length){
-        const saveBtn=$('#modalSave');if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Processando fotos…'}
-        try{
+      if(oldId && !(db.properties||[]).some(x=>x.id===oldId)){
+        toast('Imóvel original não encontrado. Atualize a lista antes de editar.');
+        return;
+      }
+      const duplicate=propertyDuplicate(fd,oldId);
+      if(duplicate){
+        toast(`Cadastro já existente (${duplicate.id}). Abra a ficha para editar, em vez de cadastrar novamente.`);
+        return;
+      }
+
+      propertySavePending=true;
+      form.dataset.agSaving='1';
+      const saveBtn=$('#modalSave')||form.closest('#modal')?.querySelector('.modal-foot .btn.primary');
+      const initialButtonText=saveBtn?.textContent||'Cadastrar imóvel';
+      if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Salvando imóvel…'}
+      try{
+        const files=[...($('#propertyInitialPhotos')?.files||[])];
+        const additions=[];
+        if(files.length){
+          if(!window.AGDriveGateway?.configured?.())throw new Error('Configure o Google Drive via Apps Script em Ajustes antes de enviar fotos.');
           for(const file of files){
+            if(saveBtn)saveBtn.textContent=`Enviando fotos (${additions.length+1}/${files.length})…`;
             const processed=await compressPropertyImage(file);
-            if(!window.AGDriveGateway?.configured?.())throw new Error('Configure o Google Drive via Apps Script em Ajustes antes de enviar fotos.');
             const stored=await window.AGDriveGateway.uploadImageData(processed,{propertyId:fd.id,fileName:file.name,room:'Capa'});
             additions.push({id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:stored.url,driveFileId:stored.fileId||'',driveWebViewLink:stored.webViewLink||'',name:file.name.replace(/\.[^.]+$/,''),created:todayISO(),watermarked:true,watermark:'AG',storage:'google-drive'});
           }
-        }catch(e){console.error(e);toast(e?.message||'Não foi possível processar ou enviar uma das fotos ao Google Drive.');if(saveBtn){saveBtn.disabled=false;saveBtn.textContent=current?'Salvar alterações':'Cadastrar imóvel'}return}
-      }
+        }
+        // A remote update may arrive while pictures are uploading. Recheck the
+        // currently synchronized state immediately before committing the insert.
+        const existing=oldId?(db.properties||[]).find(x=>x.id===oldId):null;
+        if(oldId&&!existing)throw new Error('O imóvel foi removido durante o envio. Atualize a lista antes de tentar novamente.');
+        const lateDuplicate=propertyDuplicate(fd,oldId);
+        if(lateDuplicate)throw new Error(`Este imóvel já foi cadastrado (${lateDuplicate.id}). Não foi criado outro registro.`);
 
-      const record={...(current||{}),...fd};
-      record.photos=[...(current?.photos||[]),...additions];
-      if(!record.photos.length){
-        record.photos=[{id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:v5FallbackPropertyImage(record),name:'Imagem principal',created:todayISO()}];
-      }
-      if(!record.coverPhoto || !record.photos.some(x=>x.id===record.coverPhoto))record.coverPhoto=record.photos[0]?.id||'';
-      if(current){const i=db.properties.findIndex(x=>x.id===oldId);db.properties[i]=record}else db.properties.push(record);
-
-      pushActivity('⌂',current?'Imóvel atualizado':'Novo imóvel cadastrado',`${record.id} · ${record.title}`);
-      closeModal();
-      try{
+        const record={...(existing||{}),...fd};
+        record.photos=[...(existing?.photos||[]),...additions];
+        if(!record.photos.length){
+          record.photos=[{id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:v5FallbackPropertyImage(record),name:'Imagem principal',created:todayISO()}];
+        }
+        if(!record.coverPhoto || !record.photos.some(x=>x.id===record.coverPhoto))record.coverPhoto=record.photos[0]?.id||'';
+        if(existing){
+          const i=db.properties.findIndex(x=>x.id===oldId);
+          db.properties[i]=record;
+        }else db.properties.push(record);
+        pushActivity('⌂',existing?'Imóvel atualizado':'Novo imóvel cadastrado',`${record.id} · ${record.title}`);
         saveDB();
+        closeModal();
         toast(files.length?`Imóvel salvo com ${files.length} ${files.length===1?'foto':'fotos'}.`:'Imóvel salvo com sucesso.');
-        if(files.length) setTimeout(()=>openPropertyDetails(record.id,'gallery',additions[0]?.id),120);
-      }catch(e){console.error(e);toast('Os dados ou fotos excederam o espaço disponível no navegador.')}
+        if(files.length)setTimeout(()=>openPropertyDetails(record.id,'gallery',additions[0]?.id),120);
+      }catch(e){
+        console.error('Falha no cadastro do imóvel',e);
+        toast(e?.message||'Não foi possível salvar o imóvel. Confira os dados e tente novamente.');
+      }finally{
+        propertySavePending=false;
+        delete form.dataset.agSaving;
+        if(saveBtn?.isConnected){saveBtn.disabled=false;saveBtn.textContent=initialButtonText}
+      }
       return;
     }
     return baseSaveModal();
