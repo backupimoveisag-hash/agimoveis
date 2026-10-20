@@ -1,6 +1,6 @@
 const CACHE_NAME = 'ag-crm-v107-shell';
 const APP_SHELL = [
-  './', './index.html', './manifest.webmanifest', './integration-config.js',
+  './', './index.html', './manifest.webmanifest', './firebase-config.js',
   './assets/ag-logo.png', './assets/login-luxury-bg.jpg', './assets/login-luxury-bg-mobile.jpg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png',
   './css/01-styles.css', './css/02-quiet-luxury-redesign.css', './css/03-typography-v4.css', './css/04-property-detail-v6.css',
   './css/05-crm-fluid-responsive-v16.css', './css/06-login-luxury-overrides.css', './css/07-ag-menu-identity.css', './css/08-ag-white-background-fix.css',
