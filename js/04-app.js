@@ -27,7 +27,7 @@ const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 
 if(!enabled){
   status('Modo local');
-  setAuthNote('Modo local · configure firebase-config.js para ativar a nuvem.');
+  setAuthNote('Modo local · ative a sincronização nas configurações.');
   window.EIFirebaseCRM={enabled:false,queueStateSync(){},queueCatalogSync(){}};
 }else{
   const [appMod,authMod,fsMod]=await Promise.all([
