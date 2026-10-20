@@ -538,7 +538,7 @@ function initSiteEvents(){
   $('#sitePropertyPublishList')?.addEventListener('change',e=>{const input=e.target.closest('[data-site-publish]');if(input)setPropertyPublication(input.dataset.sitePublish,input.checked)});
   $('#saveSiteSettings')?.addEventListener('click',()=>{db.settings.siteBrand=$('#siteBrandInput').value.trim()||db.settings.name;db.settings.siteTagline=$('#siteTaglineInput').value.trim()||'Imóveis para viver o próximo capítulo.';db.settings.siteWhatsapp=$('#siteWhatsappInput').value.replace(/\D/g,'');db.settings.siteRegion=$('#siteRegionInput').value.trim();localStorage.setItem('atlasImobCRM',JSON.stringify(db));syncPublicCatalog();renderSiteManager();toast('Site atualizado e sincronizado.')});
   $('#refreshSitePreview')?.addEventListener('click',()=>{renderSiteManager();toast('Prévia atualizada.')});
-  $('#openPublicSite')?.addEventListener('click',()=>{const url=window.EI_FIREBASE_CONFIG?.publicSiteUrl||'';if(url){window.open(url,'_blank','noopener')}else{toast('Configure o endereço do site público nas integrações do CRM.')}});
+  $('#openPublicSite')?.addEventListener('click',()=>{const url=window.EI_FIREBASE_CONFIG?.publicSiteUrl||'';if(url){window.open(url,'_blank','noopener')}else{toast('Configure publicSiteUrl no firebase-config.js do CRM.')}});
   $('#publishAllAvailable')?.addEventListener('click',()=>{db.properties.forEach(p=>p.published=p.status==='Disponível'||p.status==='Reservado');localStorage.setItem('atlasImobCRM',JSON.stringify(db));syncPublicCatalog();renderSiteManager();toast('Imóveis disponíveis publicados.')});
 }
 function initLoginV7(){

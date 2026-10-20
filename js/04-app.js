@@ -27,7 +27,7 @@ const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 
 if(!enabled){
   status('Modo local');
-  setAuthNote('Modo local · ative a sincronização nas configurações.');
+  setAuthNote('Modo local · configure firebase-config.js para ativar a nuvem.');
   window.EIFirebaseCRM={enabled:false,queueStateSync(){},queueCatalogSync(){}};
 }else{
   const [appMod,authMod,fsMod]=await Promise.all([
@@ -154,7 +154,7 @@ if(!enabled){
   function firestoreFriendlyMessage(err){
     const code=String(err?.code||'').toLowerCase(),msg=String(err?.message||'');
     if(isFirestoreConnectivityError(err))return 'A autenticação funcionou, mas o Cloud Firestore não respondeu. No Firebase Console, confirme que o banco Firestore (default) foi criado e está ativo. Depois clique em “Tentar conectar”.';
-    if(code.includes('permission-denied')||code==='rest/403')return 'Acesso ao banco de dados negado. Solicite ao administrador a revisão das regras de acesso.';
+    if(code.includes('permission-denied')||code==='rest/403')return 'O Firestore respondeu, mas as regras bloquearam o acesso. Publique o arquivo firestore.rules desta versão em Firestore Database → Regras → Publicar.';
     if(code.includes('failed-precondition')||code==='rest/404'||/database.*does not exist|firestore api.*disabled|not found/i.test(msg))return 'O Cloud Firestore de ID "default" não foi encontrado neste projeto. Em Firebase Console → Firestore Database, crie o banco padrão e depois tente novamente.';
     if(code.includes('profile-not-created'))return 'O Authentication criou a conta, mas o documento users/{uid} não foi criado. Publique as regras desta versão e tente entrar novamente; a V66 cria o perfil ausente automaticamente no primeiro login.';
     return msg||'Não foi possível acessar o Cloud Firestore.';
