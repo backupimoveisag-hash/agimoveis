@@ -1,0 +1,40 @@
+/* AG v108 — Capa de segurança e busca mobile compacta */
+.concept-hero #heroPhoto{background-color:#14253f;background-image:url('../assets/login-luxury-bg.jpg');background-size:cover;background-position:center center}
+.concept-hero .hero-photo:before{background:linear-gradient(180deg,rgba(6,15,27,.42),rgba(6,15,27,.32) 42%,rgba(6,15,27,.70) 100%)!important}
+.ag-hero-heading{text-align:center;color:#fff;margin:0 auto 20px;max-width:680px;text-shadow:0 2px 16px rgba(0,0,0,.32)}
+.ag-hero-heading h1{font-size:clamp(25px,3vw,39px);line-height:1.12;letter-spacing:-.035em;font-weight:650;margin:0 0 7px;color:#fff}
+.ag-hero-heading p{font-size:clamp(12px,1.2vw,15px);line-height:1.5;margin:0;color:rgba(255,255,255,.90)}
+@media(max-width:760px){
+ .site-nav .nav-inner{height:70px!important;padding:0 12px!important}
+ .site-nav .brand-logo-img{height:49px!important;max-width:125px!important}
+ .site-nav .nav-actions{gap:8px!important}
+ .site-nav .icon-btn{width:43px!important;height:43px!important;min-width:43px!important}
+ .concept-hero{height:100svh!important;min-height:690px!important;overflow:visible!important}
+ .concept-hero .hero-visual{overflow:hidden!important}
+ .concept-hero .hero-photo{background-position:57% center!important}
+ .concept-hero-center{width:calc(100% - 32px)!important;max-width:460px!important;top:auto!important;bottom:clamp(36px,7svh,85px)!important;left:50%!important;transform:translateX(-50%)!important}
+ .ag-hero-heading{margin-bottom:21px!important}
+ .ag-hero-heading h1{font-size:clamp(23px,6vw,30px)!important;line-height:1.14!important}
+ .ag-hero-heading p{font-size:12px!important}
+ .concept-purpose-tabs{margin-bottom:12px!important;gap:30px!important}
+ .concept-purpose-tabs button{font-size:15px!important;padding-bottom:9px!important}
+ .search-dock{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;padding:0!important;border-radius:16px!important;overflow:hidden!important}
+ .search-dock .search-field{display:flex!important;width:100%!important;height:53px!important;min-width:0!important;padding:0 16px!important;border-bottom:1px solid #e7e9ed!important;border-right:0!important;grid-column:auto!important}
+ .search-dock .concept-query-field{grid-column:auto!important}
+ .search-field label{font-size:9px!important;letter-spacing:.07em!important;margin-bottom:3px!important}
+ .search-field input,.search-field select{font-size:16px!important;min-width:0!important;line-height:1.25!important}
+ .search-field input::placeholder{color:#8691a0!important;font-size:13px!important}
+ .search-submit{grid-column:1/-1!important;width:100%!important;height:48px!important;font-size:14px!important;border-radius:0!important}
+ .concept-search-meta{margin-top:10px!important;gap:0!important;min-height:unset!important;padding:0!important}
+ .concept-advanced-toggle{font-size:12px!important;padding:6px 0!important;color:#f3d4a4!important}
+ .search-dock-wrap.advanced-open .geo-radius-status{display:none!important}
+ .search-dock-wrap.advanced-open .geo-filter-bar{display:grid!important;grid-template-columns:1fr 1fr!important;position:absolute!important;z-index:20!important;top:calc(100% + 6px)!important;left:0!important;right:0!important;margin:0!important;padding:14px!important;gap:10px!important;max-height:min(52svh,430px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;box-shadow:0 20px 55px rgba(0,0,0,.33)!important;border-radius:16px!important}
+ .geo-filter-title{grid-column:1/-1!important;padding:0 2px!important}
+ .geo-filter-title b{font-size:12px!important}.geo-filter-title span{font-size:11px!important}
+ .geo-field{height:60px!important;padding:8px 11px!important;min-width:0!important}
+ .geo-field label{font-size:10px!important}.geo-field select{font-size:14px!important;min-width:0!important}
+ .geo-field:last-child{grid-column:1/-1!important}
+ .floating-wa{width:48px!important;height:48px!important;right:14px!important;bottom:20px!important}
+}
+@media(max-width:390px){.concept-hero-center{bottom:40px!important}.ag-hero-heading h1{font-size:23px!important}.search-dock .search-field{height:51px!important}}
+@media(max-height:720px) and (max-width:760px){.concept-hero{min-height:640px!important}.concept-hero-center{bottom:32px!important}.ag-hero-heading{margin-bottom:11px!important}.ag-hero-heading p{display:none!important}}
