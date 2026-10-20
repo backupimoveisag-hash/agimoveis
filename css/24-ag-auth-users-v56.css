@@ -1,4 +1,4 @@
-/* V56 — nuvem Auth, aprovação e permissões */
+/* V56 — Firebase Auth, aprovação e permissões */
 #loginScreen.login-screen{overflow-y:auto!important}
 .role-hidden{display:none!important}
 #loginScreen .login-card{width:min(460px,94vw)!important}
