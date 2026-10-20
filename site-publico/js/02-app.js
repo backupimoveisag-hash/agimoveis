@@ -10,7 +10,7 @@ if(enabled){
     const app=initializeApp(cfg),fs=getFirestore(app,cfg.databaseId||'(default)');
     window.EIFirebaseSite={
       enabled:true,
-      async submitLead(event){try{await setDoc(doc(fs,'siteLeads',event.id),{...event,processed:false},{merge:false})}catch(err){console.warn('Lead mantido na fila local; Firebase indisponível.',err)}}
+      async submitLead(event){try{await setDoc(doc(fs,'siteLeads',event.id),{...event,processed:false},{merge:false})}catch(err){console.warn('Lead mantido na fila local; Serviço de sincronização indisponível.',err)}}
     };
     onSnapshot(doc(fs,'public','catalog'),snap=>{
       if(!snap.exists())return;
@@ -21,6 +21,6 @@ if(enabled){
       document.documentElement.dataset.catalogSyncedAt=remote.syncedAt||new Date().toISOString();
       renderHeader();renderLocationFilters();renderProperties();renderFavorites();renderLocations();renderRecentlyViewed();
       if(activeProperty&&document.getElementById('modalBg')?.classList.contains('show')){const p=catalog.properties.find(x=>x.id===activeProperty.id);if(p)openProperty(p.id)}
-    },err=>console.warn('Catálogo Firebase indisponível; usando cache local.',err));
-  }catch(err){console.warn('Firebase não inicializado; site operando em modo local.',err)}
+    },err=>console.warn('Catálogo online indisponível; usando cache local.',err));
+  }catch(err){console.warn('Sincronização não inicializada; site operando em modo local.',err)}
 }else window.EIFirebaseSite={enabled:false,submitLead:async()=>{}};
