@@ -1,0 +1,12 @@
+/* AG Imobiliária | Conteúdo institucional v109 */
+.ag-editorial-section{padding:84px 0 26px}
+.ag-editorial-inner{max-width:900px;margin:0 auto;padding:54px 62px;background:#f7f6f3;border:1px solid #e7e4dc;border-radius:20px}
+.ag-editorial-inner .eyebrow{color:#97783e;margin-bottom:18px}
+.ag-editorial-inner h2{font-size:clamp(31px,4vw,52px);line-height:1.13;letter-spacing:-.035em;color:#142339;margin:0 0 24px}
+.ag-editorial-inner p{font-size:16px;line-height:1.8;color:#4b5664;margin:0 0 15px}
+.ag-editorial-inner strong{display:block;margin-top:22px;font-size:16px;line-height:1.6;color:#142339}
+.ag-editorial-owner .ag-editorial-inner{background:#101e30;border-color:#24364d}
+.ag-editorial-owner h2,.ag-editorial-owner strong{color:#fff}
+.ag-editorial-owner p{color:#d6dce3}
+.ag-owner-action{display:inline-flex;margin-top:12px;padding:14px 23px;border-radius:9px;background:#cfb17d;color:#101e30;font-weight:700;text-decoration:none;gap:18px;align-items:center}
+@media(max-width:700px){.ag-editorial-section{padding:38px 15px 0}.ag-editorial-inner{padding:31px 23px;border-radius:15px}.ag-editorial-inner p{font-size:15px}.ag-editorial-inner h2{font-size:30px}}
