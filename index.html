@@ -93,6 +93,7 @@
 <link rel="stylesheet" id="ag-property-admin-watermark-v99" href="./css/42-ag-property-admin-watermark-v99.css?v=100">
 <link rel="stylesheet" id="ag-keys-v102" href="./css/43-ag-keys-v102.css?v=104">
 <link rel="stylesheet" id="ag-drive-appscript-v107" href="./css/46-ag-drive-appscript-v107.css?v=107">
+<link rel="stylesheet" href="./css/47-ag-canal-pro-v113.css?v=114">
 </head>
 <body class="auth-required">
 
@@ -145,6 +146,7 @@
       <button data-page="propostas" title="Documentos"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6zM14 2v6h6M9 13h7M9 17h5"/></svg></span>Docs</button>
       <button data-page="financeiro" title="Financeiro"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="M7 15l4-4 3 2 5-7"/></svg></span>Financeiro</button>
       <button data-page="site" title="Site público"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></span>Site</button>
+
       <button data-page="configuracoes" title="Configurações"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span>Ajustes</button>
     </nav>
     <div class="sidebar-foot"><button type="button" class="pwa-install-btn" id="pwaInstallBtn" hidden>▣ Instalar AG CRM</button><div class="user-mini"><div class="avatar">AG</div><div><b id="loggedUserName">Administrador</b><small>AG Imóveis</small></div><button class="logout-mini" id="logoutBtn" title="Sair">↗</button></div></div>
@@ -336,11 +338,13 @@
       </div>
     </section>
 
+
     <section class="page" id="page-configuracoes">
-      <div class="page-head"><div><h1>Ajustes</h1><p>Identidade da AG, equipe, dados e regras de automação em um só lugar.</p></div></div>
+      <div class="page-head"><div><h1>Ajustes</h1><p>Identidade da AG, equipe, integrações e automações em um só lugar.</p></div></div>
       <div class="ag-settings-tabs" role="tablist" aria-label="Áreas de ajustes">
         <button class="ag-settings-tab active" type="button" role="tab" aria-selected="true" data-settings-tab="geral">Geral</button>
         <button class="ag-settings-tab" type="button" role="tab" aria-selected="false" data-settings-tab="automacoes">Automações</button>
+        <button class="ag-settings-tab" type="button" role="tab" aria-selected="false" data-settings-tab="canalpro" hidden>Canal Pro</button>
         <button class="ag-settings-tab" type="button" role="tab" aria-selected="false" data-settings-tab="usuarios">Usuários e permissões</button>
       </div>
 
@@ -438,6 +442,49 @@
           </section>
         </div>
       </div>
+
+      <div class="ag-settings-panel ag-cp-panel" id="ag-canalpro-settings" data-settings-panel="canalpro">
+      <div class="page-head ag-cp-title"><div><span class="v5-kicker">PORTAIS IMOBILIÁRIOS</span><h1>Canal Pro</h1><p>Envie os imóveis selecionados ao ZAP, Viva Real e OLX pela integração oficial VRSync.</p></div><div class="head-actions"><button class="btn" id="agCpRefresh">Atualizar status</button><button class="btn primary" id="agCpPublish">Publicar XML agora</button></div></div>
+      <div class="ag-cp-metrics">
+        <div class="card ag-cp-metric"><span>Imóveis selecionados</span><b id="agCpSelectedCount">0</b><small>Independentes do site público</small></div>
+        <div class="card ag-cp-metric"><span>Prontos para envio</span><b id="agCpReadyCount">0</b><small>Com dados mínimos válidos</small></div>
+        <div class="card ag-cp-metric"><span>Precisam de revisão</span><b id="agCpInvalidCount">0</b><small>Antes de gerar o XML</small></div>
+        <div class="card ag-cp-metric"><span>Última publicação</span><b id="agCpLastPublish">—</b><small id="agCpPublishStatus">Pendente</small></div>
+      </div>
+      <div class="ag-cp-columns">
+        <div class="ag-cp-main">
+          <article class="card ag-cp-card">
+            <div class="ag-cp-card-head"><div><span class="v5-kicker">CONFIGURAÇÃO DO CANAL</span><h3>Identificação e endereço público</h3></div><span class="ag-cp-pill" id="agCpConfigStatus">Não configurado</span></div>
+            <p>Use um endereço público para o XML. A publicação no GitHub Pages depende da configuração segura do Apps Script, sem inserir o token do GitHub no CRM.</p>
+            <div class="ag-cp-settings-grid">
+              <label class="ag-cp-switch"><input type="checkbox" id="agCpEnabled"><span>Ativar exportação de anúncios</span></label>
+              <label>URL pública do XML<input class="form-control" id="agCpUrl" placeholder="https://www.imoveisag.com/integracoes/canalpro.xml"><small>A URL real depende da configuração de domínio e da pasta publicada no GitHub Pages.</small></label>
+              <label>Nome público da imobiliária<input class="form-control" id="agCpName" placeholder="AG Imobiliária"></label>
+              <label>E-mail público comercial<input class="form-control" type="email" id="agCpEmail" placeholder="contato@seudominio.com.br"><small>Não use e-mail de proprietário ou credenciais.</small></label>
+              <label>Telefone de atendimento<input class="form-control" id="agCpPhone" placeholder="(47) 99999-9999"></label>
+              <label>Site comercial<input class="form-control" id="agCpWebsite" placeholder="https://www.imoveisag.com"></label>
+            </div>
+            <div class="ag-cp-toolbar"><button class="btn primary" id="agCpSaveConfig">Salvar configuração</button><button class="btn" id="agCpDownload">Baixar XML de prévia</button><button class="btn" id="agCpOpenFeed">Abrir endereço público ↗</button></div>
+            <div class="ag-cp-message" id="agCpMessage" role="status">Configure o Apps Script e o repositório antes da primeira publicação.</div>
+          </article>
+          <article class="card ag-cp-card">
+            <div class="ag-cp-card-head"><div><span class="v5-kicker">CARTEIRA PARA PORTAIS</span><h3>Selecionar anúncios</h3></div><span class="ag-cp-sublabel">Só imóveis disponíveis</span></div>
+            <p>Ative individualmente os imóveis que deseja anunciar. Imóveis vendidos, alugados ou inativos são removidos do próximo XML.</p>
+            <div class="ag-cp-filters"><input class="form-control" id="agCpSearch" placeholder="Pesquisar código, título ou bairro…" aria-label="Pesquisar imóveis"><select class="form-control" id="agCpFilter"><option value="all">Todos os imóveis</option><option value="selected">Selecionados</option><option value="issues">Com pendências</option></select></div>
+            <div id="agCpPropertyList" class="ag-cp-property-list"></div>
+          </article>
+        </div>
+        <aside class="ag-cp-side">
+          <article class="card ag-cp-card"><span class="v5-kicker">PUBLICAÇÃO AUTOMÁTICA</span><h3>Como funciona</h3>
+            <ol class="ag-cp-steps"><li>Selecione os imóveis e salve a configuração.</li><li>Configure o token do GitHub exclusivamente nas propriedades do Apps Script.</li><li>Publique o XML no domínio e cadastre a URL no Canal Pro.</li><li>O Apps Script atualiza o arquivo a cada 2 horas; o portal processa em intervalos próprios.</li></ol>
+            <button class="btn" id="agCpInstallSchedule">Instalar rotina de 2 horas</button>
+            <p class="ag-cp-note">O site público continua independente. Fotos do Google Drive podem ser copiadas como JPEG público para a pasta exclusiva do feed.</p>
+          </article>
+          <article class="card ag-cp-card"><span class="v5-kicker">CHECKLIST DE QUALIDADE</span><h3>Antes de enviar</h3><p>Título com 10–100 caracteres; descrição pública própria com 50–3.000; finalidade, tipo, preço, cidade, UF e bairro; área e pelo menos 5 fotografias JPEG acessíveis.</p><p class="ag-cp-note">A publicação real só é confirmada após um processamento sem erro no relatório do Canal Pro. A prévia local não publica os anúncios.</p><a href="https://developers.grupozap.com/feeds/vrsync/elements/listing.html" target="_blank" rel="noopener noreferrer">Ver documentação oficial ↗</a></article>
+          <article class="card ag-cp-card"><span class="v5-kicker">STATUS TÉCNICO</span><h3>Destino GitHub Pages</h3><div class="ag-cp-tech" id="agCpTechnical">Aguardando consulta ao Apps Script.</div></article>
+        </aside>
+      </div>
+      </div>
     </section>
   </main>
 </div>
@@ -475,5 +522,6 @@
 <script src="./js/14-ag-property-admin-watermark-v99.js?v=100"></script>
 <script src="./js/15-ag-keys-v102.js?v=104"></script>
 <script src="./js/18-ag-drive-appscript-v107.js?v=107"></script>
+<script src="./js/19-ag-canal-pro-v113.js?v=114"></script>
 </body>
 </html>
