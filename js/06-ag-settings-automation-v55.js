@@ -5,6 +5,8 @@
   if(!tabs.length||!panels.length)return;
 
   function activateSettingsTab(name){
+    const chosen=tabs.find(btn=>btn.dataset.settingsTab===name);
+    if(!chosen||chosen.hidden)name='geral';
     tabs.forEach(btn=>{
       const active=btn.dataset.settingsTab===name;
       btn.classList.toggle('active',active);

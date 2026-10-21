@@ -197,6 +197,8 @@ if(!enabled){
     const allowed=new Set(permissionsForProfile(profile));
     document.querySelectorAll('[data-page]').forEach(el=>el.classList.toggle('role-hidden',!allowed.has(el.dataset.page)));
     document.querySelectorAll('[data-pagejump]').forEach(el=>{const p=el.dataset.pagejump;if(p)el.classList.toggle('role-hidden',!allowed.has(p))});
+    const canalTab=$('[data-settings-tab="canalpro"]');if(canalTab)canalTab.hidden=profile?.role!=='Administrador';
+    const canalPanel=$('[data-settings-panel="canalpro"]');if(canalPanel&&profile?.role!=='Administrador'&&canalPanel.classList.contains('active'))window.activateSettingsTab?.('geral');
     const userTab=$('[data-settings-tab="usuarios"]');if(userTab)userTab.hidden=profile?.role!=='Administrador';
     const userPanel=$('[data-settings-panel="usuarios"]');if(userPanel&&profile?.role!=='Administrador'){if(userPanel.classList.contains('active'))window.activateSettingsTab?.('geral');userPanel.classList.remove('active')}
     const active=document.querySelector('.page.active')?.id?.replace('page-','');if(active&&!allowed.has(active))bridge.navigate('dashboard');

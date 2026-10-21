@@ -116,6 +116,10 @@
       ${field('commission','Percentual de comissão',data.commission||'5','number','min="0" step="0.01"')}
       ${selectField('featured','Imóvel em destaque',['Não','Sim'],data.featured?'Sim':'Não')}
       ${selectField('published','Publicar no site',['Sim','Não'],data.published===false?'Não':'Sim')}
+      ${selectField('canalProPublished','Publicar no Canal Pro',['Não','Sim'],data.canalProPublished===true?'Sim':'Não')}
+      ${selectField('canalProTier','Plano do anúncio Canal Pro',['STANDARD','PREMIUM','SUPER_PREMIUM'],data.canalProTier||'STANDARD')}
+      ${selectField('canalProType','Tipo VRSync (se necessário)',['Automático','Residential / Apartment','Residential / Home','Residential / Condo','Residential / Farm Ranch','Residential / Agricultural','Residential / Land Lot','Commercial / Building','Commercial / Office','Commercial / Land Lot','Commercial / Industrial','Commercial / Business'],data.canalProType||'Automático')}
+      <div class="form-group full"><label>Descrição pública para o Canal Pro <small style="font-weight:500;color:var(--muted)">somente dados do imóvel; não inclua informações do proprietário (50–3.000 caracteres)</small></label><textarea class="form-control" name="canalProDescription" rows="5" maxlength="3000" placeholder="Descreva os atributos, a localização e os diferenciais do imóvel para os portais.">${safe(data.canalProDescription||'')}</textarea></div>
       <div class="form-group full"><label>Diferenciais <small style="font-weight:500;color:var(--muted)">separe por vírgula</small></label><input class="form-control" name="amenities" value="${safe(data.amenities||'')}" placeholder="Piscina, varanda gourmet, elevador..."></div>
       <div class="form-group full"><label>Observações complementares</label><textarea class="form-control" name="extraObs">${safe(data.extraObs||'')}</textarea></div>
     </form>`;
@@ -206,6 +210,7 @@
       fd.featured=fd.featured==='Sim';
       fd.siteFeatured=fd.featured;
       fd.published=fd.published!=='Não';
+      fd.canalProPublished=fd.canalProPublished==='Sim';
       fd.ownerName=fd.owner;
       fd.propertyTitle=fd.title;
       fd.propertyType=fd.type;
