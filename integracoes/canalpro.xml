@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- APENAS PRÉVIA LOCAL. Fotos Drive precisam ser verificadas/espelhadas pelo Apps Script. NÃO CADASTRE ESTE ARQUIVO NO PORTAL. -->
+<ListingDataFeed xmlns="http://www.vivareal.com/schemas/1.0/VRSync" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.vivareal.com/schemas/1.0/VRSync http://xml.vivareal.com/vrsync.xsd"><Header><Provider>AG CRM</Provider><Email>contato@imoveisag.com</Email><ContactName>AG Imobiliária</ContactName><PublishDate>2026-10-21T13:29:37</PublishDate></Header><Listings></Listings></ListingDataFeed>
