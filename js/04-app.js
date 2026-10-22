@@ -524,10 +524,38 @@ if(!enabled){
     if(!row){row={id:'U'+Date.now().toString(36).toUpperCase(),name:profile.name||email,role:profile.role||'Corretor',email,phone:'',active:profile.active!==false,closed:0,pipeline:0,firebaseUid:uid};state.users.push(row)}
     Object.assign(row,{name:profile.name||row.name,email,role:profile.role||row.role,permissions:permissionsForProfile(profile),active:profile.active!==false,firebaseUid:uid});bridge.persistLocal();queueStateSync();
   }
+  function agCrmAccessUrl(){
+    try{
+      const u=new URL(window.location.href);
+      u.search='';u.hash='';
+      if(/\/index\.html?$/i.test(u.pathname))u.pathname=u.pathname.replace(/\/index\.html?$/i,'/');
+      return u.href;
+    }catch(e){return String(window.location.href||'')}
+  }
+  async function sendWelcomeEmailToUser(profile){
+    const email=String(profile?.email||'').trim().toLowerCase();
+    if(!email)return {sent:false,reason:'no-email'};
+    if(!window.AGDriveGateway?.configured?.())return {sent:false,reason:'drive-not-configured'};
+    try{
+      await window.AGDriveGateway.request('welcomeEmail',{
+        email,
+        name:String(profile?.name||email),
+        role:String(profile?.role||'Usuário'),
+        accessUrl:agCrmAccessUrl()
+      });
+      return {sent:true};
+    }catch(err){
+      console.warn('AG CRM: usuário criado/aprovado, mas o e-mail de boas-vindas falhou.',err);
+      return {sent:false,reason:err?.message||String(err)};
+    }
+  }
+
   async function approveRequest(uid){
     if(!isAdmin())return;const r=requestCache.get(uid);if(!r)return;const role=$(`[data-request-role="${uid}"]`)?.value||'Corretor';const permissions=ROLE_DEFAULTS[role]||ROLE_DEFAULTS.Corretor;
     const profile={uid,name:r.name||r.email,email:String(r.email||'').toLowerCase(),role,permissions,active:true,approvalStatus:'approved',approvedAt:serverTimestamp(),approvedBy:auth.currentUser.uid,updatedAt:serverTimestamp()};
-    await dbSet(`users/${uid}`,profile,{merge:true});await dbUpdate(`accessRequests/${uid}`,{status:'approved',approvedAt:new Date().toISOString(),approvedBy:auth.currentUser.uid});await upsertRosterFromProfile(uid,profile);await refreshAdminConsoleRest();bridge.toast('Usuário aprovado e liberado.');
+    await dbSet(`users/${uid}`,profile,{merge:true});await dbUpdate(`accessRequests/${uid}`,{status:'approved',approvedAt:new Date().toISOString(),approvedBy:auth.currentUser.uid});await upsertRosterFromProfile(uid,profile);await refreshAdminConsoleRest();
+    const welcome=await sendWelcomeEmailToUser(profile);
+    bridge.toast(welcome.sent?'Usuário aprovado. E-mail de boas-vindas enviado.':'Usuário aprovado e liberado. O e-mail de boas-vindas não pôde ser enviado.');
   }
   async function rejectRequest(uid){if(!isAdmin())return;if(firestoreTransport==='rest'){await dbUpdate(`accessRequests/${uid}`,{status:'rejected',rejectedAt:new Date().toISOString(),rejectedBy:auth.currentUser.uid});await dbSet(`users/${uid}`,{active:false,approvalStatus:'rejected',updatedAt:new Date().toISOString(),updatedBy:auth.currentUser.uid},{merge:true});await refreshAdminConsoleRest()}else{const batch=writeBatch(fs);batch.update(doc(fs,'accessRequests',uid),{status:'rejected',rejectedAt:serverTimestamp(),rejectedBy:auth.currentUser.uid});batch.set(doc(fs,'users',uid),{active:false,approvalStatus:'rejected',updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});await batch.commit()}bridge.toast('Solicitação recusada.')}
   async function createUserByAdmin(){
@@ -538,7 +566,8 @@ if(!enabled){
     try{
       secondaryApp=initializeApp(firebaseOptions,'ag-user-create-'+Date.now());secondaryAuth=getAuth(secondaryApp);const cred=await createUserWithEmailAndPassword(secondaryAuth,email,pass);await updateProfile(cred.user,{displayName:name});await signOut(secondaryAuth);
       const profile={uid:cred.user.uid,name,email,role,permissions,active:true,approvalStatus:'approved',createdAt:new Date().toISOString(),createdBy:auth.currentUser.uid,updatedAt:new Date().toISOString()};await dbSet(`users/${cred.user.uid}`,profile);await dbSet(`accessInvites/${email}`,{name,email,role,permissions,active:true,createdAt:new Date().toISOString()},{merge:true});await upsertRosterFromProfile(cred.user.uid,profile);await refreshAdminConsoleRest();
-      $('#adminCreateName').value='';$('#adminCreateEmail').value='';$('#adminCreatePassword').value='';bridge.toast('Usuário criado. Compartilhe a senha temporária com segurança.');
+      const welcome=await sendWelcomeEmailToUser(profile);
+      $('#adminCreateName').value='';$('#adminCreateEmail').value='';$('#adminCreatePassword').value='';bridge.toast(welcome.sent?'Usuário criado e e-mail de boas-vindas enviado. Compartilhe a senha temporária por um canal seguro.':'Usuário criado. O e-mail de boas-vindas não pôde ser enviado; compartilhe a senha temporária por um canal seguro.');
     }catch(err){console.error(err);bridge.toast(authErrorMessage(err))}finally{if(secondaryApp)try{await deleteApp(secondaryApp)}catch(e){}}
   }
   function openPermissionEditor(uid){
