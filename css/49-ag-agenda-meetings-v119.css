@@ -101,3 +101,11 @@
 .ag-room-wait{z-index:12;background:rgba(8,17,27,.86);backdrop-filter:blur(5px)}
 @media(max-width:900px){.ag-rtc-grid{inset:0 0 72px 0;padding:8px;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(135px,1fr);gap:6px}.ag-rtc-tile{min-height:135px;border-radius:13px}.ag-rtc-controls{height:70px;gap:6px;padding:8px}.ag-rtc-control{min-width:54px;height:44px;border-radius:12px}.ag-rtc-control span{display:none}.ag-room-tabs button{padding:11px 5px;font-size:11px}}
 @media(max-width:520px){.ag-rtc-grid{grid-template-columns:1fr 1fr}.ag-room-layout{grid-template-rows:minmax(300px,58vh) minmax(230px,42vh)}.ag-room-top{gap:7px}.ag-room-status{order:4}.ag-room-end{font-size:10px}}
+
+
+/* AG CRM V131 — câmera local visível imediatamente */
+.ag-rtc-grid:has(.ag-rtc-tile:only-child){grid-template-columns:minmax(320px,900px);justify-content:center;align-content:center}
+.ag-rtc-tile.local{outline:1px solid rgba(234,198,134,.26)}
+.ag-rtc-control.requesting{opacity:.65;cursor:wait}
+.ag-rtc-control:not(.active)#agRtcCamera{background:#3a2630;border-color:#6e3a4c;color:#fff}
+@media(max-width:520px){.ag-rtc-grid:has(.ag-rtc-tile:only-child){grid-template-columns:1fr}.ag-rtc-tile.local{min-height:250px}}
