@@ -23,7 +23,7 @@ const defaultDB={
  timelines:[],
  tasks:[],
  siteEvents:[],
- automation:{roundRobin:true,rrIndex:0,slaMinutes:15,followupHours:24}
+ automation:{roundRobin:true,distributionMode:'roulette',rouletteOrder:[],rrIndex:0,slaMinutes:15,followupHours:24}
 };
 
 let db=loadDB(), calendarDate=new Date(), editing={type:null,id:null};

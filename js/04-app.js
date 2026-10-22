@@ -517,7 +517,7 @@ if(!enabled){
     reqList.innerHTML=pending.length?pending.map(r=>`<div class="ag-access-row"><div class="ag-access-person"><span class="ag-access-avatar">${safeText((r.name||r.email||'?').slice(0,1).toUpperCase())}</span><div><b>${safeText(r.name||'Novo usuário')}</b><small>${safeText(r.email||'')} · ${safeText(r.provider||'cadastro')} · ${formatTs(r.requestedAt)}</small></div></div><div class="ag-access-actions"><select class="form-control ag-request-role" data-request-role="${r.uid}">${roleOptions('Corretor')}</select><button class="btn primary small" data-approve-user="${r.uid}">Aprovar</button><button class="btn danger small" data-reject-user="${r.uid}">Recusar</button></div></div>`).join(''):'<div class="ag-access-empty">Nenhum cadastro aguardando aprovação.</div>';
     const users=[...userCache.values()].filter(u=>u.approvalStatus!=='pending'&&u.approvalStatus!=='rejected').sort((a,b)=>String(a.name||a.email||'').localeCompare(String(b.name||b.email||'')));
     const userList=$('#agAccessUserList');
-    userList.innerHTML=users.length?users.map(u=>`<div class="ag-user-row" data-user-row="${u.uid}"><div class="ag-access-person"><span class="ag-access-avatar">${safeText((u.name||u.email||'?').slice(0,1).toUpperCase())}</span><div><b>${safeText(u.name||'Usuário')}</b><small>${safeText(u.email||'')} · ${u.active===false?'inativo':'ativo'} · ${permissionsForProfile(u).length} permissões</small></div></div><div class="ag-access-actions"><select class="form-control ag-user-role" data-user-role="${u.uid}" ${u.uid===auth.currentUser?.uid?'disabled':''}>${roleOptions(u.role||'Corretor')}</select><button class="btn small" data-edit-permissions="${u.uid}">Permissões</button><button class="btn small" data-reset-password="${u.uid}">Redefinir senha</button>${u.uid===auth.currentUser?.uid?'':`<button class="btn ${u.active===false?'primary':'danger'} small" data-toggle-user="${u.uid}">${u.active===false?'Ativar':'Desativar'}</button>`}</div></div>`).join(''):'<div class="ag-access-empty">Nenhum usuário aprovado.</div>';
+    userList.innerHTML=users.length?users.map(u=>`<div class="ag-user-row" data-user-row="${u.uid}"><div class="ag-access-person"><span class="ag-access-avatar">${safeText((u.name||u.email||'?').slice(0,1).toUpperCase())}</span><div><b>${safeText(u.name||'Usuário')}</b><small>${safeText(u.email||'')} · ${u.active===false?'inativo':'ativo'} · ${permissionsForProfile(u).length} permissões</small></div></div><div class="ag-access-actions"><select class="form-control ag-user-role" data-user-role="${u.uid}" ${u.uid===auth.currentUser?.uid?'disabled':''}>${roleOptions(u.role||'Corretor')}</select><button class="btn small" data-edit-permissions="${u.uid}">Permissões</button><button class="btn small" data-reset-password="${u.uid}">Redefinir senha</button><button class="btn small" data-welcome-user="${u.uid}">Boas-vindas</button>${u.uid===auth.currentUser?.uid?'':`<button class="btn ${u.active===false?'primary':'danger'} small" data-toggle-user="${u.uid}">${u.active===false?'Ativar':'Desativar'}</button>`}</div></div>`).join(''):'<div class="ag-access-empty">Nenhum usuário aprovado.</div>';
   }
   async function upsertRosterFromProfile(uid,profile){
     const state=bridge.getState();state.users=state.users||[];const email=String(profile.email||'').toLowerCase();let row=state.users.find(u=>u.firebaseUid===uid||String(u.email||'').toLowerCase()===email);
@@ -526,11 +526,14 @@ if(!enabled){
   }
   function agCrmAccessUrl(){
     try{
+      const configured=String(window.AGDriveGateway?.config?.()?.crmAccessUrl||'').trim();
+      if(/^https?:\/\//i.test(configured))return configured;
+      if(!/^https?:$/i.test(window.location.protocol))return '';
       const u=new URL(window.location.href);
       u.search='';u.hash='';
       if(/\/index\.html?$/i.test(u.pathname))u.pathname=u.pathname.replace(/\/index\.html?$/i,'/');
       return u.href;
-    }catch(e){return String(window.location.href||'')}
+    }catch(e){return ''}
   }
   async function sendWelcomeEmailToUser(profile){
     const email=String(profile?.email||'').trim().toLowerCase();
@@ -555,7 +558,7 @@ if(!enabled){
     const profile={uid,name:r.name||r.email,email:String(r.email||'').toLowerCase(),role,permissions,active:true,approvalStatus:'approved',approvedAt:serverTimestamp(),approvedBy:auth.currentUser.uid,updatedAt:serverTimestamp()};
     await dbSet(`users/${uid}`,profile,{merge:true});await dbUpdate(`accessRequests/${uid}`,{status:'approved',approvedAt:new Date().toISOString(),approvedBy:auth.currentUser.uid});await upsertRosterFromProfile(uid,profile);await refreshAdminConsoleRest();
     const welcome=await sendWelcomeEmailToUser(profile);
-    bridge.toast(welcome.sent?'Usuário aprovado. E-mail de boas-vindas enviado.':'Usuário aprovado e liberado. O e-mail de boas-vindas não pôde ser enviado.');
+    bridge.toast(welcome.sent?'Usuário aprovado. E-mail de boas-vindas enviado.':('Usuário aprovado, mas o e-mail não foi enviado: '+(welcome.reason||'erro desconhecido')));
   }
   async function rejectRequest(uid){if(!isAdmin())return;if(firestoreTransport==='rest'){await dbUpdate(`accessRequests/${uid}`,{status:'rejected',rejectedAt:new Date().toISOString(),rejectedBy:auth.currentUser.uid});await dbSet(`users/${uid}`,{active:false,approvalStatus:'rejected',updatedAt:new Date().toISOString(),updatedBy:auth.currentUser.uid},{merge:true});await refreshAdminConsoleRest()}else{const batch=writeBatch(fs);batch.update(doc(fs,'accessRequests',uid),{status:'rejected',rejectedAt:serverTimestamp(),rejectedBy:auth.currentUser.uid});batch.set(doc(fs,'users',uid),{active:false,approvalStatus:'rejected',updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});await batch.commit()}bridge.toast('Solicitação recusada.')}
   async function createUserByAdmin(){
@@ -567,7 +570,7 @@ if(!enabled){
       secondaryApp=initializeApp(firebaseOptions,'ag-user-create-'+Date.now());secondaryAuth=getAuth(secondaryApp);const cred=await createUserWithEmailAndPassword(secondaryAuth,email,pass);await updateProfile(cred.user,{displayName:name});await signOut(secondaryAuth);
       const profile={uid:cred.user.uid,name,email,role,permissions,active:true,approvalStatus:'approved',createdAt:new Date().toISOString(),createdBy:auth.currentUser.uid,updatedAt:new Date().toISOString()};await dbSet(`users/${cred.user.uid}`,profile);await dbSet(`accessInvites/${email}`,{name,email,role,permissions,active:true,createdAt:new Date().toISOString()},{merge:true});await upsertRosterFromProfile(cred.user.uid,profile);await refreshAdminConsoleRest();
       const welcome=await sendWelcomeEmailToUser(profile);
-      $('#adminCreateName').value='';$('#adminCreateEmail').value='';$('#adminCreatePassword').value='';bridge.toast(welcome.sent?'Usuário criado e e-mail de boas-vindas enviado. Compartilhe a senha temporária por um canal seguro.':'Usuário criado. O e-mail de boas-vindas não pôde ser enviado; compartilhe a senha temporária por um canal seguro.');
+      $('#adminCreateName').value='';$('#adminCreateEmail').value='';$('#adminCreatePassword').value='';bridge.toast(welcome.sent?'Usuário criado e e-mail de boas-vindas enviado. Compartilhe a senha temporária por um canal seguro.':('Usuário criado, mas o e-mail não foi enviado: '+(welcome.reason||'erro desconhecido')));
     }catch(err){console.error(err);bridge.toast(authErrorMessage(err))}finally{if(secondaryApp)try{await deleteApp(secondaryApp)}catch(e){}}
   }
   function openPermissionEditor(uid){
@@ -579,6 +582,11 @@ if(!enabled){
   }
   async function toggleUser(uid){if(!isAdmin()||uid===auth.currentUser?.uid)return;const u=userCache.get(uid);if(!u)return;const active=u.active===false;await dbUpdate(`users/${uid}`,{active,updatedAt:new Date().toISOString(),updatedBy:auth.currentUser.uid});if(u.email)await dbSet(`accessInvites/${String(u.email).toLowerCase()}`,{active,updatedAt:new Date().toISOString()},{merge:true});await upsertRosterFromProfile(uid,{...u,active});await refreshAdminConsoleRest();bridge.toast(active?'Usuário ativado.':'Usuário desativado.')}
   async function resetUserPassword(uid){if(!isAdmin())return;const u=userCache.get(uid);if(!u?.email)return;try{await sendPasswordResetEmail(auth,u.email);bridge.toast('E-mail para redefinição de senha enviado.')}catch(err){bridge.toast(authErrorMessage(err))}}
+  async function resendWelcomeEmail(uid){
+    if(!isAdmin())return;const u=userCache.get(uid);if(!u?.email)return;
+    const result=await sendWelcomeEmailToUser(u);
+    bridge.toast(result.sent?'E-mail de boas-vindas reenviado.':('Não foi possível enviar: '+(result.reason||'erro desconhecido')));
+  }
 
   $('#adminCreateRole')?.addEventListener('change',e=>renderPermissionChecks($('#adminCreatePermissions'),ROLE_DEFAULTS[e.target.value]||ROLE_DEFAULTS.Corretor));
   $('#adminCreateUser')?.addEventListener('click',createUserByAdmin);
@@ -590,6 +598,7 @@ if(!enabled){
     const edit=e.target.closest('[data-edit-permissions]');if(edit){openPermissionEditor(edit.dataset.editPermissions);return}
     const toggle=e.target.closest('[data-toggle-user]');if(toggle){await toggleUser(toggle.dataset.toggleUser);return}
     const reset=e.target.closest('[data-reset-password]');if(reset){await resetUserPassword(reset.dataset.resetPassword);return}
+    const welcome=e.target.closest('[data-welcome-user]');if(welcome){await resendWelcomeEmail(welcome.dataset.welcomeUser);return}
   });
   document.addEventListener('change',async e=>{
     const roleSel=e.target.closest('[data-user-role]');if(!roleSel||!isAdmin())return;const uid=roleSel.dataset.userRole,u=userCache.get(uid);if(!u||uid===auth.currentUser?.uid)return;const role=roleSel.value,permissions=ROLE_DEFAULTS[role]||ROLE_DEFAULTS.Corretor;
@@ -604,7 +613,7 @@ if(!enabled){
       ...current,
       settings:{...(current.settings||{}),name:'AG',cnpj:'',phone:'',email:'',address:'',siteBrand:'AG',siteTagline:(current.settings?.siteTagline||'Imóveis para viver o próximo capítulo.'),siteWhatsapp:'',siteRegion:(current.settings?.siteRegion||'Jaraguá do Sul e região'),productionResetVersion:PRODUCTION_RESET_VERSION},
       properties:[],prospectings:[],leads:[],clients:[],appointments:[],proposals:[],finance:[],activities:[],owners:[],contracts:[],commissions:[],timelines:[],tasks:[],siteEvents:[],users:[],
-      automation:{roundRobin:true,rrIndex:0,slaMinutes:15,followupHours:24}
+      automation:{roundRobin:true,distributionMode:'roulette',rouletteOrder:[],rrIndex:0,slaMinutes:15,followupHours:24}
     };
   }
   async function ensureProductionResetV82(){

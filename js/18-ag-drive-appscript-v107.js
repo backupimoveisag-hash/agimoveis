@@ -1,4 +1,4 @@
-/* AG CRM V107 — Google Drive via Apps Script + e-mail + snapshot + backup 2h */
+/* AG CRM V117 — Google Drive via Apps Script + e-mail + snapshot + backup 2h + boas-vindas */
 (function(){
   'use strict';
 
@@ -36,6 +36,15 @@
 
   function safeName(v){return String(v||'arquivo').replace(/[\\/:*?"<>|]+/g,'-').trim()||'arquivo'}
 
+  function currentHostedCrmUrl(){
+    try{
+      if(!/^https?:$/i.test(location.protocol))return '';
+      const u=new URL(location.href);u.search='';u.hash='';
+      if(/\/index\.html?$/i.test(u.pathname))u.pathname=u.pathname.replace(/\/index\.html?$/i,'/');
+      return u.href;
+    }catch(e){return ''}
+  }
+
   function currentConfigFromFields(){
     return {
       enabled:true,
@@ -44,6 +53,7 @@
       rootFolderId:String($('agDriveRootFolderId')?.value||'').trim(),
       rootFolderName:String($('agDriveRootFolderName')?.value||'AG CRM').trim()||'AG CRM',
       notifyEmail:String($('agDriveNotifyEmail')?.value||DEFAULT_EMAIL).trim()||DEFAULT_EMAIL,
+      crmAccessUrl:String($('agDriveCrmAccessUrl')?.value||currentHostedCrmUrl()).trim(),
       backupEveryHours:2
     };
   }
@@ -58,6 +68,7 @@
     if($('agDriveRootFolderId') && document.activeElement!==$('agDriveRootFolderId'))$('agDriveRootFolderId').value=c.rootFolderId||'';
     if($('agDriveRootFolderName') && document.activeElement!==$('agDriveRootFolderName'))$('agDriveRootFolderName').value=c.rootFolderName||'AG CRM';
     if($('agDriveNotifyEmail') && document.activeElement!==$('agDriveNotifyEmail'))$('agDriveNotifyEmail').value=c.notifyEmail||DEFAULT_EMAIL;
+    if($('agDriveCrmAccessUrl') && document.activeElement!==$('agDriveCrmAccessUrl'))$('agDriveCrmAccessUrl').value=c.crmAccessUrl||currentHostedCrmUrl()||'';
 
     if($('agDriveLastBackup'))$('agDriveLastBackup').textContent=fmt(localStorage.getItem(LS_LAST_BACKUP));
     if($('agDriveFolder'))$('agDriveFolder').textContent=c.rootFolderName||'AG CRM';
@@ -83,6 +94,7 @@
       rootFolderId:String(c.rootFolderId||'').trim(),
       rootFolderName:String(c.rootFolderName||'AG CRM').trim(),
       notifyEmail:String(c.notifyEmail||DEFAULT_EMAIL).trim()||DEFAULT_EMAIL,
+      crmAccessUrl:String(c.crmAccessUrl||currentHostedCrmUrl()||'').trim(),
       ...payload
     };
     let res;
@@ -97,7 +109,7 @@
       throw new Error('Não foi possível acessar o Apps Script. Verifique a URL do Web App e a implantação.');
     }
     const raw=await res.text();let data;
-    try{data=JSON.parse(raw)}catch(e){throw new Error('Resposta inválida do Apps Script. Publique o código V107 em uma nova versão do Web App.');}
+    try{data=JSON.parse(raw)}catch(e){throw new Error('Resposta inválida do Apps Script. Publique o código V117 em uma nova versão do Web App.');}
     if(!data?.ok)throw new Error(data?.error||'Falha na integração com o Google Drive.');
     return data;
   }
@@ -268,11 +280,33 @@
     window.saveDB=wrapped;
   }
 
+  async function testWelcomeEmail(){
+    if(!isAdmin())return;
+    const c=currentConfigFromFields();
+    const recipient=String(c.notifyEmail||DEFAULT_EMAIL).trim();
+    setMsg(`Enviando um e-mail de boas-vindas de teste para <b>${recipient}</b>…`);
+    try{
+      const r=await request('welcomeEmail',{
+        email:recipient,
+        name:'Teste AG CRM',
+        role:'Administrador',
+        accessUrl:String(c.crmAccessUrl||currentHostedCrmUrl()||'').trim()
+      },c);
+      setMsg(`E-mail de boas-vindas enviado para <b>${r.recipient||recipient}</b>. Verifique também a pasta de spam.`, 'success');
+      try{toast('E-mail de boas-vindas de teste enviado.')}catch(e){}
+      return r;
+    }catch(err){
+      setMsg('Falha no e-mail de boas-vindas: <b>'+String(err.message||err)+'</b>','error');
+      throw err;
+    }
+  }
+
   function bind(){
     $('agDriveSaveBtn')?.addEventListener('click',()=>saveCredentials());
     $('agDriveTestBtn')?.addEventListener('click',()=>testConnection());
     $('agDriveBackupNowBtn')?.addEventListener('click',()=>backupNow().catch(err=>setMsg(err.message,'error')));
     $('agDriveInstallTriggerBtn')?.addEventListener('click',()=>installBackup2h());
+    $('agDriveTestWelcomeBtn')?.addEventListener('click',()=>testWelcomeEmail().catch(()=>{}));
     $('agDriveShowKeyBtn')?.addEventListener('click',()=>{
       const el=$('agDriveApiKey');if(!el)return;
       el.type=el.type==='password'?'text':'password';
@@ -289,7 +323,9 @@
     syncSnapshot,
     configured:()=>configured(cfg()),
     config:cfg,
-    installBackup2h
+    installBackup2h,
+    testWelcomeEmail,
+    currentHostedCrmUrl
   };
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,0));
