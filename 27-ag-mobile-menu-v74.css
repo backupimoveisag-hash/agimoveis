@@ -1,0 +1,237 @@
+/* V74 — Menu mobile reconstruído para evitar conflitos entre os estilos desktop antigos e o PWA. */
+.ag-mobile-drawer-close,.ag-mobile-menu-title,.ag-mobile-label{display:none}
+
+@media(max-width:900px){
+  body.drawer-open{overflow:hidden!important;touch-action:none}
+
+  /* Drawer independente do layout desktop. */
+  #sidebar.sidebar{
+    position:fixed!important;
+    z-index:140!important;
+    left:8px!important;
+    right:auto!important;
+    top:calc(8px + var(--ag-safe-top,0px))!important;
+    bottom:calc(8px + var(--ag-safe-bottom,0px))!important;
+    width:min(344px,calc(100vw - 20px))!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+    border:1px solid rgba(255,255,255,.10)!important;
+    border-radius:24px!important;
+    background:#14253f!important;
+    box-shadow:none!important;
+    transform:translate3d(calc(-100% - 28px),0,0)!important;
+    transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s ease!important;
+    contain:layout paint;
+  }
+  #sidebar.sidebar.open{
+    transform:translate3d(0,0,0)!important;
+    box-shadow:20px 0 60px rgba(6,15,27,.32)!important;
+  }
+
+  /* Cabeçalho do drawer. */
+  #sidebar .brand.brand--with-logo{
+    position:relative!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:82px!important;
+    margin:0!important;
+    padding:14px 62px 12px 16px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    border-bottom:1px solid rgba(255,255,255,.10)!important;
+    background:#14253f!important;
+  }
+  #sidebar .brand-mark.logo-full{display:flex!important;align-items:center!important;min-width:0!important}
+  #sidebar .brand-mark.logo-full img{
+    width:112px!important;
+    max-width:42vw!important;
+    height:auto!important;
+    max-height:58px!important;
+    object-fit:contain!important;
+  }
+  .ag-mobile-drawer-close{
+    display:grid!important;
+    place-items:center!important;
+    position:absolute!important;
+    top:50%!important;
+    right:14px!important;
+    transform:translateY(-50%)!important;
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    padding:0!important;
+    border:1px solid rgba(255,255,255,.16)!important;
+    border-radius:13px!important;
+    background:rgba(255,255,255,.07)!important;
+    color:#fff!important;
+    font-size:24px!important;
+    line-height:1!important;
+  }
+
+  /* A navegação é a única área rolável do drawer. */
+  #sidebar #sideNav.nav{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    width:100%!important;
+    margin:0!important;
+    padding:10px 10px 14px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    gap:4px!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+    scrollbar-width:thin;
+  }
+  #sidebar #sideNav.nav button,
+  #sidebar #sideNav.nav .nav-heart{
+    position:relative!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    height:auto!important;
+    margin:0!important;
+    padding:10px 12px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:11px!important;
+    border:0!important;
+    border-radius:13px!important;
+    background:transparent!important;
+    color:rgba(255,255,255,.78)!important;
+    font-size:13px!important;
+    font-weight:700!important;
+    line-height:1.25!important;
+    text-align:left!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  #sidebar #sideNav.nav button .ico,
+  #sidebar #sideNav.nav .nav-heart .ico{
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 22px!important;
+    width:22px!important;
+    height:22px!important;
+    margin:0!important;
+    color:#eac686!important;
+  }
+  #sidebar #sideNav.nav button .ico svg{width:21px!important;height:21px!important}
+  #sidebar #sideNav.nav button.active,
+  #sidebar #sideNav.nav .nav-heart.active{
+    background:#fff!important;
+    color:#14253f!important;
+    box-shadow:0 6px 18px rgba(5,14,25,.12)!important;
+  }
+  #sidebar #sideNav.nav button.active .ico,
+  #sidebar #sideNav.nav .nav-heart.active .ico{color:#14253f!important}
+  #sidebar #sideNav.nav button .badge{
+    margin-left:auto!important;
+    position:static!important;
+    flex:0 0 auto!important;
+    min-width:22px!important;
+    height:22px!important;
+    padding:0 7px!important;
+    display:inline-grid!important;
+    place-items:center!important;
+    border-radius:999px!important;
+    font-size:10px!important;
+  }
+  #sidebar #sideNav.nav .nav-heart:after{content:none!important}
+  #sidebar #sideNav.nav .nav-heart .ag-mobile-label{display:inline!important;font-size:13px!important;color:inherit!important}
+
+  /* Perfil sempre no final, fora da área de rolagem. */
+  #sidebar .sidebar-foot{
+    flex:0 0 auto!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:10px 12px 12px!important;
+    border:0!important;
+    border-top:1px solid rgba(255,255,255,.10)!important;
+    background:#14253f!important;
+    overflow:visible!important;
+  }
+  #sidebar .sidebar-foot .pwa-install-btn{margin:0 0 8px!important}
+  #sidebar .user-mini{
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:6px!important;
+    display:grid!important;
+    grid-template-columns:42px minmax(0,1fr) 42px!important;
+    align-items:center!important;
+    gap:9px!important;
+  }
+  #sidebar .user-mini>div:not(.avatar){display:block!important;min-width:0!important;overflow:hidden!important}
+  #sidebar .user-mini b,#sidebar .user-mini small{display:block!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #sidebar .logout-mini{width:42px!important;height:42px!important;min-width:42px!important;margin:0!important}
+
+  /* Backdrop sólido e previsível. */
+  #mobileDrawerBackdrop.mobile-drawer-backdrop{
+    position:fixed!important;
+    inset:0!important;
+    z-index:130!important;
+    display:block!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    background:rgba(6,15,27,.48)!important;
+    backdrop-filter:blur(3px)!important;
+    -webkit-backdrop-filter:blur(3px)!important;
+    transition:opacity .2s ease,visibility .2s ease!important;
+  }
+  #mobileDrawerBackdrop.mobile-drawer-backdrop.show{
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+
+  /* Gatilhos do menu e barra inferior sem colisão. */
+  #mobileMenu.mobile-menu{
+    display:grid!important;
+    place-items:center!important;
+    width:46px!important;
+    min-width:46px!important;
+    height:46px!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+  #mobileMenu.mobile-menu:before{line-height:1!important}
+  #mobileBottom.mobile-bottom{
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    overflow:visible!important;
+  }
+  #mobileBottom.mobile-bottom button{
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-height:54px!important;
+    padding:5px 2px!important;
+    overflow:hidden!important;
+    font-size:10px!important;
+    line-height:1.05!important;
+  }
+  #mobileBottom.mobile-bottom button span{font-size:19px!important;line-height:1!important}
+}
+
+@media(max-width:360px){
+  #sidebar.sidebar{left:6px!important;top:calc(6px + var(--ag-safe-top,0px))!important;bottom:calc(6px + var(--ag-safe-bottom,0px))!important;width:calc(100vw - 12px)!important;border-radius:20px!important}
+  #sidebar .brand.brand--with-logo{min-height:74px!important;padding-left:14px!important}
+  #sidebar .brand-mark.logo-full img{width:102px!important}
+  #mobileBottom.mobile-bottom{left:6px!important;right:6px!important;padding:5px!important}
+  #mobileBottom.mobile-bottom button{font-size:9px!important}
+}

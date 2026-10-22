@@ -1,0 +1,165 @@
+/* V73 — Mobile overflow hardening
+   Goal: no text/control may protrude outside its card, modal, panel or viewport. */
+html,body{max-width:100%;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+
+@media(max-width:900px){
+  /* Every layout child is allowed to shrink instead of forcing horizontal overflow. */
+  .app,.main,.main>*,.page,.page>*,.card,.card-head,.card-body,.section-row,.dash-grid,
+  .settings-grid,.finance-grid,.report-grid,.toolbar,.form-grid,.form-group,.field,.select,
+  .property-grid,.property-card,.property-content,.kan-card,.kan-card>*,.kan-col,.modal,
+  .modal-head,.modal-body,.modal-foot,.property-workspace,.pw-hero,.pw-summary,.pw-panel,
+  .pw-overview-grid,.pw-spec-grid,.pw-data-grid,.pw-owner,.pw-owner>*,.pw-history-item,
+  .ag-users-admin-grid,.ag-users-intro,.ag-current-access,.ag-access-row,.ag-user-row,
+  .ag-access-actions,.ag-permission-editor,.ag-permission-grid,.ag-create-user-form,
+  .v5-control-grid,.v5-health-grid,.v25-attention-grid,.site-preview-toolbar,
+  .journey-actions,.journey-last,.cloud-card,.cloud-grid,.cloud-metric,.cloud-actions{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  /* Text that belongs to content must wrap inside its own container. */
+  :is(.dashboard-intro,.page-head,.card,.property-card,.kan-card,.modal,.property-workspace,
+      .ag-users-intro,.ag-access-row,.ag-user-row,.ag-permission-editor,.cloud-card,
+      .journey-last,.sidebar-foot,.user-mini)
+  :is(h1,h2,h3,h4,h5,h6,p,b,strong,small,span,em,label,a,time){
+    max-width:100%;
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+
+  .dashboard-intro h1,.page-head h1,.card-head h3,.property-content h3,.modal-head h2,
+  .pw-summary h2,.pw-price,.pw-price strong,.pw-owner b,.pw-history-item b,
+  .ag-permission-editor-head b,.ag-user-row b,.ag-access-row b{
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
+    word-break:break-word!important;
+  }
+
+  /* Buttons may wrap, but never become wider than the screen/card. */
+  button,.btn,[role="button"]{
+    max-width:100%;
+    min-width:0;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    word-break:normal;
+    line-height:1.2;
+  }
+  .intro-actions .btn,.head-actions .btn{
+    max-width:min(82vw,340px)!important;
+    white-space:normal!important;
+  }
+
+  /* Form values/placeholders cannot force the viewport wider. */
+  input,select,textarea,.form-control,.field,.select{
+    width:100%;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  textarea{resize:vertical}
+
+  /* Drawer/navigation labels wrap inside the drawer. */
+  .sidebar,.sidebar *{min-width:0}
+  .nav button,.nav .nav-heart{
+    max-width:100%!important;
+    white-space:normal!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    line-height:1.2!important;
+    text-align:left!important;
+  }
+  .user-mini>div:not(.avatar){min-width:0!important;max-width:100%!important;overflow:hidden}
+  .user-mini b,.user-mini small{
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  /* Bottom bar: labels stay inside each of the 5 fixed cells. */
+  .mobile-bottom{min-width:0!important;overflow:hidden!important}
+  .mobile-bottom button{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    white-space:normal!important;
+    line-height:1.05!important;
+    word-break:normal!important;
+  }
+  .mobile-bottom button>*{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+
+  /* Cards and metrics can wrap long values instead of spilling out. */
+  .kpi,.v5-health-grid>div,.cloud-metric,.pw-spec,.pw-data{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  .kpi strong,.kpi span,.kpi small,.v5-health-grid strong,.v5-health-grid span,
+  .v5-health-grid small,.cloud-metric b,.cloud-metric span,.pw-spec b,.pw-spec span,
+  .pw-data b,.pw-data span{
+    max-width:100%;
+    overflow-wrap:anywhere!important;
+    word-break:break-word!important;
+    white-space:normal!important;
+  }
+
+  /* Long addresses, emails, URLs and codes are particularly prone to overflow. */
+  .property-meta,.property-content small,.price-row,.pw-photo-meta,.pw-photo-meta small,
+  .pw-history-item p,.ag-access-meta,.ag-user-meta,.cloud-help,.cloud-auth-note{
+    max-width:100%!important;
+    overflow-wrap:anywhere!important;
+    word-break:break-word!important;
+    white-space:normal!important;
+  }
+
+  /* Modal headers/actions must reflow rather than collide. */
+  .modal-head{gap:10px!important}
+  .modal-head>div,.modal-head h2{min-width:0!important;max-width:100%!important}
+  .modal-head .modal-close,.modal-head button:last-child{flex:0 0 auto}
+  .modal-foot>*{min-width:0!important;max-width:100%!important}
+
+  /* User/permission controls reflow safely on narrow phones. */
+  .ag-access-actions,.ag-permission-editor-actions{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:8px!important;
+  }
+  .ag-access-actions>*{flex:1 1 150px!important;min-width:0!important;max-width:100%!important}
+  .ag-permission-grid label{min-width:0!important;overflow-wrap:anywhere!important}
+
+  /* Intentionally scrollable components contain overflow locally. */
+  .table-wrap,.kanban,.calendar,.pw-tabs,.intro-actions,.head-actions,.ag-settings-tabs{
+    max-width:100%!important;
+    overscroll-behavior-inline:contain;
+  }
+  .table th,.table td{
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+
+  /* Images/embeds never extend beyond their parent. */
+  img,svg,canvas,video,iframe{max-width:100%}
+  .site-preview-frame{max-width:100%!important;overflow:hidden!important}
+
+  /* Toasts/status messages stay inside the viewport. */
+  .toast,.toast-wrap,.notice,.alert,.pwa-update-bar,.pwa-offline-pill{
+    max-width:calc(100vw - 20px)!important;
+    overflow-wrap:anywhere!important;
+    word-break:break-word!important;
+  }
+}
+
+@media(max-width:480px){
+  /* Avoid cramped two-column blocks on very narrow devices. */
+  .pw-spec-grid{grid-template-columns:1fr!important}
+  .ag-permission-grid{grid-template-columns:1fr!important}
+  .site-preview-toolbar{grid-template-columns:1fr!important}
+  .site-preview-toolbar>*{width:100%!important;max-width:100%!important}
+  .page-head,.dashboard-intro{min-width:0!important}
+  .page-head h1,.dashboard-intro h1{overflow-wrap:anywhere!important;word-break:break-word!important}
+}
+
+@media(max-width:360px){
+  .kpis{grid-template-columns:1fr!important}
+  .mobile-bottom button{font-size:9px!important;padding-left:1px!important;padding-right:1px!important}
+  .mobile-bottom button span{font-size:17px!important}
+}

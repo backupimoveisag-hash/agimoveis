@@ -1,0 +1,30 @@
+/* AG CRM V118 — modos de distribuição de leads */
+.ag-v118-hidden-old-toggle{display:none!important}
+.ag-lead-distribution-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.ag-lead-mode{border:1px solid rgba(20,37,63,.12);background:#fff;border-radius:16px;padding:14px;text-align:left;cursor:pointer;transition:.18s;display:grid;gap:5px;color:#14253f}
+.ag-lead-mode b{font-size:12px}.ag-lead-mode span{font-size:9px;line-height:1.45;color:var(--muted)}
+.ag-lead-mode.active{border-color:#eac686;background:rgba(234,198,134,.12);box-shadow:0 0 0 2px rgba(234,198,134,.13)}
+.ag-lead-mode.active b:before{content:'✓ ';color:#9d742f}
+.ag-lead-distribution-help{padding:11px 12px;border-radius:12px;background:#f5f7fa;border:1px solid rgba(20,37,63,.08);font-size:10px;line-height:1.5;color:#5f6875;margin-bottom:12px}.ag-lead-distribution-help b{color:#14253f}
+#autoBrokerOrder{gap:7px!important;display:grid}
+.ag-roulette-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:9px;padding:8px 10px;border:1px solid rgba(20,37,63,.09);border-radius:12px;background:#fff}
+.ag-roulette-position{width:27px;height:27px;border-radius:9px;display:grid;place-items:center;background:#14253f;color:#fff;font-size:10px;font-weight:800}
+.ag-roulette-person{min-width:0}.ag-roulette-person b{display:block;font-size:11px;color:#14253f}.ag-roulette-person small{display:block;font-size:8px;color:var(--muted);margin-top:2px}
+.ag-roulette-actions{display:flex;gap:5px}.ag-roulette-actions .btn{width:32px;height:30px;padding:0!important}.ag-roulette-actions .btn:disabled{opacity:.3;cursor:not-allowed}
+.ag-distribution-empty{font-size:10px;color:var(--muted);padding:10px 0}
+.ag-lead-owner{display:inline-flex;align-items:center;padding:6px 9px;border-radius:999px;background:rgba(20,37,63,.07);font-size:10px;font-weight:750;color:#14253f;white-space:nowrap}.ag-lead-owner.pending{background:rgba(234,198,134,.18);color:#8b641f}
+.ag-assignment-contact{padding:13px 14px;border-radius:13px;background:#f6f7f9;border:1px solid rgba(20,37,63,.08)}.ag-assignment-contact b,.ag-assignment-contact span{display:block}.ag-assignment-contact b{font-size:13px;color:#14253f}.ag-assignment-contact span{font-size:10px;color:var(--muted);margin-top:3px}
+@media(max-width:900px){
+  .ag-lead-distribution-modes{grid-template-columns:1fr}
+  .ag-lead-mode{min-height:72px}
+  #page-leads .table tbody td:nth-child(2)::before{content:'E-mail'!important}
+  #page-leads .table tbody td:nth-child(3)::before{content:'Interesse'!important}
+  #page-leads .table tbody td:nth-child(4)::before{content:'Responsável'!important}
+  #page-leads .table tbody td:nth-child(4){display:grid!important;grid-template-columns:minmax(92px,.78fr) minmax(0,1.35fr)!important;padding:9px 0!important;border-top:1px solid rgba(20,37,63,.07)!important}
+  #page-leads .table tbody td:nth-child(4) .ag-lead-owner{justify-self:start;white-space:normal}
+  #page-leads .table tbody td:nth-child(5){display:block!important;padding:13px 0 0!important;margin-top:3px!important;border-top:1px solid rgba(20,37,63,.09)!important}
+  #page-leads .table tbody td:nth-child(5)::before{display:none!important}
+  #page-leads .table tbody td:nth-child(5) .actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  #page-leads .table tbody td:nth-child(5) .btn{width:100%!important;min-height:42px!important;justify-content:center!important}
+}
+@media(max-width:390px){#page-leads .table tbody td:nth-child(5) .actions{grid-template-columns:1fr!important}}
