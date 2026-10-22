@@ -1,4 +1,4 @@
-/* AG CRM V124 — Excluir reunião diretamente na lista da Agenda */
+/* AG CRM V125 — Exclusão definitiva de reunião + limpeza de compromisso órfão */
 (async()=>{
   const cfg=window.EI_FIREBASE_CONFIG||{};
   if(!cfg.enabled||!cfg.apiKey||!cfg.projectId)return;
@@ -25,6 +25,8 @@
   const fmtDate=d=>{if(!d)return'—';const [y,m,day]=String(d).split('-');return `${day}/${m}/${y}`};
   const fmtBytes=n=>{n=Number(n||0);if(n<1024)return `${n} B`;if(n<1048576)return `${(n/1024).toFixed(1)} KB`;return `${(n/1048576).toFixed(1)} MB`};
   const meetingRef=id=>doc(fs,'meetings',id);
+  const appointmentsSectionRef=()=>doc(fs,'workspaces',cfg.workspaceId||'main','sections','appointments');
+  const deletedMeetingIds=new Set();
   // V121: os participantes da reunião são lidos diretamente da coleção users do Firestore.
   // Mantemos o cadastro local apenas como contingência para bases antigas.
   const userAuthUid=u=>String(u?.firebaseUid||u?.uid||'').trim();
@@ -108,7 +110,7 @@
   function closeMeetingForm(){$('agMeetingFormOverlay')?.classList.remove('show')}
   async function saveMeetingForm(){if(!isAdmin()||!currentUser)return;const form=$('agMeetingForm');if(!form.reportValidity())return;const participantUids=[...document.querySelectorAll('#agMeetingPeople input:checked')].map(i=>i.value);if(!participantUids.length){toast?.('Selecione pelo menos um participante.');return}const all=users();const participantNames=participantUids.map(id=>all.find(u=>userAuthUid(u)===id)?.name||all.find(u=>userAuthUid(u)===id)?.email||id);const id=form.elements.meetingId.value||meetingId();const existing=meetings.find(x=>x.id===id);const payload={id,title:form.elements.title.value.trim(),date:form.elements.date.value,time:form.elements.time.value,notes:form.elements.notes.value.trim(),participantUids:[currentUser.uid,...participantUids],participantNames:[displayName(),...participantNames],createdBy:existing?.createdBy||currentUser.uid,createdByName:existing?.createdByName||displayName(),status:existing?.status||'scheduled',roomName:existing?.roomName||`AGCRM_${id}`.replace(/[^a-zA-Z0-9_]/g,''),updatedAt:serverTimestamp(),...(existing?{}:{createdAt:serverTimestamp()})};try{await setDoc(meetingRef(id),payload,{merge:true});}catch(err){console.error('Falha ao salvar reunião no Firestore',err);toast(err?.message||'Não foi possível criar a sala. Verifique as regras do Firestore.');return}
     try{const ix=db.appointments.findIndex(a=>a.meetingId===id);const ap={...(ix>=0?db.appointments[ix]:{}),id:ix>=0?db.appointments[ix].id:`A${Math.random().toString(36).slice(2,8).toUpperCase()}`,date:payload.date,time:payload.time,type:'Reunião',title:payload.title,client:'Reunião interna',broker:displayName(),property:'',meetingId:id,participantUids:payload.participantUids,participantNames:payload.participantNames,createdByUid:payload.createdBy,source:'Sala de Reuniões'};if(ix>=0)db.appointments[ix]=ap;else db.appointments.push(ap);saveDB();}catch(e){console.warn('Agenda local da reunião',e)}closeMeetingForm();toast('Reunião criada. A sala está pronta e aguarda o Administrador iniciar.');}
-  function canSeeAppointment(a){if(a?.type!=='Reunião'||!Array.isArray(a.participantUids)||!a.participantUids.length)return true;if(isAdmin())return true;return !!currentUser&&a.participantUids.includes(currentUser.uid)}
+  function canSeeAppointment(a){if(a?.meetingId&&deletedMeetingIds.has(String(a.meetingId)))return false;if(a?.type!=='Reunião'||!Array.isArray(a.participantUids)||!a.participantUids.length)return true;if(isAdmin())return true;return !!currentUser&&a.participantUids.includes(currentUser.uid)}
   async function openMeetingFromAgenda(id){
     if(!isAdmin()||!id)return;
     let m=meetings.find(x=>x.id===id);
@@ -134,35 +136,92 @@
   function renderMeetings(){const list=$('agMeetingList');if(!list)return;const sorted=[...meetings].sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time)));if(!sorted.length){list.innerHTML='<div class="ag-meeting-empty">Nenhuma reunião encontrada na sua agenda.</div>';return}list.innerHTML=sorted.map(m=>{const people=(m.participantNames||[]).filter(Boolean);const chips=people.slice(0,4).map(n=>`<span class="ag-meeting-chip">@${esc(n)}</span>`).join('')+(people.length>4?`<span class="ag-meeting-chip">+${people.length-4}</span>`:'');let action='';if(isAdmin()){if(m.status==='scheduled')action=`<button class="btn primary small" data-meeting-start="${m.id}">Iniciar sala</button>`;else if(m.status==='starting'||m.status==='live')action=`<button class="btn primary small" data-meeting-join="${m.id}">Entrar</button>`;action+=`<button class="btn small" data-meeting-edit="${m.id}">Editar</button><button class="btn danger small" data-meeting-delete="${m.id}">Excluir</button>`}else{action=m.status==='live'?`<button class="btn primary small" data-meeting-join="${m.id}">Entrar na sala</button>`:`<span style="font-size:11px;color:var(--muted)">${m.status==='ended'?'Reunião encerrada':'Aguardando Administrador'}</span>`}return `<div class="ag-meeting-row"><div><h4>${esc(m.title)}</h4><p>${esc(m.notes||'Sem pauta informada.')}</p><div class="ag-meeting-meta">${chips}</div></div><div class="ag-meeting-when"><b>${fmtDate(m.date)}</b><small>${esc(m.time||'')}</small></div><div><span class="ag-meeting-status ${esc(m.status||'scheduled')}">${meetingStateLabel(m.status)}</span></div><div class="ag-meeting-actions">${action}</div></div>`}).join('');list.querySelectorAll('[data-meeting-start]').forEach(b=>b.onclick=()=>startMeeting(b.dataset.meetingStart));list.querySelectorAll('[data-meeting-join]').forEach(b=>b.onclick=()=>openRoomById(b.dataset.meetingJoin));list.querySelectorAll('[data-meeting-edit]').forEach(b=>b.onclick=()=>openMeetingForm(meetings.find(m=>m.id===b.dataset.meetingEdit)));list.querySelectorAll('[data-meeting-delete]').forEach(b=>b.onclick=()=>deleteMeeting(b.dataset.meetingDelete));}
   async function deleteMeeting(id){
     if(!isAdmin()||!currentUser)return;
-    const m=meetings.find(x=>x.id===id);
-    if(!m)return;
-    const when=[fmtDate(m.date),m.time].filter(Boolean).join(' às ');
-    const ok=confirm(`Excluir a reunião “${m.title||'Sem título'}”${when?` (${when})`:''}?\n\nEla será removida da Agenda de todos os participantes. Esta ação não pode ser desfeita.`);
+    id=String(id||'').trim();
+    if(!id)return;
+    // V125: permite limpar também compromissos órfãos. Isso ocorre quando o documento
+    // /meetings/{id} já foi apagado, mas a seção compartilhada appointments ainda
+    // possui a cópia usada pelo calendário.
+    let m=meetings.find(x=>String(x.id)===id)||null;
+    const orphanAppointment=(typeof db!=='undefined'&&Array.isArray(db.appointments))
+      ? db.appointments.find(a=>String(a?.meetingId||'')===id)
+      : null;
+    if(!m){
+      try{
+        const snap=await getDoc(meetingRef(id));
+        if(snap.exists())m={id:snap.id,...snap.data()};
+      }catch(e){console.warn('Falha ao conferir reunião antes da exclusão.',e)}
+    }
+    if(!m&&!orphanAppointment){
+      toast?.('Esta reunião já foi excluída. Atualizando a Agenda…');
+      deletedMeetingIds.add(id);
+      try{renderCalendar?.()}catch(e){}
+      return;
+    }
+    const title=m?.title||orphanAppointment?.title||'Sem título';
+    const date=m?.date||orphanAppointment?.date||'';
+    const time=m?.time||orphanAppointment?.time||'';
+    const when=[fmtDate(date),time].filter(Boolean).join(' às ');
+    const ok=confirm(`Excluir a reunião “${title}”${when?` (${when})`:''}?\n\nEla será removida definitivamente da Agenda de todos os participantes. Esta ação não pode ser desfeita.`);
     if(!ok)return;
+    deletedMeetingIds.add(id);
     try{
       if(roomMeeting?.id===id)closeRoom();
-      // Limpa chat e registros de arquivos da reunião antes de apagar o documento principal.
-      // Os arquivos físicos no Google Drive não são apagados por segurança.
+
+      // 1) Apaga chat/metadados e o documento principal da reunião.
       try{
         const msgSnap=await getDocs(collection(fs,'meetings',id,'messages'));
         await Promise.all(msgSnap.docs.map(d=>deleteDoc(d.ref)));
       }catch(msgErr){
-        console.warn('Não foi possível limpar todas as mensagens da reunião antes da exclusão.',msgErr);
+        console.warn('Não foi possível limpar todas as mensagens da reunião.',msgErr);
       }
-      await deleteDoc(meetingRef(id));
-      try{
-        if(typeof db!=='undefined'&&Array.isArray(db.appointments)){
-          db.appointments=db.appointments.filter(a=>a?.meetingId!==id);
-          saveDB();
-          try{renderCalendar?.()}catch(e){}
+      try{await deleteDoc(meetingRef(id));}catch(meetingErr){
+        console.warn('Documento da reunião já podia estar excluído.',meetingErr);
+      }
+
+      // 2) Remove a cópia da Agenda local SEM usar saveDB(), evitando o debounce
+      // de sincronização reintroduzir um appointments antigo.
+      let cleanAppointments=[];
+      if(typeof db!=='undefined'&&Array.isArray(db.appointments)){
+        cleanAppointments=db.appointments.filter(a=>String(a?.meetingId||'')!==id);
+        db.appointments=cleanAppointments;
+        try{window.EICRMBridge?.persistLocal?.()}catch(e){
+          try{localStorage.setItem('atlasImobCRM',JSON.stringify(db))}catch(_){}
         }
-      }catch(localErr){console.warn('Falha ao remover reunião da Agenda local.',localErr)}
-      meetings=meetings.filter(x=>x.id!==id);
+      }
+
+      // 3) Persiste imediatamente a seção appointments no Firestore. Esta é a
+      // parte que faltava na V124 e fazia o compromisso reaparecer em "Na sequência".
+      try{
+        const cloudValue=JSON.parse(JSON.stringify(cleanAppointments));
+        await setDoc(appointmentsSectionRef(),{value:cloudValue,updatedAt:serverTimestamp()},{merge:true});
+      }catch(agendaErr){
+        console.warn('Gravação direta da Agenda falhou; tentando sincronização central.',agendaErr);
+        if(window.EIFirebaseCRM?.saveStateNow){
+          await window.EIFirebaseCRM.saveStateNow(true);
+        }else{
+          throw agendaErr;
+        }
+      }
+
+      // 4) Confirma a exclusão do documento e mantém a UI limpa mesmo durante
+      // snapshots atrasados da seção compartilhada.
+      try{
+        const verify=await getDoc(meetingRef(id));
+        if(verify.exists())throw new Error('O documento da reunião ainda existe no Firestore.');
+      }catch(verifyErr){
+        if(String(verifyErr?.message||'').includes('ainda existe'))throw verifyErr;
+        console.warn('Não foi possível verificar a exclusão da reunião.',verifyErr);
+      }
+
+      meetings=meetings.filter(x=>String(x.id)!==id);
       renderMeetings();
-      toast?.('Reunião excluída da Agenda de todos os participantes.');
+      try{renderCalendar?.()}catch(e){}
+      toast?.('Reunião excluída definitivamente da Agenda.');
     }catch(err){
+      deletedMeetingIds.delete(id);
       console.error('Falha ao excluir reunião',err);
       toast?.(err?.message||'Não foi possível excluir a reunião.');
+      try{renderCalendar?.()}catch(e){}
     }
   }
   function subscribeMeetings(){meetingUnsub?.();if(!currentUser)return;const col=collection(fs,'meetings');const q=isAdmin()?query(col):query(col,where('participantUids','array-contains',currentUser.uid));meetingUnsub=onSnapshot(q,snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()}));$('agMeetingCloudState')&&($('agMeetingCloudState').textContent='Online');renderMeetings();patchCalendar()},err=>{console.error('Reuniões',err);if($('agMeetingCloudState'))$('agMeetingCloudState').textContent='Erro de sincronização'});}
