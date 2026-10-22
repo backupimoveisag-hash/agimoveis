@@ -11,6 +11,6 @@ window.EI_FIREBASE_CONFIG = {
   messagingSenderId: "280440406177",
   appId: "1:280440406177:web:14cf4e7b4d92c91f4770e0",
   workspaceId: "main",
-  publicSiteUrl: "https://www.imoveisag.com",
+  publicSiteUrl: "",
   buildId: "v105-google-drive-backup"
 };

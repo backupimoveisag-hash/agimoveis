@@ -94,6 +94,7 @@
 <link rel="stylesheet" id="ag-keys-v102" href="./css/43-ag-keys-v102.css?v=104">
 <link rel="stylesheet" id="ag-drive-appscript-v107" href="./css/46-ag-drive-appscript-v107.css?v=107">
 <link rel="stylesheet" href="./css/47-ag-canal-pro-v113.css?v=114">
+<link rel="stylesheet" href="./css/48-ag-lead-distribution-v118.css?v=118">
 </head>
 <body class="auth-required">
 
@@ -217,7 +218,7 @@
     <section class="page" id="page-leads">
       <div class="page-head"><div><h1>Leads.</h1><p>Contatos simples para compra, locação ou captação de imóveis.</p></div><div class="head-actions"><button class="btn primary" data-open="lead">＋ Novo contato</button></div></div>
       <div class="toolbar"><input class="field" id="leadSearch" placeholder="Nome, telefone ou e-mail"><select class="select" id="leadSourceFilter"><option value="">Todos os interesses</option><option>Quero comprar um imóvel</option><option>Quero alugar um imóvel</option><option>Tenho imóvel para vender</option><option>Tenho imóvel para alugar</option></select><select class="select" id="leadStatusFilter" aria-label="Filtro interno"><option value=""></option></select></div>
-      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contato</th><th>E-mail</th><th>Interesse</th><th></th></tr></thead><tbody id="leadTable"></tbody></table></div></article>
+      <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contato</th><th>E-mail</th><th>Interesse</th><th>Responsável</th><th></th></tr></thead><tbody id="leadTable"></tbody></table></div></article>
     </section>
 
     <section class="page" id="page-atendimento">
@@ -369,6 +370,7 @@
     <label>ID da pasta raiz<input class="form-control" id="agDriveRootFolderId" placeholder="Opcional"><small>Gerado pelo comando AGCRM_CONFIGURAR().</small></label>
     <label>Nome da pasta raiz<input class="form-control" id="agDriveRootFolderName" value="AG CRM"></label>
     <label class="ag-drive-email">E-mail para notificações<input class="form-control" id="agDriveNotifyEmail" type="email" value="lucas@igenergia.com.br" placeholder="lucas@igenergia.com.br"><small>Recebe avisos de alterações salvas, novas imagens e backups concluídos.</small></label>
+    <label class="full">URL pública de acesso ao CRM<input class="form-control" id="agDriveCrmAccessUrl" type="url" placeholder="https://seu-dominio.com.br/"><small>Este é o link usado no botão “Acessar AG CRM” do e-mail de boas-vindas. Em produção o sistema tenta preencher automaticamente.</small></label>
   </div>
   <div class="ag-drive-grid">
     <div class="ag-drive-metric"><span>Último backup manual</span><b id="agDriveLastBackup">Nunca</b></div>
@@ -384,6 +386,7 @@
     <button class="btn" id="agDriveTestBtn" type="button">Testar conexão</button>
     <button class="btn" id="agDriveBackupNowBtn" type="button">Fazer backup JSON agora</button>
     <button class="btn" id="agDriveInstallTriggerBtn" type="button">Ativar backup 2h</button>
+    <button class="btn" id="agDriveTestWelcomeBtn" type="button">Testar e-mail de boas-vindas</button>
   </div>
   <div class="ag-drive-storage-note"><b>Imagens no Drive:</b> o CRM aplica a marca d’água e envia a foto ao Apps Script antes de salvar o cadastro. O banco guarda somente a URL do arquivo no Drive.</div>
   <div class="ag-drive-schedule-note"><b>Rotina automática:</b> após alterações relevantes, o CRM atualiza <code>AG CRM/Sistema/AG_CRM_LATEST.json</code>. O Apps Script cria um backup versionado desse estado a cada 2 horas e envia a confirmação por e-mail.</div>
@@ -400,6 +403,11 @@
           <article class="card ag-automation-settings-card">
             <div class="card-head"><div><span class="v5-kicker">DISTRIBUIÇÃO COMERCIAL</span><h3>Regras automáticas</h3></div><span class="ag-settings-status-dot">● ativo</span></div>
             <div class="auto-config ag-auto-config-settings">
+              <div class="ag-lead-distribution-modes" id="agLeadDistributionModes">
+                <button type="button" class="ag-lead-mode" data-lead-distribution-mode="roulette"><b>Roleta sequencial</b><span>Distribui automaticamente seguindo a ordem configurada abaixo.</span></button>
+                <button type="button" class="ag-lead-mode" data-lead-distribution-mode="manual"><b>Atribuição manual</b><span>O lead aguarda o Administrador escolher o corretor responsável.</span></button>
+              </div>
+              <div class="ag-lead-distribution-help" id="agLeadDistributionHelp"></div>
               <div class="auto-switch-row"><div><b>Rodízio automático</b><span>Novo telefone recebe o próximo corretor disponível.</span></div><button class="auto-switch" id="autoRoundRobinToggle" aria-label="Ativar ou desativar rodízio"></button></div>
               <div class="auto-config-grid"><label>SLA primeiro contato (min)<input class="form-control" id="autoSlaInput" type="number" min="1" max="240"></label><label>Follow-up automático (horas)<input class="form-control" id="autoFollowupInput" type="number" min="1" max="168"></label></div>
               <div class="ag-auto-broker-title"><b>Ordem atual do rodízio</b><span>Corretoras e corretores comerciais ativos entram nesta sequência.</span></div>
@@ -521,7 +529,8 @@
 <script src="./js/13-ag-properties-leads-reorg-v98.js?v=115"></script>
 <script src="./js/14-ag-property-admin-watermark-v99.js?v=100"></script>
 <script src="./js/15-ag-keys-v102.js?v=104"></script>
-<script src="./js/18-ag-drive-appscript-v107.js?v=116"></script>
+<script src="./js/18-ag-drive-appscript-v107.js?v=117"></script>
 <script src="./js/19-ag-canal-pro-v113.js?v=114"></script>
+<script src="./js/20-ag-lead-distribution-v118.js?v=118"></script>
 </body>
 </html>
