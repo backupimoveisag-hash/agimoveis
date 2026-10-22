@@ -1,4 +1,4 @@
-/* AG CRM V121 — Participantes da Agenda carregados do Firestore */
+/* AG CRM V122 — Participantes da Agenda via diretório unificado do CRM */
 (async()=>{
   const cfg=window.EI_FIREBASE_CONFIG||{};
   if(!cfg.enabled||!cfg.apiKey||!cfg.projectId)return;
@@ -39,6 +39,18 @@
   }
   async function refreshMeetingDirectory(){
     if(!currentUser||!isAdmin())return users();
+    // Fonte principal: o mesmo diretório que alimenta Ajustes > Usuários.
+    // Ele já sabe alternar entre SDK do Firestore e HTTPS autenticado.
+    try{
+      const shared=await window.EIFirebaseCRM?.listUsers?.();
+      if(Array.isArray(shared)){
+        directoryUsers=shared.map(u=>({uid:userAuthUid(u)||u.uid||'',firebaseUid:userAuthUid(u)||u.uid||'',...u}));
+        if(users().length)return users();
+      }
+    }catch(err){
+      console.warn('AG CRM: diretório unificado indisponível para a reunião.',err);
+    }
+    // Contingência: leitura direta do Firestore.
     try{
       const snap=await getDocs(collection(fs,'users'));
       directoryUsers=[];
@@ -66,8 +78,17 @@
     document.querySelectorAll('[data-room-tab]').forEach(b=>b.onclick=()=>switchRoomTab(b.dataset.roomTab));
     $('agMeetingFileBtn').onclick=()=>$('agMeetingFile').click();$('agMeetingFile').onchange=uploadMeetingFile;
   }
-  function renderPeople(selected=[]){const set=new Set(selected);const box=$('agMeetingPeople');if(!box)return;box.innerHTML=users().map(u=>{const authUid=userAuthUid(u);return `<label class="ag-meeting-person"><input type="checkbox" value="${esc(authUid)}" ${set.has(authUid)?'checked':''}><span><b>@${esc(u.name||u.email)}</b><small>${esc(u.role||'Usuário')} · ${esc(u.email||'')}</small></span></label>`}).join('')||'<div class="ag-meeting-empty">Nenhum outro usuário ativo e aprovado foi encontrado no Firebase.</div>'}
-  function selectGroup(group){document.querySelectorAll('#agMeetingPeople input').forEach(i=>{const u=users().find(x=>userAuthUid(x)===i.value);if(!u)return;i.checked=group==='ALL'||(group==='BROKERS'&&['Corretor','Corretora'].includes(u.role))||u.role===group});}
+  function renderPeople(selected=[]){const set=new Set(selected);const box=$('agMeetingPeople');if(!box)return;box.innerHTML=users().map(u=>{const authUid=userAuthUid(u);return `<label class="ag-meeting-person"><input type="checkbox" value="${esc(authUid)}" ${set.has(authUid)?'checked':''}><span><b>@${esc(u.name||u.email)}</b><small>${esc(u.role||'Usuário')} · ${esc(u.email||'')}</small></span></label>`}).join('')||'<div class="ag-meeting-empty">Nenhum outro usuário ativo e aprovado foi encontrado. Confira Ajustes → Usuários e permissões.</div>'}
+  const roleKey=v=>String(v||'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const isBrokerRole=u=>{const r=roleKey(u?.role);return r==='corretor'||r==='corretora'||r.startsWith('corretor ')||r.startsWith('corretora ')||r==='broker'};
+  function selectGroup(group){
+    const groupKey=roleKey(group);
+    document.querySelectorAll('#agMeetingPeople input').forEach(i=>{
+      const u=users().find(x=>userAuthUid(x)===i.value);if(!u)return;
+      const matches=group==='ALL'||(group==='BROKERS'&&isBrokerRole(u))||roleKey(u.role)===groupKey;
+      i.checked=matches;
+    });
+  }
   async function openMeetingForm(m=null){
     if(!isAdmin())return;
     injectAgenda();

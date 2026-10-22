@@ -663,5 +663,28 @@ if(!enabled){
     await completeAuthenticatedSession(user);
   });
 
-  window.EIFirebaseCRM={enabled:true,queueStateSync,queueCatalogSync,saveStateNow,saveCatalogNow,getProfile:()=>roleProfile,permissionsForProfile};
+  async function listDirectoryUsers(){
+    if(!auth.currentUser)return [];
+    if(!isAdmin())return roleProfile?[{uid:auth.currentUser.uid,...roleProfile}]:[];
+    try{
+      if(firestoreTransport==='rest'){
+        await refreshAdminConsoleRest();
+      }else if(!userCache.size){
+        try{
+          const snap=await getDocs(collection(fs,'users'));
+          userCache.clear();
+          snap.forEach(d=>userCache.set(d.id,{uid:d.id,...d.data()}));
+        }catch(err){
+          console.warn('AG CRM: diretório via SDK indisponível; tentando HTTPS.',err);
+          firestoreTransport='rest';
+          await refreshAdminConsoleRest();
+        }
+      }
+    }catch(err){
+      console.warn('AG CRM: falha ao atualizar diretório de usuários.',err);
+    }
+    return [...userCache.values()].map(u=>({uid:u.uid||u.firebaseUid||'',...u}));
+  }
+
+  window.EIFirebaseCRM={enabled:true,queueStateSync,queueCatalogSync,saveStateNow,saveCatalogNow,getProfile:()=>roleProfile,permissionsForProfile,listUsers:listDirectoryUsers};
 }
