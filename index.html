@@ -88,7 +88,7 @@
 <link rel="stylesheet" id="ag-mobile-scroll-v93" href="./css/37-ag-mobile-scroll-v93.css?v=93">
 <link rel="stylesheet" id="ag-prospecting-checks-v94" href="./css/38-ag-prospecting-checks-v94.css?v=94">
 <link rel="stylesheet" id="ag-agenda-mobile-v95" href="./css/39-ag-agenda-mobile-v95.css?v=95">
-<link rel="stylesheet" id="ag-agenda-meetings-v125" href="./css/49-ag-agenda-meetings-v119.css?v=125">
+<link rel="stylesheet" id="ag-agenda-meetings-v126" href="./css/49-ag-agenda-meetings-v119.css?v=126">
 <link rel="stylesheet" id="ag-leads-mobile-cards-v96" href="./css/40-ag-leads-mobile-cards-v96.css?v=96">
 <link rel="stylesheet" id="ag-properties-leads-reorg-v98" href="./css/41-ag-properties-leads-reorg-v98.css?v=98">
 <link rel="stylesheet" id="ag-property-admin-watermark-v99" href="./css/42-ag-property-admin-watermark-v99.css?v=100">
@@ -96,6 +96,7 @@
 <link rel="stylesheet" id="ag-drive-appscript-v107" href="./css/46-ag-drive-appscript-v107.css?v=107">
 <link rel="stylesheet" href="./css/47-ag-canal-pro-v113.css?v=114">
 <link rel="stylesheet" href="./css/48-ag-lead-distribution-v118.css?v=118">
+<link rel="stylesheet" id="ag-header-pwa-fix-v127" href="./css/50-ag-header-pwa-fix-v127.css?v=127">
 </head>
 <body class="auth-required">
 
@@ -151,7 +152,7 @@
 
       <button data-page="configuracoes" title="Configurações"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span>Ajustes</button>
     </nav>
-    <div class="sidebar-foot"><button type="button" class="pwa-install-btn" id="pwaInstallBtn" hidden>▣ Instalar AG CRM</button><div class="user-mini"><div class="avatar">AG</div><div><b id="loggedUserName">Administrador</b><small>AG Imóveis</small></div><button class="logout-mini" id="logoutBtn" title="Sair">↗</button></div></div>
+    <div class="sidebar-foot"><button type="button" class="pwa-install-btn" id="pwaInstallBtnMobile" hidden>▣ Instalar AG CRM</button><div class="user-mini"><div class="avatar">AG</div><div><b id="loggedUserName">Administrador</b><small>AG Imóveis</small></div><button class="logout-mini" id="logoutBtn" title="Sair">↗</button></div></div>
   </aside>
 
   <main class="main">
@@ -159,6 +160,7 @@
       <button class="mobile-menu" id="mobileMenu">☰</button>
       <div class="search"><input id="globalSearch" placeholder="Encontre qualquer coisa no CRM..." /><span class="search-key">CTRL K</span></div>
       <div class="top-actions">
+        <button class="btn pwa-install-top" type="button" id="pwaInstallBtn" hidden>▣ <span>Instalar</span></button>
         <button class="icon-btn hide-mobile" id="notificationBtn" title="Sinais">●</button>
         <button class="btn primary" id="quickAddBtn">＋ <span class="new-label">Criar</span></button>
       </div>
@@ -523,7 +525,7 @@
 
 <script src="./js/06-ag-settings-automation-v55.js?v=85"></script>
 
-<script src="./js/08-ag-pwa-v72.js?v=85"></script>
+<script src="./js/08-ag-pwa-v72.js?v=127"></script>
 <script src="./js/09-ag-mobile-menu-v74.js?v=85"></script>
 <script src="./js/10-ag-mobile-ux-v78.js?v=85"></script>
 <script src="./js/11-ag-mobile-viewport-v81.js?v=85"></script>
@@ -533,6 +535,6 @@
 <script src="./js/18-ag-drive-appscript-v107.js?v=117"></script>
 <script src="./js/19-ag-canal-pro-v113.js?v=114"></script>
 <script src="./js/20-ag-lead-distribution-v118.js?v=118"></script>
-<script src="./js/21-ag-agenda-meetings-v119.js?v=125"></script>
+<script src="./js/21-ag-agenda-meetings-v119.js?v=126"></script>
 </body>
 </html>
