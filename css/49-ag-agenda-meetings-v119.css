@@ -78,3 +78,26 @@
  .ag-meeting-form-grid{grid-template-columns:1fr}
  .ag-room-top{height:auto;min-height:58px;flex-wrap:wrap;padding:9px 10px}.ag-room-layout{grid-template-columns:1fr;grid-template-rows:minmax(260px,55vh) minmax(260px,45vh)}.ag-room-side{border-left:0;border-top:1px solid #dfe4e8}.ag-room-overlay{padding-bottom:env(safe-area-inset-bottom)}
 }
+
+
+/* AG CRM V130 — sala nativa WebRTC */
+#agJitsiMount{display:none!important}
+.ag-room-video{overflow:hidden;display:flex;flex-direction:column}
+.ag-rtc-grid{position:absolute;inset:0 0 82px 0;padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));grid-auto-rows:minmax(190px,1fr);gap:10px;align-content:center;background:radial-gradient(circle at 50% 20%,#172536 0,#08111b 68%);overflow:auto}
+.ag-rtc-tile{position:relative;min-height:190px;border-radius:18px;background:#14202d;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.ag-rtc-tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#101923;opacity:0;transition:opacity .2s}
+.ag-rtc-tile.has-video video{opacity:1}
+.ag-rtc-avatar{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(42px,7vw,84px);font-weight:800;color:#ead19f;background:linear-gradient(145deg,#1b2a3c,#0e1824)}
+.ag-rtc-tile.has-video .ag-rtc-avatar{display:none}
+.ag-rtc-tile-foot{position:absolute;left:10px;right:10px;bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:2}
+.ag-rtc-name{max-width:80%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(4,10,17,.72);backdrop-filter:blur(8px);padding:6px 9px;border-radius:999px;font-size:11px;font-weight:700;color:#fff}
+.ag-rtc-connection{position:absolute;top:9px;right:9px;z-index:2;padding:5px 8px;border-radius:999px;background:rgba(4,10,17,.68);font-size:9px;color:#d9e2ea}
+.ag-rtc-connection[data-state="connected"]{color:#88e2ad}.ag-rtc-connection[data-state="failed"]{color:#ff9d9d}
+.ag-rtc-controls{position:absolute;left:0;right:0;bottom:0;height:78px;z-index:8;display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 14px;background:linear-gradient(180deg,rgba(8,17,27,0),rgba(8,17,27,.92) 28%)}
+.ag-rtc-control{border:1px solid rgba(255,255,255,.16);background:#263341;color:#fff;border-radius:14px;min-width:72px;height:48px;padding:0 10px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-weight:700;font-size:15px}
+.ag-rtc-control span{font-size:10px}.ag-rtc-control.active{background:#f3ead8;color:#172434;border-color:#e7cd98}.ag-rtc-control:hover{transform:translateY(-1px)}
+.ag-rtc-people-list{padding:12px;overflow:auto;display:grid;gap:8px;align-content:start}
+.ag-rtc-person-row{display:flex;align-items:center;gap:9px;border:1px solid #e6eaed;border-radius:12px;padding:9px 10px}.ag-rtc-person-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#15263d;color:#fff;font-weight:800}.ag-rtc-person-row>div{min-width:0;flex:1}.ag-rtc-person-row b{display:block;font-size:11px}.ag-rtc-person-row small{display:block;color:#7d858e;font-size:9px;margin-top:2px}.ag-rtc-online{font-size:9px;color:#2d8656;font-weight:800}
+.ag-room-wait{z-index:12;background:rgba(8,17,27,.86);backdrop-filter:blur(5px)}
+@media(max-width:900px){.ag-rtc-grid{inset:0 0 72px 0;padding:8px;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(135px,1fr);gap:6px}.ag-rtc-tile{min-height:135px;border-radius:13px}.ag-rtc-controls{height:70px;gap:6px;padding:8px}.ag-rtc-control{min-width:54px;height:44px;border-radius:12px}.ag-rtc-control span{display:none}.ag-room-tabs button{padding:11px 5px;font-size:11px}}
+@media(max-width:520px){.ag-rtc-grid{grid-template-columns:1fr 1fr}.ag-room-layout{grid-template-rows:minmax(300px,58vh) minmax(230px,42vh)}.ag-room-top{gap:7px}.ag-room-status{order:4}.ag-room-end{font-size:10px}}
