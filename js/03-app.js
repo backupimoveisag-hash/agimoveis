@@ -6,6 +6,21 @@
     replaceState(next){
       if(!next||typeof next!=='object')return;
       db={...db,...clone(next)};
+      // V115: Firestore snapshots must never reintroduce two records with the same property code.
+      if(Array.isArray(db.properties)){
+        const unique=[],byCode=new Map();
+        for(const p of db.properties){
+          const code=String(p?.id||'').trim().toUpperCase();
+          if(!code){unique.push(p);continue}
+          if(!byCode.has(code)){byCode.set(code,unique.length);unique.push(p);continue}
+          const i=byCode.get(code),prev=unique[i]||{};
+          const prevPhotos=Array.isArray(prev.photos)?prev.photos:[],nextPhotos=Array.isArray(p?.photos)?p.photos:[];
+          const photos=[...prevPhotos,...nextPhotos].filter((ph,j,arr)=>arr.findIndex(x=>String(x?.id||x?.driveFileId||x?.src||'')===String(ph?.id||ph?.driveFileId||ph?.src||''))===j);
+          unique[i]={...prev,...p,photos};
+          if(!unique[i].coverPhoto||!photos.some(ph=>String(ph.id)===String(unique[i].coverPhoto)))unique[i].coverPhoto=photos[0]?.id||'';
+        }
+        db.properties=unique;
+      }
       try{localStorage.setItem('atlasImobCRM',JSON.stringify(db))}catch(e){}
       try{ensureV5Schema();ensurePropertyMediaSchema();ensureV7SiteSchema();ensureAutomationSchema()}catch(e){}
       renderAll();

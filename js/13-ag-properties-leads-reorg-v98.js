@@ -16,6 +16,52 @@
     return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
   }
 
+  // V115 — invariant: property code is unique across the CRM state.
+  function normalizedPropertyCode(value){
+    return String(value||'').trim().toUpperCase();
+  }
+  function propertyCompletenessScore(p){
+    if(!p||typeof p!=='object')return 0;
+    let score=0;
+    for(const [k,v] of Object.entries(p)){
+      if(k==='photos'&&Array.isArray(v)){score+=v.length*8;continue}
+      if(Array.isArray(v)){score+=v.length;continue}
+      if(v!==null&&v!==undefined&&String(v).trim()!=='')score++;
+    }
+    return score;
+  }
+  function mergeDuplicatePropertyRecords(a,b){
+    const primary=propertyCompletenessScore(a)>=propertyCompletenessScore(b)?a:b;
+    const secondary=primary===a?b:a;
+    const merged={...secondary,...primary};
+    const photos=[...(secondary?.photos||[]),...(primary?.photos||[])];
+    const seenPhotos=new Set();
+    merged.photos=photos.filter(ph=>{
+      const key=String(ph?.id||ph?.driveFileId||ph?.src||'');
+      if(!key)return true;
+      if(seenPhotos.has(key))return false;
+      seenPhotos.add(key);return true;
+    });
+    if(!merged.coverPhoto||!merged.photos.some(ph=>String(ph.id)===String(merged.coverPhoto)))merged.coverPhoto=merged.photos[0]?.id||'';
+    return merged;
+  }
+  function dedupePropertiesByCode(list=db.properties||[]){
+    const out=[],indexByCode=new Map();
+    for(const item of (Array.isArray(list)?list:[])){
+      const code=normalizedPropertyCode(item?.id);
+      if(!code){out.push(item);continue}
+      if(!indexByCode.has(code)){indexByCode.set(code,out.length);out.push(item);continue}
+      const idx=indexByCode.get(code);
+      out[idx]=mergeDuplicatePropertyRecords(out[idx],item);
+    }
+    return out;
+  }
+  function enforceUniqueProperties(){
+    const before=Array.isArray(db.properties)?db.properties.length:0;
+    db.properties=dedupePropertiesByCode(db.properties||[]);
+    return before-db.properties.length;
+  }
+
   function propertyDuplicate(candidate,editingId){
     const code=normalizePropertyText(candidate.id);
     const address=normalizePropertyText(candidate.address);
@@ -255,11 +301,23 @@
           record.photos=[{id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:v5FallbackPropertyImage(record),name:'Imagem principal',created:todayISO()}];
         }
         if(!record.coverPhoto || !record.photos.some(x=>x.id===record.coverPhoto))record.coverPhoto=record.photos[0]?.id||'';
-        if(existing){
-          const i=db.properties.findIndex(x=>x.id===oldId);
-          db.properties[i]=record;
-        }else db.properties.push(record);
-        pushActivity('⌂',existing?'Imóvel atualizado':'Novo imóvel cadastrado',`${record.id} · ${record.title}`);
+        // V115: upsert by property code. Even if two asynchronous save paths race,
+        // the second one replaces/merges the same code instead of appending another row.
+        enforceUniqueProperties();
+        const recordCode=normalizedPropertyCode(record.id);
+        const sameCodeIndexes=[];
+        (db.properties||[]).forEach((x,i)=>{if(normalizedPropertyCode(x?.id)===recordCode)sameCodeIndexes.push(i)});
+        const targetIndex=existing
+          ? db.properties.findIndex(x=>normalizedPropertyCode(x?.id)===normalizedPropertyCode(oldId))
+          : (sameCodeIndexes.length?sameCodeIndexes[0]:-1);
+        const wasExisting=targetIndex>=0;
+        if(wasExisting){
+          db.properties[targetIndex]=mergeDuplicatePropertyRecords(db.properties[targetIndex],record);
+        }else{
+          db.properties.push(record);
+        }
+        enforceUniqueProperties();
+        pushActivity('⌂',wasExisting?'Imóvel atualizado':'Novo imóvel cadastrado',`${record.id} · ${record.title}`);
         saveDB();
         closeModal();
         toast(files.length?`Imóvel salvo com ${files.length} ${files.length===1?'foto':'fotos'}.`:'Imóvel salvo com sucesso.');
@@ -276,6 +334,23 @@
     }
     return baseSaveModal();
   };
+
+  // V115: protect all later saves and cloud refreshes from duplicated property codes.
+  const v115SaveDBBase=saveDB;
+  saveDB=function(){
+    enforceUniqueProperties();
+    return v115SaveDBBase.apply(this,arguments);
+  };
+  window.saveDB=saveDB;
+
+  const v115RenderPropertiesBase=renderProperties;
+  renderProperties=function(){
+    enforceUniqueProperties();
+    return v115RenderPropertiesBase.apply(this,arguments);
+  };
+  window.renderProperties=renderProperties;
+
+  enforceUniqueProperties();
 
   renderLeads=function(){
     const q=$('#leadSearch')?.value.toLowerCase()||'';
