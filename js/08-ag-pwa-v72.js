@@ -20,7 +20,8 @@
   $('#mobileMenu')?.addEventListener('click', () => setTimeout(syncDrawer, 0));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && sidebar?.classList.contains('open')) { sidebar.classList.remove('open'); syncDrawer(); } });
 
-  const installBtn = $('#pwaInstallBtn');
+  const installBtns = [$('#pwaInstallBtn'), $('#pwaInstallBtnMobile')].filter(Boolean);
+  const setInstallVisible = visible => installBtns.forEach(btn => { btn.hidden = !visible; });
   const sheet = document.createElement('div');
   sheet.className = 'pwa-install-sheet';
   sheet.id = 'pwaInstallSheet';
@@ -30,23 +31,24 @@
   sheet.addEventListener('click', e => { if (e.target === sheet) sheet.classList.remove('show'); });
   sheetAction?.addEventListener('click', () => sheet.classList.remove('show'));
 
-  const revealInstall = () => { if (installBtn && !isStandalone()) installBtn.hidden = false; };
+  const revealInstall = () => { if (!isStandalone()) setInstallVisible(true); };
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; revealInstall(); });
-  window.addEventListener('appinstalled', () => { deferredPrompt = null; if (installBtn) installBtn.hidden = true; });
+  window.addEventListener('appinstalled', () => { deferredPrompt = null; setInstallVisible(false); });
   if (isIOS() && !isStandalone()) revealInstall();
-  installBtn?.addEventListener('click', async () => {
+  const handleInstallClick = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       try { await deferredPrompt.userChoice; } catch (_) {}
       deferredPrompt = null;
-      installBtn.hidden = true;
+      setInstallVisible(false);
       return;
     }
     $('#pwaInstallCopy').textContent = isIOS()
       ? 'No Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”.'
       : 'Abra este endereço pelo Chrome ou Edge em HTTPS e use “Instalar aplicativo” no menu do navegador.';
     sheet.classList.add('show');
-  });
+  };
+  installBtns.forEach(btn => btn.addEventListener('click', handleInstallClick));
 
   const offline = document.createElement('div');
   offline.className = 'pwa-offline-pill'; offline.id = 'pwaOfflinePill'; offline.textContent = 'Sem conexão · usando conteúdo local';
@@ -57,7 +59,7 @@
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', async () => {
       try {
-        const reg = await navigator.serviceWorker.register('./sw.js?v=74', {scope:'./'});
+        const reg = await navigator.serviceWorker.register('./sw.js?v=127', {scope:'./'});
         const updateBar = document.createElement('div');
         updateBar.className = 'pwa-update-bar'; updateBar.innerHTML = '<span>Nova versão do AG CRM disponível.</span><button type="button">Atualizar</button>';
         document.body.appendChild(updateBar);
