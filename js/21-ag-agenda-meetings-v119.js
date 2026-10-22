@@ -1,4 +1,4 @@
-/* AG CRM V130 — sala de reunião nativa WebRTC, sem Jitsi/Meet/Zoom */
+/* AG CRM V131 — câmera WebRTC automática e permissões independentes */
 (async()=>{
   const cfg=window.EI_FIREBASE_CONFIG||{};
   if(!cfg.enabled||!cfg.apiKey||!cfg.projectId)return;
@@ -291,7 +291,16 @@ function ensureVideoTile(uid,name,isLocal=false){
   return tile;
 }
 function setTileStream(uid,stream,name,isLocal=false){
-  const tile=ensureVideoTile(uid,name,isLocal);if(!tile)return;const video=tile.querySelector('video');if(video&&video.srcObject!==stream)video.srcObject=stream||null;tile.classList.toggle('has-video',!!stream?.getVideoTracks()?.length);if(video)video.play?.().catch(()=>{});
+  const tile=ensureVideoTile(uid,name,isLocal);if(!tile)return;
+  const video=tile.querySelector('video');
+  const hasVideo=!!stream?.getVideoTracks()?.some(t=>t.readyState==='live');
+  tile.classList.toggle('has-video',hasVideo);
+  if(video){
+    video.autoplay=true;video.playsInline=true;if(isLocal)video.muted=true;
+    if(video.srcObject!==stream)video.srcObject=stream||null;
+    const play=()=>video.play?.().catch(err=>console.warn('V131 reprodução do vídeo local/remoto bloqueada.',err));
+    if(video.readyState>=2)play();else video.onloadedmetadata=play;
+  }
 }
 function setTileConnection(uid,label,state=''){const tile=$(tileId(uid));if(!tile)return;const el=tile.querySelector('.ag-rtc-connection');if(el){el.textContent=label||'';el.dataset.state=state||''}}
 function removePeerTile(uid){$(tileId(uid))?.remove()}
@@ -306,15 +315,37 @@ async function updateOwnPresence(extra={}){
   const payload={uid:currentUser.uid,name:displayName(),email:currentUser.email||'',active:true,sessionId:roomSessionId(roomMeeting),state:ownRtcState(),lastSeenMs:Date.now(),lastSeenAt:serverTimestamp(),...extra};
   try{await setDoc(rtcParticipantRef(roomMeeting.id,currentUser.uid),payload,{merge:true})}catch(err){console.warn('V130 presença WebRTC',err)}
 }
+async function requestCameraTrack(){
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error('Este navegador não oferece acesso à câmera por WebRTC.');
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'},audio:false});
+    return s.getVideoTracks()[0]||null;
+  }catch(err){
+    console.warn('V131 câmera indisponível/bloqueada.',err);
+    return null;
+  }
+}
+async function requestMicrophoneTrack(){
+  if(!navigator.mediaDevices?.getUserMedia)return null;
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+    return s.getAudioTracks()[0]||null;
+  }catch(err){
+    console.warn('V131 microfone indisponível/bloqueado.',err);
+    return null;
+  }
+}
 async function getLocalMedia(){
   if(localStream)return localStream;
   if(!navigator.mediaDevices?.getUserMedia)throw new Error('Este navegador não oferece acesso à câmera/microfone por WebRTC.');
-  try{localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'}})}
-  catch(first){
-    console.warn('V130 câmera+microfone indisponíveis; tentando somente áudio.',first);
-    try{localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false})}
-    catch(second){console.warn('V130 áudio também indisponível; entrando sem mídia.',second);localStream=new MediaStream();toast?.('Você entrou sem câmera e microfone. Verifique as permissões do navegador.')}
-  }
+  // V131: câmera e microfone são solicitados separadamente. Se um falhar, o outro continua funcionando.
+  const [videoTrack,audioTrack]=await Promise.all([requestCameraTrack(),requestMicrophoneTrack()]);
+  localStream=new MediaStream();
+  if(videoTrack)localStream.addTrack(videoTrack);
+  if(audioTrack)localStream.addTrack(audioTrack);
+  if(!videoTrack&&!audioTrack)throw new Error('Câmera e microfone estão bloqueados. Libere as permissões do site e tente novamente.');
+  if(!videoTrack)toast?.('A sala abriu sem câmera. Use “Ativar câmera” para liberar o vídeo.');
+  if(!audioTrack)toast?.('A sala abriu sem microfone. Você pode liberar o microfone pelo navegador.');
   return localStream;
 }
 function closePeer(uid){const p=rtcPeers.get(uid);if(p){try{p.pc.onicecandidate=null;p.pc.ontrack=null;p.pc.close()}catch(_){}rtcPeers.delete(uid)}removePeerTile(uid);updatePeoplePanel()}
@@ -360,7 +391,26 @@ function subscribeRoomMeeting(){
 }
 function setControlState(id,on){const b=$(id);if(b)b.classList.toggle('active',!!on)}
 async function toggleMicrophone(){const tracks=localStream?.getAudioTracks()||[];if(!tracks.length){toast?.('Nenhum microfone disponível.');return}const next=!tracks.some(t=>t.enabled);tracks.forEach(t=>t.enabled=next);setControlState('agRtcMic',next);await updateOwnPresence();updatePeoplePanel()}
-async function toggleCamera(){const tracks=localStream?.getVideoTracks()||[];if(!tracks.length){toast?.('Nenhuma câmera disponível.');return}const next=!tracks.some(t=>t.enabled);tracks.forEach(t=>t.enabled=next);setControlState('agRtcCamera',next);await updateOwnPresence();updatePeoplePanel()}
+async function toggleCamera(){
+  let tracks=localStream?.getVideoTracks()||[];
+  if(!tracks.length){
+    const btn=$('agRtcCamera');if(btn){btn.disabled=true;btn.classList.add('requesting')}
+    try{
+      const track=await requestCameraTrack();
+      if(!track){toast?.('Não foi possível abrir a câmera. Clique no cadeado do navegador e permita o uso da câmera para este site.');return}
+      if(!localStream)localStream=new MediaStream();localStream.addTrack(track);tracks=[track];
+      setTileStream(currentUser.uid,localStream,displayName(),true);
+      for(const [uid,e] of rtcPeers){
+        let sender=e.pc.getSenders().find(s=>s.track?.kind==='video');
+        if(sender)await sender.replaceTrack(track);else{try{e.pc.addTrack(track,localStream);await makeOffer(uid)}catch(err){console.warn('V131 adicionar câmera ao peer',uid,err)}}
+      }
+      toast?.('Câmera ativada.');
+    }finally{if(btn){btn.disabled=false;btn.classList.remove('requesting')}}
+  }else{
+    const next=!tracks.some(t=>t.enabled);tracks.forEach(t=>t.enabled=next);setControlState('agRtcCamera',next);setTileStream(currentUser.uid,localStream,displayName(),true);
+  }
+  setControlState('agRtcCamera',!!localStream?.getVideoTracks().some(t=>t.enabled));await updateOwnPresence();updatePeoplePanel();
+}
 async function toggleScreenShare(){
   if(screenStream){await stopScreenShare();return}
   if(!navigator.mediaDevices?.getDisplayMedia){toast?.('Compartilhamento de tela não disponível neste navegador.');return}
@@ -384,7 +434,7 @@ async function openRoomById(id){
 }
 async function openRoom(m,starting){
   if(roomMeeting)await closeRoom(false);roomClosing=false;roomMeeting=m;$('agRoomOverlay').classList.add('show');$('agRoomTitle').textContent=m.title||'Reunião';$('agRoomSubtitle').textContent=`${fmtDate(m.date)} · ${m.time||''} · AG CRM`;$('agRoomEnd').hidden=!isAdmin();$('agRoomStatus').textContent='Entrando…';const wait=$('agRoomWait');wait.style.display='grid';wait.style.pointerEvents='auto';wait.innerHTML='<div><strong>Preparando sala própria…</strong><p>Autorize câmera e microfone quando o navegador solicitar.</p></div>';$('agRtcGrid').innerHTML='';rtcParticipantCache.clear();subscribeMessages(m.id);
-  try{await getLocalMedia();setTileStream(currentUser.uid,localStream,displayName(),true);setControlState('agRtcMic',!!localStream.getAudioTracks().some(t=>t.enabled));setControlState('agRtcCamera',!!localStream.getVideoTracks().some(t=>t.enabled));setControlState('agRtcScreen',false);subscribeRtcInbox();subscribeRtcParticipants();subscribeRoomMeeting();await updateOwnPresence({joinedAt:serverTimestamp()});rtcHeartbeat=setInterval(()=>updateOwnPresence().catch(()=>{}),15000);wait.style.display='none';wait.style.pointerEvents='none';$('agRoomStatus').textContent='Ao vivo';updatePeoplePanel()}
+  try{await getLocalMedia();setTileStream(currentUser.uid,localStream,displayName(),true);const micOn=!!localStream.getAudioTracks().some(t=>t.enabled),camOn=!!localStream.getVideoTracks().some(t=>t.enabled);setControlState('agRtcMic',micOn);setControlState('agRtcCamera',camOn);setControlState('agRtcScreen',false);const camBtn=$('agRtcCamera');if(camBtn){camBtn.title=camOn?'Desligar câmera':'Ativar câmera';const sp=camBtn.querySelector('span');if(sp)sp.textContent=camOn?'Câmera':'Ativar câmera'}subscribeRtcInbox();subscribeRtcParticipants();subscribeRoomMeeting();await updateOwnPresence({joinedAt:serverTimestamp()});rtcHeartbeat=setInterval(()=>updateOwnPresence().catch(()=>{}),15000);wait.style.display='none';wait.style.pointerEvents='none';$('agRoomStatus').textContent=camOn?'Ao vivo · câmera ativa':'Ao vivo · câmera desligada';updatePeoplePanel()}
   catch(err){console.error('V130 sala WebRTC',err);wait.style.display='grid';wait.style.pointerEvents='auto';wait.innerHTML=`<div><strong>Não foi possível ativar a sala</strong><p>${esc(err.message||err)}</p><p>Confira as permissões de câmera/microfone e se o site está em HTTPS.</p></div>`;$('agRoomStatus').textContent='Falha na conexão'}
 }
 async function closeRoom(sendBye=true){
