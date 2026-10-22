@@ -1,4 +1,4 @@
-/* AG CRM V122 — Participantes da Agenda via diretório unificado do CRM */
+/* AG CRM V123 — Administrador pode excluir reuniões da Agenda */
 (async()=>{
   const cfg=window.EI_FIREBASE_CONFIG||{};
   if(!cfg.enabled||!cfg.apiKey||!cfg.projectId)return;
@@ -111,7 +111,40 @@
   function canSeeAppointment(a){if(a?.type!=='Reunião'||!Array.isArray(a.participantUids)||!a.participantUids.length)return true;if(isAdmin())return true;return !!currentUser&&a.participantUids.includes(currentUser.uid)}
   function patchCalendar(){if(window.renderCalendar?.__agMeetingPatched)return;const base=window.renderCalendar;if(typeof base!=='function')return;const wrapped=function(){if(typeof db==='undefined'||!Array.isArray(db.appointments))return base();const all=db.appointments;db.appointments=all.filter(canSeeAppointment);try{return base()}finally{db.appointments=all}};wrapped.__agMeetingPatched=true;window.renderCalendar=wrapped;try{renderCalendar=wrapped}catch(e){};try{wrapped()}catch(e){}}
   function meetingStateLabel(s){return s==='live'?'Em andamento':s==='starting'?'Administrador entrando…':s==='ended'?'Encerrada':'Agendada'}
-  function renderMeetings(){const list=$('agMeetingList');if(!list)return;const sorted=[...meetings].sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time)));if(!sorted.length){list.innerHTML='<div class="ag-meeting-empty">Nenhuma reunião encontrada na sua agenda.</div>';return}list.innerHTML=sorted.map(m=>{const people=(m.participantNames||[]).filter(Boolean);const chips=people.slice(0,4).map(n=>`<span class="ag-meeting-chip">@${esc(n)}</span>`).join('')+(people.length>4?`<span class="ag-meeting-chip">+${people.length-4}</span>`:'');let action='';if(isAdmin()){if(m.status==='scheduled')action=`<button class="btn primary small" data-meeting-start="${m.id}">Iniciar sala</button>`;else if(m.status==='starting'||m.status==='live')action=`<button class="btn primary small" data-meeting-join="${m.id}">Entrar</button>`;action+=`<button class="btn small" data-meeting-edit="${m.id}">Editar</button>`}else{action=m.status==='live'?`<button class="btn primary small" data-meeting-join="${m.id}">Entrar na sala</button>`:`<span style="font-size:11px;color:var(--muted)">${m.status==='ended'?'Reunião encerrada':'Aguardando Administrador'}</span>`}return `<div class="ag-meeting-row"><div><h4>${esc(m.title)}</h4><p>${esc(m.notes||'Sem pauta informada.')}</p><div class="ag-meeting-meta">${chips}</div></div><div class="ag-meeting-when"><b>${fmtDate(m.date)}</b><small>${esc(m.time||'')}</small></div><div><span class="ag-meeting-status ${esc(m.status||'scheduled')}">${meetingStateLabel(m.status)}</span></div><div class="ag-meeting-actions">${action}</div></div>`}).join('');list.querySelectorAll('[data-meeting-start]').forEach(b=>b.onclick=()=>startMeeting(b.dataset.meetingStart));list.querySelectorAll('[data-meeting-join]').forEach(b=>b.onclick=()=>openRoomById(b.dataset.meetingJoin));list.querySelectorAll('[data-meeting-edit]').forEach(b=>b.onclick=()=>openMeetingForm(meetings.find(m=>m.id===b.dataset.meetingEdit)));}
+  function renderMeetings(){const list=$('agMeetingList');if(!list)return;const sorted=[...meetings].sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time)));if(!sorted.length){list.innerHTML='<div class="ag-meeting-empty">Nenhuma reunião encontrada na sua agenda.</div>';return}list.innerHTML=sorted.map(m=>{const people=(m.participantNames||[]).filter(Boolean);const chips=people.slice(0,4).map(n=>`<span class="ag-meeting-chip">@${esc(n)}</span>`).join('')+(people.length>4?`<span class="ag-meeting-chip">+${people.length-4}</span>`:'');let action='';if(isAdmin()){if(m.status==='scheduled')action=`<button class="btn primary small" data-meeting-start="${m.id}">Iniciar sala</button>`;else if(m.status==='starting'||m.status==='live')action=`<button class="btn primary small" data-meeting-join="${m.id}">Entrar</button>`;action+=`<button class="btn small" data-meeting-edit="${m.id}">Editar</button><button class="btn danger small" data-meeting-delete="${m.id}">Excluir</button>`}else{action=m.status==='live'?`<button class="btn primary small" data-meeting-join="${m.id}">Entrar na sala</button>`:`<span style="font-size:11px;color:var(--muted)">${m.status==='ended'?'Reunião encerrada':'Aguardando Administrador'}</span>`}return `<div class="ag-meeting-row"><div><h4>${esc(m.title)}</h4><p>${esc(m.notes||'Sem pauta informada.')}</p><div class="ag-meeting-meta">${chips}</div></div><div class="ag-meeting-when"><b>${fmtDate(m.date)}</b><small>${esc(m.time||'')}</small></div><div><span class="ag-meeting-status ${esc(m.status||'scheduled')}">${meetingStateLabel(m.status)}</span></div><div class="ag-meeting-actions">${action}</div></div>`}).join('');list.querySelectorAll('[data-meeting-start]').forEach(b=>b.onclick=()=>startMeeting(b.dataset.meetingStart));list.querySelectorAll('[data-meeting-join]').forEach(b=>b.onclick=()=>openRoomById(b.dataset.meetingJoin));list.querySelectorAll('[data-meeting-edit]').forEach(b=>b.onclick=()=>openMeetingForm(meetings.find(m=>m.id===b.dataset.meetingEdit)));list.querySelectorAll('[data-meeting-delete]').forEach(b=>b.onclick=()=>deleteMeeting(b.dataset.meetingDelete));}
+  async function deleteMeeting(id){
+    if(!isAdmin()||!currentUser)return;
+    const m=meetings.find(x=>x.id===id);
+    if(!m)return;
+    const when=[fmtDate(m.date),m.time].filter(Boolean).join(' às ');
+    const ok=confirm(`Excluir a reunião “${m.title||'Sem título'}”${when?` (${when})`:''}?\n\nEla será removida da Agenda de todos os participantes. Esta ação não pode ser desfeita.`);
+    if(!ok)return;
+    try{
+      if(roomMeeting?.id===id)closeRoom();
+      // Limpa chat e registros de arquivos da reunião antes de apagar o documento principal.
+      // Os arquivos físicos no Google Drive não são apagados por segurança.
+      try{
+        const msgSnap=await getDocs(collection(fs,'meetings',id,'messages'));
+        await Promise.all(msgSnap.docs.map(d=>deleteDoc(d.ref)));
+      }catch(msgErr){
+        console.warn('Não foi possível limpar todas as mensagens da reunião antes da exclusão.',msgErr);
+      }
+      await deleteDoc(meetingRef(id));
+      try{
+        if(typeof db!=='undefined'&&Array.isArray(db.appointments)){
+          db.appointments=db.appointments.filter(a=>a?.meetingId!==id);
+          saveDB();
+          try{renderCalendar?.()}catch(e){}
+        }
+      }catch(localErr){console.warn('Falha ao remover reunião da Agenda local.',localErr)}
+      meetings=meetings.filter(x=>x.id!==id);
+      renderMeetings();
+      toast?.('Reunião excluída da Agenda de todos os participantes.');
+    }catch(err){
+      console.error('Falha ao excluir reunião',err);
+      toast?.(err?.message||'Não foi possível excluir a reunião.');
+    }
+  }
   function subscribeMeetings(){meetingUnsub?.();if(!currentUser)return;const col=collection(fs,'meetings');const q=isAdmin()?query(col):query(col,where('participantUids','array-contains',currentUser.uid));meetingUnsub=onSnapshot(q,snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()}));$('agMeetingCloudState')&&($('agMeetingCloudState').textContent='Online');renderMeetings();patchCalendar()},err=>{console.error('Reuniões',err);if($('agMeetingCloudState'))$('agMeetingCloudState').textContent='Erro de sincronização'});}
   async function loadJitsi(){if(window.JitsiMeetExternalAPI)return;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://meet.jit.si/external_api.js';s.async=true;s.onload=resolve;s.onerror=()=>reject(new Error('Não foi possível carregar o serviço de vídeo.'));document.head.appendChild(s)})}
   async function startMeeting(id){if(!isAdmin())return;const m=meetings.find(x=>x.id===id);if(!m)return;const room=(m.roomName||`AGCRM_${id}`).replace(/[^a-zA-Z0-9_]/g,'');try{await updateDoc(meetingRef(id),{status:'starting',roomName:room,startedBy:currentUser.uid,startedByName:displayName(),startedAt:serverTimestamp()});await openRoom({...m,status:'starting',roomName:room},true)}catch(err){console.error('Falha ao iniciar reunião',err);toast(err?.message||'Não foi possível iniciar a sala de reunião.')}}
@@ -131,5 +164,5 @@
   window.addEventListener('ag:firebase-ready',()=>setTimeout(()=>{injectAgenda();patchCalendar()},200));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{injectAgenda();setTimeout(patchCalendar,400)});else{injectAgenda();setTimeout(patchCalendar,400)}
   setInterval(()=>{const mode=isAdmin();if(mode!==lastAdminMode){lastAdminMode=mode;const b=$('agNewVideoMeeting');if(b)b.style.display=mode?'':'none';if(currentUser)subscribeMeetings();}},1200);
-  window.AGMeetingRooms={openMeetingForm,startMeeting,openRoomById};
+  window.AGMeetingRooms={openMeetingForm,startMeeting,openRoomById,deleteMeeting};
 })();
