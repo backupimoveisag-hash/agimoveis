@@ -1,4 +1,4 @@
-/* AG CRM V125 — Exclusão definitiva de reunião + limpeza de compromisso órfão */
+/* AG CRM V128 — sincronização de convidados + exclusão definitiva com tombstone */
 (async()=>{
   const cfg=window.EI_FIREBASE_CONFIG||{};
   if(!cfg.enabled||!cfg.apiKey||!cfg.projectId)return;
@@ -14,7 +14,7 @@
   }
   if(!app)return;
   const auth=getAuth(app), fs=getFirestore(app,cfg.databaseId||'(default)');
-  let currentUser=null,meetings=[],meetingUnsub=null,msgUnsub=null,jitsiApi=null,roomMeeting=null,lastAdminMode=null,directoryUsers=[];
+  let currentUser=null,meetings=[],meetingUnsub=null,msgUnsub=null,jitsiApi=null,roomMeeting=null,lastAdminMode=null,directoryUsers=[],meetingIdsSignature='';
   const $=id=>document.getElementById(id);
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const profile=()=>window.EIFirebaseCRM?.getProfile?.()||null;
@@ -26,7 +26,11 @@
   const fmtBytes=n=>{n=Number(n||0);if(n<1024)return `${n} B`;if(n<1048576)return `${(n/1024).toFixed(1)} KB`;return `${(n/1048576).toFixed(1)} MB`};
   const meetingRef=id=>doc(fs,'meetings',id);
   const appointmentsSectionRef=()=>doc(fs,'workspaces',cfg.workspaceId||'main','sections','appointments');
+  const meetingDeletionsSectionRef=()=>doc(fs,'workspaces',cfg.workspaceId||'main','sections','meetingDeletions');
   const deletedMeetingIds=new Set();
+  function deletionList(){try{return (typeof db!=='undefined'&&Array.isArray(db.meetingDeletions))?db.meetingDeletions:[]}catch(e){return[]}}
+  function isTombstoned(a){const aid=String(a?.id||'').trim(),mid=String(a?.meetingId||a?.id||'').trim();return deletionList().some(d=>(aid&&String(d?.appointmentId||'')===aid)||(mid&&String(d?.meetingId||'')===mid))}
+  function rememberDeletion(appointmentId,meetingId,title=''){if(typeof db==='undefined')return;db.meetingDeletions=deletionList();const aid=String(appointmentId||''),mid=String(meetingId||'');if(db.meetingDeletions.some(d=>(aid&&String(d?.appointmentId||'')===aid)||(mid&&String(d?.meetingId||'')===mid)))return;db.meetingDeletions.push({id:`D${Date.now().toString(36).toUpperCase()}`,appointmentId:aid,meetingId:mid,title:String(title||''),deletedAt:new Date().toISOString(),deletedBy:currentUser?.uid||''});if(db.meetingDeletions.length>500)db.meetingDeletions=db.meetingDeletions.slice(-500)}
   // V121: os participantes da reunião são lidos diretamente da coleção users do Firestore.
   // Mantemos o cadastro local apenas como contingência para bases antigas.
   const userAuthUid=u=>String(u?.firebaseUid||u?.uid||'').trim();
@@ -110,7 +114,7 @@
   function closeMeetingForm(){$('agMeetingFormOverlay')?.classList.remove('show')}
   async function saveMeetingForm(){if(!isAdmin()||!currentUser)return;const form=$('agMeetingForm');if(!form.reportValidity())return;const participantUids=[...document.querySelectorAll('#agMeetingPeople input:checked')].map(i=>i.value);if(!participantUids.length){toast?.('Selecione pelo menos um participante.');return}const all=users();const participantNames=participantUids.map(id=>all.find(u=>userAuthUid(u)===id)?.name||all.find(u=>userAuthUid(u)===id)?.email||id);const id=form.elements.meetingId.value||meetingId();const existing=meetings.find(x=>x.id===id);const payload={id,title:form.elements.title.value.trim(),date:form.elements.date.value,time:form.elements.time.value,notes:form.elements.notes.value.trim(),participantUids:[currentUser.uid,...participantUids],participantNames:[displayName(),...participantNames],createdBy:existing?.createdBy||currentUser.uid,createdByName:existing?.createdByName||displayName(),status:existing?.status||'scheduled',roomName:existing?.roomName||`AGCRM_${id}`.replace(/[^a-zA-Z0-9_]/g,''),updatedAt:serverTimestamp(),...(existing?{}:{createdAt:serverTimestamp()})};try{await setDoc(meetingRef(id),payload,{merge:true});}catch(err){console.error('Falha ao salvar reunião no Firestore',err);toast(err?.message||'Não foi possível criar a sala. Verifique as regras do Firestore.');return}
     try{const ix=db.appointments.findIndex(a=>a.meetingId===id);const ap={...(ix>=0?db.appointments[ix]:{}),id:ix>=0?db.appointments[ix].id:`A${Math.random().toString(36).slice(2,8).toUpperCase()}`,date:payload.date,time:payload.time,type:'Reunião',title:payload.title,client:'Reunião interna',broker:displayName(),property:'',meetingId:id,participantUids:payload.participantUids,participantNames:payload.participantNames,createdByUid:payload.createdBy,source:'Sala de Reuniões'};if(ix>=0)db.appointments[ix]=ap;else db.appointments.push(ap);saveDB();}catch(e){console.warn('Agenda local da reunião',e)}closeMeetingForm();toast('Reunião criada. A sala está pronta e aguarda o Administrador iniciar.');}
-  function canSeeAppointment(a){if(a?.meetingId&&deletedMeetingIds.has(String(a.meetingId)))return false;if(a?.type!=='Reunião'||!Array.isArray(a.participantUids)||!a.participantUids.length)return true;if(isAdmin())return true;return !!currentUser&&a.participantUids.includes(currentUser.uid)}
+  function canSeeAppointment(a){if(isTombstoned(a))return false;if(a?.meetingId&&deletedMeetingIds.has(String(a.meetingId)))return false;if(a?.type!=='Reunião'||!Array.isArray(a.participantUids)||!a.participantUids.length)return true;if(isAdmin())return true;return !!currentUser&&a.participantUids.includes(currentUser.uid)}
   async function openMeetingFromAgenda(id){
     if(!isAdmin()||!id)return;
     let m=meetings.find(x=>x.id===id);
@@ -119,34 +123,40 @@
     toast?.('Não foi possível localizar os dados desta reunião.');
   }
   function decorateAgendaMeetingActions(){
-    if(!isAdmin()||typeof db==='undefined'||!Array.isArray(db.appointments))return;
+    if(typeof db==='undefined'||!Array.isArray(db.appointments))return;
     const list=$('appointmentList');if(!list)return;
     const now=today();
-    const ap=[...db.appointments].filter(a=>a.date>=now).sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time))).slice(0,8);
+    const ap=[...db.appointments].filter(a=>a.date>=now&&canSeeAppointment(a)).sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time))).slice(0,8);
     [...list.querySelectorAll('.mini-item')].forEach((row,i)=>{
       const a=ap[i];if(!a?.meetingId)return;
       const right=row.querySelector('.right');if(!right)return;
-      right.innerHTML=`<div class="actions ag-agenda-meeting-actions"><button class="btn small" type="button" data-ag-agenda-meeting-edit="${esc(a.meetingId)}">Editar</button><button class="btn small danger" type="button" data-ag-agenda-appointment-delete="${esc(a.id||'')}" data-ag-agenda-meeting-id="${esc(a.meetingId||'')}">Excluir</button></div>`;
+      if(isAdmin())right.innerHTML=`<div class="actions ag-agenda-meeting-actions"><button class="btn small" type="button" data-ag-agenda-meeting-edit="${esc(a.meetingId)}">Editar</button><button class="btn small danger" type="button" data-ag-agenda-appointment-delete="${esc(a.id||'')}" data-ag-agenda-meeting-id="${esc(a.meetingId||'')}">Excluir</button></div>`;
+      else right.innerHTML=`<div class="actions ag-agenda-meeting-actions"><button class="btn small" type="button" data-ag-agenda-meeting-open="${esc(a.meetingId)}">Abrir reunião</button></div>`;
     });
     list.querySelectorAll('[data-ag-agenda-meeting-edit]').forEach(b=>b.onclick=()=>openMeetingFromAgenda(b.dataset.agAgendaMeetingEdit));
     list.querySelectorAll('[data-ag-agenda-appointment-delete]').forEach(b=>b.onclick=()=>deleteAgendaAppointment(b.dataset.agAgendaAppointmentDelete,b.dataset.agAgendaMeetingId));
+    list.querySelectorAll('[data-ag-agenda-meeting-open]').forEach(b=>b.onclick=()=>openRoomById(b.dataset.agAgendaMeetingOpen));
   }
   function patchCalendar(){if(window.renderCalendar?.__agMeetingPatched)return;const base=window.renderCalendar;if(typeof base!=='function')return;const wrapped=function(){if(typeof db==='undefined'||!Array.isArray(db.appointments))return base();const all=db.appointments;db.appointments=all.filter(canSeeAppointment);try{const result=base();decorateAgendaMeetingActions();return result}finally{db.appointments=all}};wrapped.__agMeetingPatched=true;window.renderCalendar=wrapped;try{renderCalendar=wrapped}catch(e){};try{wrapped()}catch(e){}}
   function meetingStateLabel(s){return s==='live'?'Em andamento':s==='starting'?'Administrador entrando…':s==='ended'?'Encerrada':'Agendada'}
   function renderMeetings(){const list=$('agMeetingList');if(!list)return;const sorted=[...meetings].sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time)));if(!sorted.length){list.innerHTML='<div class="ag-meeting-empty">Nenhuma reunião encontrada na sua agenda.</div>';return}list.innerHTML=sorted.map(m=>{const people=(m.participantNames||[]).filter(Boolean);const chips=people.slice(0,4).map(n=>`<span class="ag-meeting-chip">@${esc(n)}</span>`).join('')+(people.length>4?`<span class="ag-meeting-chip">+${people.length-4}</span>`:'');let action='';if(isAdmin()){if(m.status==='scheduled')action=`<button class="btn primary small" data-meeting-start="${m.id}">Iniciar sala</button>`;else if(m.status==='starting'||m.status==='live')action=`<button class="btn primary small" data-meeting-join="${m.id}">Entrar</button>`;action+=`<button class="btn small" data-meeting-edit="${m.id}">Editar</button><button class="btn danger small" data-meeting-delete="${m.id}">Excluir</button>`}else{action=m.status==='live'?`<button class="btn primary small" data-meeting-join="${m.id}">Entrar na sala</button>`:`<span style="font-size:11px;color:var(--muted)">${m.status==='ended'?'Reunião encerrada':'Aguardando Administrador'}</span>`}return `<div class="ag-meeting-row"><div><h4>${esc(m.title)}</h4><p>${esc(m.notes||'Sem pauta informada.')}</p><div class="ag-meeting-meta">${chips}</div></div><div class="ag-meeting-when"><b>${fmtDate(m.date)}</b><small>${esc(m.time||'')}</small></div><div><span class="ag-meeting-status ${esc(m.status||'scheduled')}">${meetingStateLabel(m.status)}</span></div><div class="ag-meeting-actions">${action}</div></div>`}).join('');list.querySelectorAll('[data-meeting-start]').forEach(b=>b.onclick=()=>startMeeting(b.dataset.meetingStart));list.querySelectorAll('[data-meeting-join]').forEach(b=>b.onclick=()=>openRoomById(b.dataset.meetingJoin));list.querySelectorAll('[data-meeting-edit]').forEach(b=>b.onclick=()=>openMeetingForm(meetings.find(m=>m.id===b.dataset.meetingEdit)));list.querySelectorAll('[data-meeting-delete]').forEach(b=>b.onclick=()=>deleteMeeting(b.dataset.meetingDelete));}
   async function persistAgendaAfterDelete(){
-    // V126: usa o MESMO mecanismo de sincronização do CRM. Assim funciona tanto
-    // com o SDK do Firestore quanto quando o CRM está operando via HTTPS/REST.
-    try{window.EICRMBridge?.persistLocal?.()}catch(e){
-      try{localStorage.setItem('atlasImobCRM',JSON.stringify(db))}catch(_){}
-    }
-    if(window.EIFirebaseCRM?.saveStateNow){
-      await window.EIFirebaseCRM.saveStateNow(true);
+    // V128: grava diretamente os compromissos E a lista de exclusões.
+    // A marca de exclusão impede um aparelho com cache antigo de ressuscitar a reunião.
+    try{window.EICRMBridge?.persistLocal?.()}catch(e){try{localStorage.setItem('atlasImobCRM',JSON.stringify(db))}catch(_){}}
+    const appointments=JSON.parse(JSON.stringify(db.appointments||[]));
+    const deletions=JSON.parse(JSON.stringify(deletionList()));
+    try{
+      await Promise.all([
+        setDoc(appointmentsSectionRef(),{value:appointments,updatedAt:serverTimestamp()},{merge:true}),
+        setDoc(meetingDeletionsSectionRef(),{value:deletions,updatedAt:serverTimestamp()},{merge:true})
+      ]);
       return;
+    }catch(err){
+      console.warn('V128: gravação direta da exclusão falhou; usando sincronizador central.',err);
+      if(window.EIFirebaseCRM?.saveStateNow){await window.EIFirebaseCRM.saveStateNow(true);return}
+      throw err;
     }
-    // Fallback para instalações antigas onde o bridge ainda não foi carregado.
-    const cloudValue=JSON.parse(JSON.stringify(db.appointments||[]));
-    await setDoc(appointmentsSectionRef(),{value:cloudValue,updatedAt:serverTimestamp()},{merge:true});
   }
   async function cleanupMeetingCloud(meetingId){
     meetingId=String(meetingId||'').trim();
@@ -191,9 +201,11 @@
     // Remove primeiro o compromisso visível e persiste usando o sincronizador
     // central do CRM. A sala é uma limpeza complementar e nunca bloqueia a Agenda.
     const before=db.appointments.length;
+    rememberDeletion(appointmentId||ap?.id||'',meetingId||ap?.meetingId||'',title);
     db.appointments=db.appointments.filter(a=>{
       if(appointmentId&&String(a?.id||'')===appointmentId)return false;
       if(meetingId&&String(a?.meetingId||'')===meetingId)return false;
+      if(isTombstoned(a))return false;
       return true;
     });
     if(before===db.appointments.length&&ap){
@@ -219,7 +231,36 @@
     const ap=(typeof db!=='undefined'&&Array.isArray(db.appointments))?db.appointments.find(a=>String(a?.meetingId||'')===id):null;
     return deleteAgendaAppointment(ap?.id||'',id);
   }
-  function subscribeMeetings(){meetingUnsub?.();if(!currentUser)return;const col=collection(fs,'meetings');const q=isAdmin()?query(col):query(col,where('participantUids','array-contains',currentUser.uid));meetingUnsub=onSnapshot(q,snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()}));$('agMeetingCloudState')&&($('agMeetingCloudState').textContent='Online');renderMeetings();patchCalendar()},err=>{console.error('Reuniões',err);if($('agMeetingCloudState'))$('agMeetingCloudState').textContent='Erro de sincronização'});}
+  function visibleMeetingIds(){if(!currentUser||typeof db==='undefined'||!Array.isArray(db.appointments))return[];return [...new Set(db.appointments.filter(a=>a?.meetingId&&canSeeAppointment(a)).map(a=>String(a.meetingId)).filter(Boolean))].sort()}
+  async function repairMeetingAccessFromAgenda(list){
+    if(!isAdmin()||typeof db==='undefined'||!Array.isArray(db.appointments))return;
+    const jobs=[];
+    for(const m of (list||[])){
+      const ap=db.appointments.find(a=>String(a?.meetingId||'')===String(m?.id||''));
+      if(!ap||!Array.isArray(ap.participantUids)||!ap.participantUids.length)continue;
+      const desired=[...new Set(ap.participantUids.map(x=>String(x||'').trim()).filter(Boolean))].sort();
+      const current=[...new Set((Array.isArray(m.participantUids)?m.participantUids:[]).map(x=>String(x||'').trim()).filter(Boolean))].sort();
+      if(desired.join('|')!==current.join('|'))jobs.push(updateDoc(meetingRef(m.id),{participantUids:desired,participantNames:Array.isArray(ap.participantNames)?ap.participantNames:(m.participantNames||[]),updatedAt:serverTimestamp()}));
+    }
+    if(jobs.length)await Promise.allSettled(jobs);
+  }
+  function subscribeMeetings(){
+    meetingUnsub?.();meetingUnsub=null;if(!currentUser)return;
+    if(isAdmin()){
+      meetingIdsSignature='ADMIN';
+      const q=query(collection(fs,'meetings'));
+      meetingUnsub=onSnapshot(q,snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()})).filter(m=>!deletionList().some(x=>String(x?.meetingId||'')===String(m.id)));if($('agMeetingCloudState'))$('agMeetingCloudState').textContent='Online';renderMeetings();patchCalendar();repairMeetingAccessFromAgenda(meetings).catch(e=>console.warn('V128: reparo de participantes',e))},err=>{console.error('Reuniões admin',err);if($('agMeetingCloudState'))$('agMeetingCloudState').textContent='Erro de sincronização'});
+      return;
+    }
+    // V128: convidados não consultam a coleção inteira. Lemos apenas os documentos
+    // das reuniões já presentes na própria Agenda, o que casa exatamente com as regras.
+    const ids=visibleMeetingIds();meetingIdsSignature=ids.join('|');
+    if(!ids.length){meetings=[];if($('agMeetingCloudState'))$('agMeetingCloudState').textContent='Online';renderMeetings();patchCalendar();return}
+    const map=new Map(),unsubs=[];
+    const refresh=()=>{meetings=[...map.values()].sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time)));if($('agMeetingCloudState'))$('agMeetingCloudState').textContent='Online';renderMeetings();patchCalendar()};
+    ids.forEach(id=>{unsubs.push(onSnapshot(meetingRef(id),snap=>{if(snap.exists())map.set(id,{id:snap.id,...snap.data()});else map.delete(id);refresh()},err=>{console.warn('Reunião individual',id,err);map.delete(id);refresh()}))});
+    meetingUnsub=()=>unsubs.forEach(u=>{try{u()}catch(e){}});
+  }
   async function loadJitsi(){if(window.JitsiMeetExternalAPI)return;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://meet.jit.si/external_api.js';s.async=true;s.onload=resolve;s.onerror=()=>reject(new Error('Não foi possível carregar o serviço de vídeo.'));document.head.appendChild(s)})}
   async function startMeeting(id){if(!isAdmin())return;const m=meetings.find(x=>x.id===id);if(!m)return;const room=(m.roomName||`AGCRM_${id}`).replace(/[^a-zA-Z0-9_]/g,'');try{await updateDoc(meetingRef(id),{status:'starting',roomName:room,startedBy:currentUser.uid,startedByName:displayName(),startedAt:serverTimestamp()});await openRoom({...m,status:'starting',roomName:room},true)}catch(err){console.error('Falha ao iniciar reunião',err);toast(err?.message||'Não foi possível iniciar a sala de reunião.')}}
   async function openRoomById(id){const snap=await getDoc(meetingRef(id));if(!snap.exists())return;const m={id:snap.id,...snap.data()};if(!isAdmin()&&m.status!=='live'){toast?.('A sala ainda não foi iniciada pelo Administrador.');return}await openRoom(m,false)}
@@ -237,6 +278,6 @@
   onAuthStateChanged(auth,user=>{currentUser=user;injectAgenda();setTimeout(()=>{const b=$('agNewVideoMeeting');if(b)b.style.display=isAdmin()?'':'none';patchCalendar();subscribeMeetings()},250)});
   window.addEventListener('ag:firebase-ready',()=>setTimeout(()=>{injectAgenda();patchCalendar()},200));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{injectAgenda();setTimeout(patchCalendar,400)});else{injectAgenda();setTimeout(patchCalendar,400)}
-  setInterval(()=>{const mode=isAdmin();if(mode!==lastAdminMode){lastAdminMode=mode;const b=$('agNewVideoMeeting');if(b)b.style.display=mode?'':'none';if(currentUser)subscribeMeetings();}},1200);
+  setInterval(()=>{const mode=isAdmin();const sig=mode?'ADMIN':visibleMeetingIds().join('|');if(mode!==lastAdminMode||sig!==meetingIdsSignature){lastAdminMode=mode;const b=$('agNewVideoMeeting');if(b)b.style.display=mode?'':'none';if(currentUser)subscribeMeetings();}},1200);
   window.AGMeetingRooms={openMeetingForm,startMeeting,openRoomById,deleteMeeting};
 })();
