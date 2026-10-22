@@ -12,5 +12,5 @@ window.EI_FIREBASE_CONFIG = {
   appId: "1:280440406177:web:14cf4e7b4d92c91f4770e0",
   workspaceId: "main",
   publicSiteUrl: "",
-  buildId: "v128-agenda-sync-delete-tombstone"
+  buildId: "v129-meeting-admin-live-release"
 };
