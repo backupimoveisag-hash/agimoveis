@@ -1,4 +1,4 @@
-/* AG CRM V117 — Google Drive via Apps Script + e-mail + snapshot + backup 2h + boas-vindas */
+/* AG CRM V117 — Google Drive via Apps Script + e-mail + snapshot + backup 12h + boas-vindas */
 (function(){
   'use strict';
 
@@ -54,7 +54,7 @@
       rootFolderName:String($('agDriveRootFolderName')?.value||'AG CRM').trim()||'AG CRM',
       notifyEmail:String($('agDriveNotifyEmail')?.value||DEFAULT_EMAIL).trim()||DEFAULT_EMAIL,
       crmAccessUrl:String($('agDriveCrmAccessUrl')?.value||currentHostedCrmUrl()).trim(),
-      backupEveryHours:2
+      backupEveryHours:12
     };
   }
 
@@ -73,12 +73,12 @@
     if($('agDriveLastBackup'))$('agDriveLastBackup').textContent=fmt(localStorage.getItem(LS_LAST_BACKUP));
     if($('agDriveFolder'))$('agDriveFolder').textContent=c.rootFolderName||'AG CRM';
     if($('agDriveImageMode'))$('agDriveImageMode').textContent=configured(c)?'Drive obrigatório':'Pendente';
-    if($('agDriveScheduleLabel'))$('agDriveScheduleLabel').textContent=localStorage.getItem(LS_TRIGGER)==='1'?'A cada 2 horas':'Pendente';
+    if($('agDriveScheduleLabel'))$('agDriveScheduleLabel').textContent=localStorage.getItem(LS_TRIGGER)==='1'?'A cada 12 horas':'Pendente';
     if($('agDriveEmailLabel'))$('agDriveEmailLabel').textContent=c.notifyEmail||DEFAULT_EMAIL;
 
     if(configured(c)){
       setState('Configurado','on');
-      setMsg('Apps Script configurado. Alterações relevantes atualizam o snapshot no Drive e enviam aviso por e-mail. O backup agendado ocorre a cada 2 horas.','success');
+      setMsg('Apps Script configurado. Alterações relevantes atualizam o snapshot no Drive e enviam aviso por e-mail. O backup agendado ocorre a cada 12 horas.','success');
     }else{
       setState('Configuração pendente','error');
       setMsg('Cole a <b>URL do Web App</b> e a <b>chave de integração</b> geradas pelo Apps Script.','error');
@@ -129,10 +129,10 @@
     if(configured(c)){
       try{
         await request('configure',{},c);
-        const r=await request('installBackup2h',{},c);
+        const r=await request('installBackup12h',{},c);
         localStorage.setItem(LS_TRIGGER,r?.triggerActive?'1':'0');
         await syncSnapshot({force:true,overrideCfg:c,silent:true});
-        setMsg(`Credenciais salvas. Avisos serão enviados para <b>${c.notifyEmail}</b> e o backup está programado a cada 2 horas.`,'success');
+        setMsg(`Credenciais salvas. Avisos serão enviados para <b>${c.notifyEmail}</b> e o backup está programado a cada 12 horas.`,'success');
       }catch(err){
         setMsg('Credenciais salvas no CRM, mas o Apps Script respondeu: '+err.message,'error');
       }
@@ -144,13 +144,13 @@
     if(!isAdmin())return;
     const c=currentConfigFromFields();
     setState('Testando…','off');
-    setMsg('Testando Apps Script, Google Drive, e-mail e situação do backup 2h…');
+    setMsg('Testando Apps Script, Google Drive, e-mail e situação do backup 12h…');
     try{
       const r=await request('ping',{},c);
       localStorage.setItem(LS_LAST_TEST,new Date().toISOString());
       localStorage.setItem(LS_TRIGGER,r?.triggerActive?'1':'0');
       setState('Conectado','on');
-      setMsg(`Conexão concluída. Pasta: <b>${r.rootFolderName||c.rootFolderName||'AG CRM'}</b> · E-mail: <b>${r.notifyEmail||c.notifyEmail}</b> · Backup: <b>${r.triggerActive?'a cada 2 horas':'gatilho pendente'}</b>.`,'success');
+      setMsg(`Conexão concluída. Pasta: <b>${r.rootFolderName||c.rootFolderName||'AG CRM'}</b> · E-mail: <b>${r.notifyEmail||c.notifyEmail}</b> · Backup: <b>${r.triggerActive?'a cada 12 horas':'gatilho pendente'}</b>.`,'success');
       try{toast('Google Drive e Apps Script conectados.')}catch(e){}
       render();
     }catch(err){
@@ -159,16 +159,16 @@
     }
   }
 
-  async function installBackup2h(){
+  async function installBackup12h(){
     if(!isAdmin())return;
     const c=currentConfigFromFields();
-    setMsg('Instalando o gatilho de backup a cada 2 horas…');
+    setMsg('Instalando o gatilho de backup a cada 12 horas…');
     try{
-      const r=await request('installBackup2h',{},c);
+      const r=await request('installBackup12h',{},c);
       localStorage.setItem(LS_TRIGGER,r?.triggerActive?'1':'0');
-      setMsg('Backup automático instalado: <b>a cada 2 horas</b>.','success');
+      setMsg('Backup automático instalado: <b>a cada 12 horas</b>.','success');
       render();
-      try{toast('Backup automático de 2 em 2 horas ativado.')}catch(e){}
+      try{toast('Backup automático de 12 em 12 horas ativado.')}catch(e){}
     }catch(err){setMsg(err.message,'error')}
   }
 
@@ -305,7 +305,7 @@
     $('agDriveSaveBtn')?.addEventListener('click',()=>saveCredentials());
     $('agDriveTestBtn')?.addEventListener('click',()=>testConnection());
     $('agDriveBackupNowBtn')?.addEventListener('click',()=>backupNow().catch(err=>setMsg(err.message,'error')));
-    $('agDriveInstallTriggerBtn')?.addEventListener('click',()=>installBackup2h());
+    $('agDriveInstallTriggerBtn')?.addEventListener('click',()=>installBackup12h());
     $('agDriveTestWelcomeBtn')?.addEventListener('click',()=>testWelcomeEmail().catch(()=>{}));
     $('agDriveShowKeyBtn')?.addEventListener('click',()=>{
       const el=$('agDriveApiKey');if(!el)return;
@@ -323,7 +323,7 @@
     syncSnapshot,
     configured:()=>configured(cfg()),
     config:cfg,
-    installBackup2h,
+    installBackup12h,
     testWelcomeEmail,
     currentHostedCrmUrl
   };

@@ -1,4 +1,4 @@
-/* AG CRM V131 — câmera WebRTC automática e permissões independentes */
+/* AG CRM V132 — sala WebRTC + leituras Firestore sob demanda */
 (async()=>{
   const cfg=window.EI_FIREBASE_CONFIG||{};
   if(!cfg.enabled||!cfg.apiKey||!cfg.projectId)return;
@@ -23,6 +23,7 @@
   const profile=()=>window.EIFirebaseCRM?.getProfile?.()||null;
   const isAdmin=()=>profile()?.active!==false&&profile()?.role==='Administrador';
   const displayName=()=>profile()?.name||currentUser?.displayName||currentUser?.email||'Usuário';
+  const agendaIsActive=()=>!!$('page-agenda')?.classList.contains('active');
   const meetingId=()=>`M${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).slice(2,7).toUpperCase()}`;
   const today=()=>new Date().toISOString().slice(0,10);
   const fmtDate=d=>{if(!d)return'—';const [y,m,day]=String(d).split('-');return `${day}/${m}/${y}`};
@@ -257,6 +258,9 @@
   }
   function subscribeMeetings(){
     meetingUnsub?.();meetingUnsub=null;if(!currentUser)return;
+    // V132: a lista de reuniões só consulta o Firestore quando a Agenda está aberta.
+    // A sala aberta possui listeners próprios e continua funcionando normalmente.
+    if(!agendaIsActive())return;
     if(isAdmin()){
       meetingIdsSignature='ADMIN';
       const q=query(collection(fs,'meetings'));
@@ -455,9 +459,18 @@ async function endMeeting(){if(!isAdmin()||!roomMeeting)return;if(!confirm('Ence
   async function uploadMeetingFile(e){const file=e.target.files?.[0];e.target.value='';if(!file||!roomMeeting)return;if(file.size>10*1024*1024){toast?.('O arquivo deve ter no máximo 10 MB.');return}if(!window.AGDriveGateway?.configured?.()){toast?.('Configure o Google Drive em Ajustes para enviar arquivos.');return}const btn=$('agMeetingFileBtn');const old=btn.textContent;btn.disabled=true;btn.textContent='Enviando…';try{const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});const up=await window.AGDriveGateway.request('uploadMeetingFile',{meetingId:roomMeeting.id,meetingTitle:roomMeeting.title,fileName:file.name,mimeType:file.type||'application/octet-stream',dataUrl,uploadedBy:displayName()});await addDoc(collection(fs,'meetings',roomMeeting.id,'messages'),{type:'file',fileId:up.fileId,fileName:up.fileName||file.name,fileSize:file.size,mimeType:file.type||'',authorUid:currentUser.uid,authorName:displayName(),createdAt:serverTimestamp(),timeLabel:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});toast?.('Arquivo enviado para a reunião.')}catch(err){console.error(err);toast?.(err.message||'Falha ao enviar arquivo.')}finally{btn.disabled=false;btn.textContent=old}}
   async function downloadMeetingFile(fileId){if(!fileId)return;try{const r=await window.AGDriveGateway.request('getMeetingFile',{fileId});const a=document.createElement('a');a.href=r.dataUrl;a.download=r.fileName||'arquivo';document.body.appendChild(a);a.click();a.remove()}catch(err){console.error(err);toast?.(err.message||'Não foi possível baixar o arquivo.')}}
 
-  onAuthStateChanged(auth,user=>{currentUser=user;injectAgenda();setTimeout(()=>{const b=$('agNewVideoMeeting');if(b)b.style.display=isAdmin()?'':'none';patchCalendar();subscribeMeetings()},250)});
+  onAuthStateChanged(auth,user=>{currentUser=user;injectAgenda();if(!user){meetingUnsub?.();meetingUnsub=null;meetings=[]}setTimeout(()=>{const b=$('agNewVideoMeeting');if(b)b.style.display=isAdmin()?'':'none';patchCalendar();if(agendaIsActive())subscribeMeetings()},250)});
   window.addEventListener('ag:firebase-ready',()=>setTimeout(()=>{injectAgenda();patchCalendar()},200));
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{injectAgenda();setTimeout(patchCalendar,400)});else{injectAgenda();setTimeout(patchCalendar,400)}
-  setInterval(()=>{const mode=isAdmin();const sig=mode?'ADMIN':visibleMeetingIds().join('|');if(mode!==lastAdminMode||sig!==meetingIdsSignature){lastAdminMode=mode;const b=$('agNewVideoMeeting');if(b)b.style.display=mode?'':'none';if(currentUser)subscribeMeetings();}},1200);
+  document.addEventListener('click',e=>{if(e.target.closest('[data-page="agenda"],[data-pagejump="agenda"]'))setTimeout(()=>{if(currentUser&&agendaIsActive())subscribeMeetings()},80)});
+  setInterval(()=>{
+    if(document.visibilityState!=='visible')return;
+    if(!agendaIsActive()){
+      if(meetingUnsub){meetingUnsub();meetingUnsub=null}
+      return;
+    }
+    const mode=isAdmin(),sig=mode?'ADMIN':visibleMeetingIds().join('|');
+    if(mode!==lastAdminMode||sig!==meetingIdsSignature){lastAdminMode=mode;const b=$('agNewVideoMeeting');if(b)b.style.display=mode?'':'none';if(currentUser)subscribeMeetings()}
+  },5000);
   window.AGMeetingRooms={openMeetingForm,startMeeting,openRoomById,deleteMeeting};
 })();

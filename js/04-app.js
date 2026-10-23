@@ -37,12 +37,12 @@ if(!enabled){
   ]);
   const {initializeApp,deleteApp}=appMod;
   const {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithRedirect,getRedirectResult,GoogleAuthProvider,signOut,updateProfile,sendPasswordResetEmail}=authMod;
-  const {initializeFirestore,enableNetwork,doc,getDoc,getDocs,setDoc,updateDoc,deleteDoc,collection,onSnapshot,writeBatch,serverTimestamp,runTransaction,query,orderBy,limit}=fsMod;
+  const {initializeFirestore,enableNetwork,doc,getDoc,getDocs,setDoc,updateDoc,deleteDoc,collection,onSnapshot,writeBatch,serverTimestamp,runTransaction,query,where,orderBy,limit}=fsMod;
   const firebaseOptions={apiKey:cfg.apiKey,authDomain:cfg.authDomain,projectId:cfg.projectId,messagingSenderId:cfg.messagingSenderId,appId:cfg.appId};
   const app=initializeApp(firebaseOptions);
   const firestoreDatabaseId=cfg.databaseId||'(default)';
   const auth=getAuth(app),fs=initializeFirestore(app,{experimentalForceLongPolling:true,experimentalLongPollingOptions:{timeoutSeconds:20}},firestoreDatabaseId),wid=cfg.workspaceId||'main';
-  console.info(`[AG CRM v69] Firestore databaseId=${firestoreDatabaseId}`);
+  console.info(`[AG CRM v132] Firestore databaseId=${firestoreDatabaseId}`);
   window.dispatchEvent(new CustomEvent('ag:firebase-ready'));
   window.dispatchEvent(new CustomEvent('ag:firestore-database',{detail:{databaseId:firestoreDatabaseId}}));
   const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});
@@ -51,7 +51,7 @@ if(!enabled){
   const userCache=new Map(),requestCache=new Map();
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const FIRESTORE_TIMEOUT_MS=6500;
-  let firestoreTransport='rest';
+  let firestoreTransport='sdk';
   function timeoutError(label='Firestore'){
     const e=new Error(`${label} não respondeu dentro do tempo esperado.`);e.code='ag/firestore-timeout';return e;
   }
@@ -226,19 +226,23 @@ if(!enabled){
   function plainProfile(base,extra={}){return {...base,...extra,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}}
   async function provisionMissingProfileSdk(user,nameOverride=''){
     const base=newUserBase(user,nameOverride),uref=doc(fs,'users',user.uid),bootstrapRef=doc(fs,'system','bootstrap');
-    const rref=doc(fs,'accessRequests',user.uid),invRef=base.email?doc(fs,'accessInvites',base.email):null;
-    return withFirestoreRetry(()=>runTransaction(fs,async tx=>{
-      const existing=await tx.get(uref);if(existing.exists())return existing.data();
-      const boot=await tx.get(bootstrapRef);
+    const rref=doc(fs,'accessRequests',user.uid);
+    return withFirestoreRetry(async()=>{
+      const existing=await getDoc(uref);if(existing.exists())return existing.data();
+      let boot=await getDoc(bootstrapRef);
       if(!boot.exists()){
-        const profile={...base,role:'Administrador',permissions:[...ALL_PAGES],active:true,approvalStatus:'approved',createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
-        tx.set(uref,profile);tx.set(bootstrapRef,{initialized:true,adminUid:user.uid,adminEmail:base.email,createdAt:serverTimestamp()});return profile;
+        const bootPayload={initialized:true,adminUid:user.uid,adminEmail:base.email,createdAt:serverTimestamp()};
+        try{await setDoc(bootstrapRef,bootPayload);boot=await getDoc(bootstrapRef)}
+        catch(err){boot=await getDoc(bootstrapRef);if(!boot.exists())throw err}
       }
-      // V66: todo cadastro posterior ao primeiro administrador entra como pendente.
-      // A liberação é feita exclusivamente pelo Administrador em Ajustes > Usuários e permissões.
+      if(boot.data()?.adminUid===user.uid){
+        const profile={...base,role:'Administrador',permissions:[...ALL_PAGES],active:true,approvalStatus:'approved',createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
+        await setDoc(uref,profile);const verify=await getDoc(uref);if(!verify.exists()){const e=new Error('O Firestore não confirmou a criação do perfil do administrador.');e.code='ag/profile-not-created';throw e}return verify.data();
+      }
       const profile={...base,role:'Corretor',permissions:[],active:false,approvalStatus:'pending',createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
-      tx.set(uref,profile);tx.set(rref,{...base,status:'pending',reason:'Cadastro solicitado',requestedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});return profile;
-    }),{attempts:2,delay:500,timeout:5000});
+      await setDoc(uref,profile);await setDoc(rref,{...base,status:'pending',reason:'Cadastro solicitado',requestedAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});
+      const verify=await getDoc(uref);if(!verify.exists()){const e=new Error('O Firestore não confirmou a criação do perfil pendente.');e.code='ag/profile-not-created';throw e}return verify.data();
+    },{attempts:2,delay:500,timeout:5000});
   }
   async function provisionMissingProfileRest(user,nameOverride=''){
     const base=newUserBase(user,nameOverride);
@@ -283,21 +287,27 @@ if(!enabled){
     return verify.data;
   }
   async function ensureProfile(user){
-    // V66: autenticação e criação/leitura do perfil usam REST HTTPS como caminho primário, com bootstrap-first.
-    // Isso evita o travamento "Conectando ao Firestore…" observado quando o SDK fica offline.
-    firestoreTransport='rest';
+    // V132: usa o SDK do Firestore como caminho principal. REST HTTPS fica somente como contingência
+    // quando houver falha real de conectividade. Isso evita polling contínuo e milhares de leituras ociosas.
+    firestoreTransport='sdk';
     status('Conectando ao Firestore','syncing');
-    setAuthNote(`Firebase autenticado · Firestore: ${firestoreDatabaseId} · HTTPS v71`);
+    setAuthNote(`Firebase autenticado · Firestore: ${firestoreDatabaseId} · tempo real`);
     let profile=null;
     try{
+      profile=await provisionMissingProfileSdk(user,pendingRegisterName||user.displayName||'');
+    }catch(err){
+      if(!isFirestoreConnectivityError(err)){
+        console.error('Firestore SDK / perfil',err);
+        throw err;
+      }
+      console.warn('Firestore SDK indisponível; ativando contingência HTTPS.',err);
+      firestoreTransport='rest';
+      setAuthNote(`Firebase autenticado · Firestore: ${firestoreDatabaseId} · contingência HTTPS`);
       profile=await withTimeout(
         provisionMissingProfileRest(user,pendingRegisterName||user.displayName||''),
         11000,
-        'Perfil no Firestore'
+        'Perfil no Firestore via HTTPS'
       );
-    }catch(err){
-      console.error('Firestore REST / perfil',err);
-      throw err;
     }
     if(!profile){const e=new Error('A conta foi autenticada, mas o perfil não pôde ser criado no Firestore.');e.code='ag/profile-not-created';throw e}
     if(profile.approvalStatus==='pending'){const e=new Error('Seu cadastro foi criado no Firestore e está aguardando aprovação do administrador da AG.');e.code='ag/pending-approval';throw e}
@@ -356,7 +366,6 @@ if(!enabled){
         const state=cloudSafeState(bridge.getState());
         for(const [key,value] of Object.entries(state)){if(!canWriteSection(key))continue;await restSet(`workspaces/${wid}/sections/${key}`,{value,updatedAt:new Date().toISOString()})}
         await restSet(`workspaces/${wid}`,{version:68,updatedAt:new Date().toISOString(),updatedBy:auth.currentUser.uid});
-        if(isAdmin())await syncRosterInvites();
         lastCloudState=state;status('Online via HTTPS','online');setLastSync();return;
       }catch(err){console.error('Firestore REST state sync',err);status('Erro de sync','error');bridge.toast(firestoreFriendlyMessage(err));return}
     }
@@ -366,31 +375,42 @@ if(!enabled){
       for(const [key,value] of Object.entries(state)){if(!canWriteSection(key))continue;batch.set(sectionRef(key),{value,updatedAt:serverTimestamp()},{merge:true});writes++}
       batch.set(doc(fs,'workspaces',wid),{version:26,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});writes++;
       if(writes)await batch.commit();
-      if(isAdmin())await syncRosterInvites();
       lastCloudState=state;status('Online','online');setLastSync();
     }catch(err){
       if(isFirestoreConnectivityError(err)){
-        try{firestoreTransport='rest';const state=cloudSafeState(bridge.getState());for(const [key,value] of Object.entries(state)){if(!canWriteSection(key))continue;await restSet(`workspaces/${wid}/sections/${key}`,{value,updatedAt:new Date().toISOString()})}await restSet(`workspaces/${wid}`,{version:63,updatedAt:new Date().toISOString(),updatedBy:auth.currentUser.uid});lastCloudState=state;status('Online via HTTPS','online');setLastSync();return}catch(restErr){console.error('REST state sync',restErr)}
+        try{firestoreTransport='rest';const state=cloudSafeState(bridge.getState());for(const [key,value] of Object.entries(state)){if(!canWriteSection(key))continue;await restSet(`workspaces/${wid}/sections/${key}`,{value,updatedAt:new Date().toISOString()})}await restSet(`workspaces/${wid}`,{version:63,updatedAt:new Date().toISOString(),updatedBy:auth.currentUser.uid});lastCloudState=state;status('Online via HTTPS','online');setLastSync();startStateListener();return}catch(restErr){console.error('REST state sync',restErr)}
       }
       console.error('Firebase state sync',err);status('Erro de sync','error');bridge.toast('Não foi possível sincronizar com o Firestore.');}
   }
   async function saveCatalogNow(){
     if(!auth.currentUser||!roleProfile?.active||(!isAdmin()&&!canPage('imoveis')&&!canPage('site')))return;
     if(firestoreTransport==='rest'){try{await restSet('public/catalog',cloudSafeCatalog(bridge.catalog()));setLastSync()}catch(err){console.warn('Firestore REST catalog sync',err)}return}
-    try{await withTimeout(setDoc(doc(fs,'public','catalog'),cloudSafeCatalog(bridge.catalog()),{merge:false}),5000,'Catálogo Firestore');setLastSync()}catch(err){try{firestoreTransport='rest';await restSet('public/catalog',cloudSafeCatalog(bridge.catalog()));setLastSync()}catch(restErr){console.warn('Firebase catalog sync',err,restErr)}}
+    try{await withTimeout(setDoc(doc(fs,'public','catalog'),cloudSafeCatalog(bridge.catalog()),{merge:false}),5000,'Catálogo Firestore');setLastSync()}catch(err){try{firestoreTransport='rest';await restSet('public/catalog',cloudSafeCatalog(bridge.catalog()));setLastSync();startStateListener()}catch(restErr){console.warn('Firebase catalog sync',err,restErr)}}
   }
   function queueStateSync(){clearTimeout(stateTimer);stateTimer=setTimeout(()=>saveStateNow(),700)}
   function queueCatalogSync(){clearTimeout(catalogTimer);catalogTimer=setTimeout(()=>saveCatalogNow(),500)}
   let restStateTimer=null;
+  const REST_FALLBACK_POLL_MS=5*60*1000;
   async function pullStateRest(){
-    if(!auth.currentUser||firestoreTransport!=='rest')return;
+    if(!auth.currentUser||firestoreTransport!=='rest'||document.visibilityState!=='visible')return;
     try{const docs=await restList(`workspaces/${wid}/sections`);const remote={};docs.forEach(x=>remote[x.id]=x.data?.value);if(docs.length){initialStateResolved=true;const mergedRemote=mergeLocalOnlyMedia(remote);lastCloudState=mergedRemote;bridge.replaceState({...bridge.getState(),...mergedRemote});status('Online via HTTPS','online');setLastSync()}else if(!initialStateResolved&&isAdmin()){initialStateResolved=true;await saveStateNow(true);await saveCatalogNow()}}catch(err){console.warn('REST state pull',err)}
   }
+  function stopRestStatePolling(){clearInterval(restStateTimer);restStateTimer=null}
+  function startRestStatePolling(){
+    stopRestStatePolling();
+    if(firestoreTransport!=='rest'||!auth.currentUser)return;
+    if(document.visibilityState==='visible')pullStateRest();
+    restStateTimer=setInterval(()=>{if(document.visibilityState==='visible')pullStateRest()},REST_FALLBACK_POLL_MS);
+  }
+  document.addEventListener('visibilitychange',()=>{
+    if(firestoreTransport!=='rest'||!auth.currentUser)return;
+    if(document.visibilityState==='visible')pullStateRest();
+  });
   function startStateListener(){
-    sectionUnsub?.();clearInterval(restStateTimer);
-    if(firestoreTransport==='rest'){pullStateRest();restStateTimer=setInterval(pullStateRest,15000);return}
+    sectionUnsub?.();sectionUnsub=null;stopRestStatePolling();
+    if(firestoreTransport==='rest'){startRestStatePolling();return}
     const cref=collection(fs,'workspaces',wid,'sections');
-    sectionUnsub=onSnapshot(cref,async snap=>{const remote={};snap.forEach(d=>remote[d.id]=d.data().value);if(!snap.empty){initialStateResolved=true;const mergedRemote=mergeLocalOnlyMedia(remote);lastCloudState=mergedRemote;bridge.replaceState({...bridge.getState(),...mergedRemote});status('Online','online');setLastSync()}else if(!initialStateResolved&&isAdmin()){initialStateResolved=true;await saveStateNow(true);await saveCatalogNow()}},err=>{console.error(err);if(isFirestoreConnectivityError(err)){firestoreTransport='rest';startStateListener()}else status('Erro de leitura','error')});
+    sectionUnsub=onSnapshot(cref,async snap=>{const remote={};snap.forEach(d=>remote[d.id]=d.data().value);if(!snap.empty){initialStateResolved=true;const mergedRemote=mergeLocalOnlyMedia(remote);lastCloudState=mergedRemote;bridge.replaceState({...bridge.getState(),...mergedRemote});status('Online','online');setLastSync()}else if(!initialStateResolved&&isAdmin()){initialStateResolved=true;await saveStateNow(true);await saveCatalogNow()}},err=>{console.error(err);if(isFirestoreConnectivityError(err)){firestoreTransport='rest';status('Contingência HTTPS','syncing');startStateListener()}else status('Erro de leitura','error')});
   }
   async function claimAndProcess(d){
     const dref=d.ref;let claimed=false;
@@ -401,7 +421,7 @@ if(!enabled){
   function startLeadListener(){
     leadUnsub?.();if(!canPage('leads')&&!canPage('atendimento')&&!isAdmin())return;
     if(firestoreTransport==='rest')return;
-    const q=query(collection(fs,'siteLeads'),orderBy('createdAt','desc'),limit(100));
+    const q=query(collection(fs,'siteLeads'),where('processed','==',false),limit(100));
     leadUnsub=onSnapshot(q,s=>s.docChanges().forEach(c=>{if(c.type==='added'&&c.doc.data().processed!==true)claimAndProcess(c.doc)}),err=>console.warn('siteLeads listener',err));
   }
   function ensureRosterLink(user,profile){
@@ -482,7 +502,7 @@ if(!enabled){
   });
   $('#logoutBtn')?.addEventListener('click',async e=>{e.preventDefault();e.stopImmediatePropagation();await signOut(auth)},true);
 
-  $('#cloudTestBtn')?.addEventListener('click',async()=>{try{status('Testando','syncing');firestoreTransport='rest';await restGet('public/catalog');status('Online via HTTPS','online');bridge.toast('Firestore conectado via HTTPS.')}catch(e){status('Erro','error');bridge.toast(firestoreFriendlyMessage(e))}});
+  $('#cloudTestBtn')?.addEventListener('click',async()=>{try{status('Testando','syncing');await withFirestoreRetry(()=>getDoc(doc(fs,'public','catalog')),{attempts:1,timeout:5000});firestoreTransport='sdk';startStateListener();status('Online','online');bridge.toast('Firestore conectado em tempo real.')}catch(e){try{await restGet('public/catalog');firestoreTransport='rest';startStateListener();status('Online via HTTPS','online');bridge.toast('SDK indisponível; contingência HTTPS ativa.')}catch(restErr){status('Erro','error');bridge.toast(firestoreFriendlyMessage(restErr))}}});
   $('#cloudPushBtn')?.addEventListener('click',async()=>{await saveStateNow(true);await saveCatalogNow();bridge.toast('Dados autorizados enviados para a nuvem.')});
   $('#cloudPullBtn')?.addEventListener('click',()=>{if(lastCloudState){bridge.replaceState({...bridge.getState(),...lastCloudState});bridge.toast('Dados da nuvem aplicados.')}else bridge.toast('Aguardando primeira leitura da nuvem.')});
 
@@ -497,18 +517,49 @@ if(!enabled){
     container.innerHTML=PAGE_DEFS.map(([id,label])=>`<label class="ag-permission-check"><input type="checkbox" value="${id}" ${set.has(id)?'checked':''}><span>${label}</span></label>`).join('');
   }
   function roleOptions(selected){return ROLES.map(r=>`<option ${r===selected?'selected':''}>${r}</option>`).join('')}
-  let restAdminTimer=null;
-  async function refreshAdminConsoleRest(){
-    if(!isAdmin()||firestoreTransport!=='rest')return;
-    try{const [users,requests]=await Promise.all([restList('users'),restList('accessRequests')]);userCache.clear();users.forEach(x=>userCache.set(x.id,{uid:x.id,...x.data}));requestCache.clear();requests.forEach(x=>requestCache.set(x.id,{uid:x.id,...x.data}));renderAdminConsole()}catch(err){console.warn('REST admin console',err)}
+  let restAdminTimer=null,adminConsoleLoading=false,adminConsoleLoadedAt=0;
+  function adminUsersPanelVisible(){return !!(document.querySelector('#page-configuracoes.active')&&document.querySelector('[data-settings-panel="usuarios"].active'))}
+  async function refreshAdminConsoleRest(force=true){
+    if(!isAdmin()||adminConsoleLoading)return;
+    if(!force&&!adminUsersPanelVisible())return;
+    adminConsoleLoading=true;
+    try{
+      let users=[],requests=[];
+      if(firestoreTransport==='rest'){
+        [users,requests]=await Promise.all([restList('users'),restList('accessRequests')]);
+        users=users.map(x=>({id:x.id,data:x.data}));requests=requests.map(x=>({id:x.id,data:x.data}));
+      }else{
+        const [userSnap,requestSnap]=await Promise.all([getDocs(collection(fs,'users')),getDocs(collection(fs,'accessRequests'))]);
+        users=userSnap.docs.map(d=>({id:d.id,data:d.data()}));requests=requestSnap.docs.map(d=>({id:d.id,data:d.data()}));
+      }
+      userCache.clear();users.forEach(x=>userCache.set(x.id,{uid:x.id,...x.data}));
+      requestCache.clear();requests.forEach(x=>requestCache.set(x.id,{uid:x.id,...x.data}));
+      adminConsoleLoadedAt=Date.now();renderAdminConsole();
+    }catch(err){
+      console.warn('Admin console',err);
+      if(firestoreTransport==='sdk'&&isFirestoreConnectivityError(err)){
+        firestoreTransport='rest';startStateListener();
+        try{
+          const [users,requests]=await Promise.all([restList('users'),restList('accessRequests')]);
+          userCache.clear();users.forEach(x=>userCache.set(x.id,{uid:x.id,...x.data}));
+          requestCache.clear();requests.forEach(x=>requestCache.set(x.id,{uid:x.id,...x.data}));
+          adminConsoleLoadedAt=Date.now();renderAdminConsole();
+        }catch(restErr){console.warn('Admin console HTTPS',restErr)}
+      }
+    }finally{adminConsoleLoading=false}
   }
   function startAdminConsole(){
-    adminUsersUnsub?.();adminRequestsUnsub?.();clearInterval(restAdminTimer);
+    adminUsersUnsub?.();adminUsersUnsub=null;adminRequestsUnsub?.();adminRequestsUnsub=null;clearInterval(restAdminTimer);restAdminTimer=null;
     if(!isAdmin()){renderAdminConsole();return}
-    if(firestoreTransport==='rest'){refreshAdminConsoleRest();restAdminTimer=setInterval(refreshAdminConsoleRest,12000);return}
-    adminUsersUnsub=onSnapshot(collection(fs,'users'),snap=>{userCache.clear();snap.forEach(d=>userCache.set(d.id,{uid:d.id,...d.data()}));renderAdminConsole()},err=>{console.warn('users listener',err);if(isFirestoreConnectivityError(err)){firestoreTransport='rest';startAdminConsole()}});
-    adminRequestsUnsub=onSnapshot(collection(fs,'accessRequests'),snap=>{requestCache.clear();snap.forEach(d=>requestCache.set(d.id,{uid:d.id,...d.data()}));renderAdminConsole()},err=>{console.warn('access requests listener',err);if(isFirestoreConnectivityError(err)){firestoreTransport='rest';startAdminConsole()}});
+    renderAdminConsole();
+    // V132: usuários e solicitações são carregados somente quando a aba de Usuários está visível.
+    if(adminUsersPanelVisible())refreshAdminConsoleRest(false);
   }
+  document.addEventListener('click',e=>{
+    if(e.target.closest('[data-settings-tab="usuarios"]'))setTimeout(()=>refreshAdminConsoleRest(true),50);
+    const settingsNav=e.target.closest('[data-page="configuracoes"],[data-pagejump="configuracoes"]');
+    if(settingsNav)setTimeout(()=>{if(adminUsersPanelVisible())refreshAdminConsoleRest(false)},80);
+  });
   function renderAdminConsole(){
     const lock=$('#agUsersAdminLock'),content=$('#agUsersAdminContent');if(!lock||!content)return;
     lock.hidden=isAdmin();content.hidden=!isAdmin();if(!isAdmin())return;
@@ -641,7 +692,7 @@ if(!enabled){
 
   let authProcessing=false;
   async function completeAuthenticatedSession(user){
-    if(!user||authProcessing)return;authProcessing=true;hideFirestoreRecoveryUI();setRegisterBusy(false);setLoginMessage(`Autenticação concluída. Conectando ao Firestore · banco ${firestoreDatabaseId} · HTTPS v82…`,'pending');
+    if(!user||authProcessing)return;authProcessing=true;hideFirestoreRecoveryUI();setRegisterBusy(false);setLoginMessage(`Autenticação concluída. Conectando ao Firestore · banco ${firestoreDatabaseId} · V132…`,'pending');
     try{
       roleProfile=await withTimeout(ensureProfile(user),12500,'Inicialização do perfil');pendingRegisterName='';if(roleProfile.active===false)throw new Error('Acesso inativo. Fale com o administrador.');
       localStorage.setItem('nexoSessionV1',JSON.stringify({email:user.email,name:roleProfile.name||user.displayName||user.email,role:roleProfile.role,uid:user.uid,at:new Date().toISOString()}));
@@ -659,7 +710,7 @@ if(!enabled){
   }
   onAuthStateChanged(auth,async user=>{
     ownProfileUnsub?.();adminUsersUnsub?.();adminRequestsUnsub?.();
-    if(!user){roleProfile=null;localStorage.removeItem('nexoSessionV1');bridge.setLoginVisible(true);applyProfileAccess(null);if($('#cloudUser'))$('#cloudUser').textContent='—';status('Aguardando login','syncing');setAuthNote('Firebase ativo · entre com sua conta ou cadastre-se.');sectionUnsub?.();leadUnsub?.();renderAdminConsole();setRegisterBusy(false);return}
+    if(!user){roleProfile=null;localStorage.removeItem('nexoSessionV1');bridge.setLoginVisible(true);applyProfileAccess(null);if($('#cloudUser'))$('#cloudUser').textContent='—';status('Aguardando login','syncing');setAuthNote('Firebase ativo · entre com sua conta ou cadastre-se.');sectionUnsub?.();sectionUnsub=null;leadUnsub?.();leadUnsub=null;stopRestStatePolling();clearInterval(restAdminTimer);restAdminTimer=null;renderAdminConsole();setRegisterBusy(false);return}
     await completeAuthenticatedSession(user);
   });
 

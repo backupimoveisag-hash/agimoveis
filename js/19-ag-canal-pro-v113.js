@@ -79,7 +79,7 @@
       'Branch: '+(status.branch||'—'),
       'Arquivo XML: '+(status.filePath||'—'),
       'URL cadastrada: '+(status.feedUrl||'—'),
-      'Rotina: '+(status.triggerActive?'A cada 2 horas':'Não instalada'),
+      'Rotina: '+(status.triggerActive?'A cada 12 horas':'Não instalada'),
       'Último resultado: '+(status.lastState||'—')
     ];
     el.textContent=data.join('\n');
@@ -167,8 +167,8 @@
   }
   async function installSchedule(){if(!isAdmin())return;
     try{
-      const r=await window.AGDriveGateway.request('canalProInstall2h');
-      message(r.triggerActive?'Rotina automática do XML instalada: a cada 2 horas.':'Não foi possível ativar a rotina.',r.triggerActive?'success':'error');
+      const r=await window.AGDriveGateway.request('canalProInstall12h');
+      message(r.triggerActive?'Rotina automática do XML instalada: a cada 12 horas.':'Não foi possível ativar a rotina.',r.triggerActive?'success':'error');
       refreshStatus();
     }catch(err){message(err.message,'error')}
   }
