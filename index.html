@@ -88,7 +88,7 @@
 <link rel="stylesheet" id="ag-mobile-scroll-v93" href="./css/37-ag-mobile-scroll-v93.css?v=93">
 <link rel="stylesheet" id="ag-prospecting-checks-v94" href="./css/38-ag-prospecting-checks-v94.css?v=94">
 <link rel="stylesheet" id="ag-agenda-mobile-v95" href="./css/39-ag-agenda-mobile-v95.css?v=95">
-<link rel="stylesheet" id="ag-agenda-meetings-v131" href="./css/49-ag-agenda-meetings-v119.css?v=131">
+<link rel="stylesheet" id="ag-agenda-meetings-v132" href="./css/49-ag-agenda-meetings-v119.css?v=132">
 <link rel="stylesheet" id="ag-leads-mobile-cards-v96" href="./css/40-ag-leads-mobile-cards-v96.css?v=96">
 <link rel="stylesheet" id="ag-properties-leads-reorg-v98" href="./css/41-ag-properties-leads-reorg-v98.css?v=98">
 <link rel="stylesheet" id="ag-property-admin-watermark-v99" href="./css/42-ag-property-admin-watermark-v99.css?v=100">
@@ -388,11 +388,11 @@
     <button class="btn primary" id="agDriveSaveBtn" type="button">Salvar credenciais</button>
     <button class="btn" id="agDriveTestBtn" type="button">Testar conexão</button>
     <button class="btn" id="agDriveBackupNowBtn" type="button">Fazer backup JSON agora</button>
-    <button class="btn" id="agDriveInstallTriggerBtn" type="button">Ativar backup 2h</button>
+    <button class="btn" id="agDriveInstallTriggerBtn" type="button">Ativar backup 12h</button>
     <button class="btn" id="agDriveTestWelcomeBtn" type="button">Testar e-mail de boas-vindas</button>
   </div>
   <div class="ag-drive-storage-note"><b>Imagens no Drive:</b> o CRM aplica a marca d’água e envia a foto ao Apps Script antes de salvar o cadastro. O banco guarda somente a URL do arquivo no Drive.</div>
-  <div class="ag-drive-schedule-note"><b>Rotina automática:</b> após alterações relevantes, o CRM atualiza <code>AG CRM/Sistema/AG_CRM_LATEST.json</code>. O Apps Script cria um backup versionado desse estado a cada 2 horas e envia a confirmação por e-mail.</div>
+  <div class="ag-drive-schedule-note"><b>Rotina automática:</b> após alterações relevantes, o CRM atualiza <code>AG CRM/Sistema/AG_CRM_LATEST.json</code>. O Apps Script cria um backup versionado desse estado a cada 12 horas e envia a confirmação por e-mail.</div>
   <div class="ag-drive-message" id="agDriveMessage">Cole as credenciais geradas pelo Apps Script.</div>
 </article></div>
       </div>
@@ -487,8 +487,8 @@
         </div>
         <aside class="ag-cp-side">
           <article class="card ag-cp-card"><span class="v5-kicker">PUBLICAÇÃO AUTOMÁTICA</span><h3>Como funciona</h3>
-            <ol class="ag-cp-steps"><li>Selecione os imóveis e salve a configuração.</li><li>Configure o token do GitHub exclusivamente nas propriedades do Apps Script.</li><li>Publique o XML no domínio e cadastre a URL no Canal Pro.</li><li>O Apps Script atualiza o arquivo a cada 2 horas; o portal processa em intervalos próprios.</li></ol>
-            <button class="btn" id="agCpInstallSchedule">Instalar rotina de 2 horas</button>
+            <ol class="ag-cp-steps"><li>Selecione os imóveis e salve a configuração.</li><li>Configure o token do GitHub exclusivamente nas propriedades do Apps Script.</li><li>Publique o XML no domínio e cadastre a URL no Canal Pro.</li><li>O Apps Script atualiza o arquivo a cada 12 horas; o portal processa em intervalos próprios.</li></ol>
+            <button class="btn" id="agCpInstallSchedule">Instalar rotina de 12 horas</button>
             <p class="ag-cp-note">O site público continua independente. Fotos do Google Drive podem ser copiadas como JPEG público para a pasta exclusiva do feed.</p>
           </article>
           <article class="card ag-cp-card"><span class="v5-kicker">CHECKLIST DE QUALIDADE</span><h3>Antes de enviar</h3><p>Título com 10–100 caracteres; descrição pública própria com 50–3.000; finalidade, tipo, preço, cidade, UF e bairro; área e pelo menos 5 fotografias JPEG acessíveis.</p><p class="ag-cp-note">A publicação real só é confirmada após um processamento sem erro no relatório do Canal Pro. A prévia local não publica os anúncios.</p><a href="https://developers.grupozap.com/feeds/vrsync/elements/listing.html" target="_blank" rel="noopener noreferrer">Ver documentação oficial ↗</a></article>
@@ -519,7 +519,7 @@
 <script src="./js/12-ag-site-preview-embedded-v92.js?v=92"></script>
 <script src="./js/02-app.js?v=110"></script>
 <script src="./js/03-app.js?v=115"></script>
-<script type="module" src="./js/04-app.js?v=122"></script>
+<script type="module" src="./js/04-app.js?v=132"></script>
 
 <script id="ag-v46-property-media-js" src="./js/05-ag-v46-property-media-js.js?v=85"></script>
 
@@ -535,6 +535,6 @@
 <script src="./js/18-ag-drive-appscript-v107.js?v=117"></script>
 <script src="./js/19-ag-canal-pro-v113.js?v=114"></script>
 <script src="./js/20-ag-lead-distribution-v118.js?v=118"></script>
-<script src="./js/21-ag-agenda-meetings-v119.js?v=131"></script>
+<script src="./js/21-ag-agenda-meetings-v119.js?v=132"></script>
 </body>
 </html>

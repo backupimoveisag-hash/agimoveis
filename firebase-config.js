@@ -1,6 +1,6 @@
 // AG Imobiliária — Firebase Authentication + Cloud Firestore
-// Firebase Storage NÃO é utilizado pelo CRM. O Google Drive é usado para backup JSON via OAuth.
-// A configuração do Drive fica em google-drive-config.js.
+// Firebase Storage NÃO é utilizado pelo CRM. O Google Drive é usado para backup JSON via Apps Script.
+// A configuração do Drive é feita pelo gateway do Apps Script dentro do CRM.
 window.EI_FIREBASE_CONFIG = {
   enabled: true,
   apiKey: "AIzaSyC2PSL6Tkr8InBfsVoWLvItPRG6jZzbZFQ",
@@ -14,5 +14,5 @@ window.EI_FIREBASE_CONFIG = {
   publicSiteUrl: "",
   // WebRTC: servidores de descoberta de rede. Pode trocar por STUN/TURN próprio futuramente.
   rtcIceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
-  buildId: "v130-native-webrtc-room"
+  buildId: "v132-firestore-low-read"
 };
