@@ -98,6 +98,7 @@
 <link rel="stylesheet" href="./css/48-ag-lead-distribution-v118.css?v=118">
 <link rel="stylesheet" id="ag-header-pwa-fix-v127" href="./css/50-ag-header-pwa-fix-v127.css?v=127">
 <link rel="stylesheet" id="ag-properties-compact-v133" href="./css/51-ag-properties-compact-v133.css?v=133">
+<link rel="stylesheet" id="ag-property-client-ficha-v139" href="./css/52-ag-property-client-ficha-v139.css?v=139">
 </head>
 <body class="auth-required">
 
@@ -530,38 +531,52 @@
 <script src="./js/09-ag-mobile-menu-v74.js?v=85"></script>
 <script src="./js/10-ag-mobile-ux-v78.js?v=85"></script>
 <script src="./js/11-ag-mobile-viewport-v81.js?v=85"></script>
-<script src="./js/13-ag-properties-leads-reorg-v98.js?v=135"></script>
+<script src="./js/13-ag-properties-leads-reorg-v98.js?v=140"></script>
 <script src="./js/14-ag-property-admin-watermark-v99.js?v=100"></script>
 <script src="./js/15-ag-keys-v102.js?v=104"></script>
 <script src="./js/18-ag-drive-appscript-v107.js?v=117"></script>
 <script src="./js/19-ag-canal-pro-v113.js?v=114"></script>
 <script src="./js/20-ag-lead-distribution-v118.js?v=118"></script>
 <script src="./js/21-ag-agenda-meetings-v119.js?v=132"></script>
+<script src="./js/22-ag-property-client-ficha-v139.js?v=139"></script>
 
-<script id="ag-search-autofill-guard-v137">
+<script id="ag-search-autofill-guard-v140">
 (function(){
   const ids=['globalSearch','propertySearch','leadSearch','clientSearch','ownerSearch','keySearch','agCpSearch','v25CommandInput'];
-  function protect(){
-    ids.forEach(function(id){
-      const el=document.getElementById(id);
-      if(!el)return;
-      el.setAttribute('autocomplete','off');
-      el.setAttribute('autocapitalize','off');
-      el.setAttribute('spellcheck','false');
-      if(el.type!=='search') try{el.type='search'}catch(e){}
-      // Alguns navegadores/password managers preenchem o e-mail da sessao mesmo com autocomplete=off.
-      // Se o campo ainda nao recebeu interacao humana e contiver exatamente o e-mail logado, limpa.
-      const session=(()=>{try{return JSON.parse(localStorage.getItem('nexoSessionV1')||'{}')}catch(e){return {}}})();
-      const email=String(session.email||'').trim().toLowerCase();
-      if(email && String(el.value||'').trim().toLowerCase()===email && !el.dataset.agUserTyped){
+  function knownEmails(){
+    const out=new Set();
+    try{const s=JSON.parse(localStorage.getItem('nexoSessionV1')||'{}');if(s?.email)out.add(String(s.email).trim().toLowerCase())}catch(e){}
+    try{const p=window.EIFirebaseCRM?.getProfile?.();if(p?.email)out.add(String(p.email).trim().toLowerCase())}catch(e){}
+    return out;
+  }
+  function prepare(el){
+    if(!el||el.dataset.agAutofillV140==='1')return;
+    el.dataset.agAutofillV140='1';
+    try{el.type='search'}catch(e){}
+    el.setAttribute('autocomplete','off');
+    el.setAttribute('autocapitalize','off');
+    el.setAttribute('spellcheck','false');
+    el.setAttribute('inputmode','search');
+    el.addEventListener('keydown',()=>{el.dataset.agHumanSearch='1'});
+    el.addEventListener('paste',()=>{el.dataset.agHumanSearch='1'});
+  }
+  function clean(){
+    const emails=knownEmails();
+    ids.forEach(id=>{
+      const el=document.getElementById(id);if(!el)return;prepare(el);
+      const value=String(el.value||'').trim().toLowerCase();
+      if(value&&emails.has(value)&&el.dataset.agHumanSearch!=='1'){
         el.value='';
         el.dispatchEvent(new Event('input',{bubbles:true}));
+        el.dispatchEvent(new Event('change',{bubbles:true}));
       }
-      ['input','keydown','paste'].forEach(function(ev){el.addEventListener(ev,function(){el.dataset.agUserTyped='1'},{once:true})});
     });
   }
-  document.addEventListener('DOMContentLoaded',function(){protect();setTimeout(protect,350);setTimeout(protect,1200)});
-  window.addEventListener('pageshow',function(){setTimeout(protect,100)});
+  document.addEventListener('DOMContentLoaded',()=>{clean();setTimeout(clean,150);setTimeout(clean,500);setTimeout(clean,1200);setTimeout(clean,2500)});
+  window.addEventListener('pageshow',()=>{setTimeout(clean,80);setTimeout(clean,650)});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(clean,80)});
+  document.addEventListener('focusin',e=>{if(ids.includes(e.target?.id)){prepare(e.target);setTimeout(clean,0)}});
+  setInterval(clean,900);
 })();
 </script>
 </body>
