@@ -899,6 +899,24 @@ function v25DetailRows(items,empty){
   return items.length?`<div class="v25-detail-list">${items.join('')}</div>`:`<div class="pw-section"><p>${safe(empty)}</p></div>`;
 }
 
+function agPropertyResponsibleBroker(p){
+  const direct=String(p?.broker||p?.brokerName||p?.responsibleBroker||'').trim();
+  if(direct)return direct;
+  const users=Array.isArray(db?.users)?db.users:[];
+  const uid=String(p?.brokerUid||'').trim();
+  if(uid){
+    const byUid=users.find(u=>String(u?.uid||u?.id||'').trim()===uid);
+    if(String(byUid?.name||'').trim())return String(byUid.name).trim();
+  }
+  const email=String(p?.brokerEmail||'').trim().toLowerCase();
+  if(email){
+    const byEmail=users.find(u=>String(u?.email||'').trim().toLowerCase()===email);
+    if(String(byEmail?.name||'').trim())return String(byEmail.name).trim();
+  }
+  return '';
+}
+window.agPropertyResponsibleBroker=agPropertyResponsibleBroker;
+
 openPropertyDetails=function(id,tab='overview',photoId=''){
   const p=(db.properties||[]).find(x=>x.id===id);if(!p)return;
   const photos=propertyPhotos(p),selected=photos.find(x=>x.id===photoId)||photos.find(x=>x.id===p.coverPhoto)||photos[0];
@@ -907,7 +925,7 @@ openPropertyDetails=function(id,tab='overview',photoId=''){
   const visits=(db.appointments||[]).filter(a=>a.property===p.id).sort((a,b)=>String(b.date+b.time).localeCompare(String(a.date+a.time)));
   const proposals=(db.proposals||[]).filter(x=>x.property===p.id).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   const contracts=(db.contracts||[]).filter(x=>x.property===p.id);
-  const broker=owner?.broker||visits[0]?.broker||proposals[0]?.broker||'Não definido';
+  const broker=agPropertyResponsibleBroker(p)||owner?.broker||visits[0]?.broker||proposals[0]?.broker||'Não definido';
   const overviewData=[['Código',p.id],['Tipo',p.type],['Finalidade',p.purpose],['Status',p.status],['Cidade',p.city||'-'],['Bairro',p.district||'-'],['Ano',p.year||'-'],['Andar / pavimentos',p.floor||'-'],['Condomínio',Number(p.condo)?money(p.condo):'—'],['IPTU anual',Number(p.iptu)?money(p.iptu):'—']];
   const interestedHTML=v25DetailRows(interested.map(person=>`<article class="v25-match-person"><div class="v25-match-score">${person.score}%</div><div><b>${safe(person.name)}</b><p>${safe(person.broker||'Sem responsável')} · ${person.phone?fmtPhone(person.phone):'sem telefone'}</p><div class="v25-reasons">${person.reasons.slice(0,4).map(r=>`<span>✓ ${safe(r)}</span>`).join('')}</div></div><div class="actions"><button class="btn small" onclick="openTimeline('${escJS(person.name)}')">360°</button></div></article>`),'Nenhum comprador ou lead compatível identificado para este imóvel.');
   const visitsHTML=v25DetailRows(visits.map(a=>`<article class="v25-detail-row"><div class="v25-detail-icon">□</div><div><b>${safe(a.title)}</b><p>${safe(a.client)} · ${safe(a.broker)}</p></div><aside><strong>${brDate(a.date)}</strong><span>${safe(a.time||'')}</span></aside></article>`),'Nenhuma visita registrada para este imóvel.');
