@@ -58,7 +58,7 @@
       const x=Math.round((w-targetW)/2);
       const y=Math.round((h-targetH)/2);
       ctx.save();
-      ctx.globalAlpha=.14;
+      ctx.globalAlpha=.09;
       ctx.drawImage(wm,x,y,targetW,targetH);
       ctx.restore();
     }catch(err){
