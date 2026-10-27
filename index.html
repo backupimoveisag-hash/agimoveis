@@ -159,7 +159,7 @@
   <main class="main">
     <header class="topbar">
       <button class="mobile-menu" id="mobileMenu">☰</button>
-      <div class="search"><input id="globalSearch" placeholder="Encontre qualquer coisa no CRM..." /><span class="search-key">CTRL K</span></div>
+      <div class="search"><input id="globalSearch" name="ag_global_query" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="search" placeholder="Encontre qualquer coisa no CRM..." /><span class="search-key">CTRL K</span></div>
       <div class="top-actions">
         <button class="btn pwa-install-top" type="button" id="pwaInstallBtn" hidden>▣ <span>Instalar</span></button>
         <button class="icon-btn hide-mobile" id="notificationBtn" title="Sinais">●</button>
@@ -215,13 +215,13 @@
 
     <section class="page" id="page-imoveis">
       <div class="page-head"><div><h1>Imóveis</h1><p>Gerencie toda a carteira, disponibilidade, proprietários e condições comerciais.</p></div><div class="head-actions"><button class="btn primary" data-open="property">＋ Cadastrar imóvel</button></div></div>
-      <div class="toolbar"><input class="field" id="propertySearch" placeholder="Código, endereço, proprietário..."><select class="select" id="propertyTypeFilter"><option value="">Todos os tipos</option><option>Apartamento</option><option>Casa</option><option>Terreno</option><option>Comercial</option><option>Rural</option></select><select class="select" id="propertyPurposeFilter"><option value="">Venda + locação</option><option>Venda</option><option>Locação</option></select><div class="spacer"></div><button class="btn" id="clearPropertyFilters">Zerar filtros</button></div>
+      <div class="toolbar"><input class="field" id="propertySearch" name="ag_property_query" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="search" placeholder="Código, endereço, proprietário..."><select class="select" id="propertyTypeFilter"><option value="">Todos os tipos</option><option>Apartamento</option><option>Casa</option><option>Terreno</option><option>Comercial</option><option>Rural</option></select><select class="select" id="propertyPurposeFilter"><option value="">Venda + locação</option><option>Venda</option><option>Locação</option></select><div class="spacer"></div><button class="btn" id="clearPropertyFilters">Zerar filtros</button></div>
       <div class="grid property-grid" id="propertyGrid"></div>
     </section>
 
     <section class="page" id="page-leads">
       <div class="page-head"><div><h1>Leads.</h1><p>Contatos simples para compra, locação ou captação de imóveis.</p></div><div class="head-actions"><button class="btn primary" data-open="lead">＋ Novo contato</button></div></div>
-      <div class="toolbar"><input class="field" id="leadSearch" placeholder="Nome, telefone ou e-mail"><select class="select" id="leadSourceFilter"><option value="">Todos os interesses</option><option>Quero comprar um imóvel</option><option>Quero alugar um imóvel</option><option>Tenho imóvel para vender</option><option>Tenho imóvel para alugar</option></select><select class="select" id="leadStatusFilter" aria-label="Filtro interno"><option value=""></option></select></div>
+      <div class="toolbar"><input class="field" id="leadSearch" name="ag_lead_query" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="search" placeholder="Nome, telefone ou e-mail"><select class="select" id="leadSourceFilter"><option value="">Todos os interesses</option><option>Quero comprar um imóvel</option><option>Quero alugar um imóvel</option><option>Tenho imóvel para vender</option><option>Tenho imóvel para alugar</option></select><select class="select" id="leadStatusFilter" aria-label="Filtro interno"><option value=""></option></select></div>
       <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Contato</th><th>E-mail</th><th>Interesse</th><th>Responsável</th><th></th></tr></thead><tbody id="leadTable"></tbody></table></div></article>
     </section>
 
@@ -244,7 +244,7 @@
 
     <section class="page" id="page-clientes">
       <div class="page-head"><div><h1>Pessoas.</h1><p>Clientes, proprietários e investidores vistos como relacionamento.</p></div><div class="head-actions"><button class="btn primary" data-open="client">＋ Nova pessoa</button></div></div>
-      <div class="toolbar"><input class="field" id="clientSearch" placeholder="Nome, documento ou telefone"><select class="select" id="clientTypeFilter"><option value="">Todos os perfis</option><option>Comprador</option><option>Locatário</option><option>Proprietário</option><option>Investidor</option></select></div>
+      <div class="toolbar"><input class="field" id="clientSearch" name="ag_client_query" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="search" placeholder="Nome, documento ou telefone"><select class="select" id="clientTypeFilter"><option value="">Todos os perfis</option><option>Comprador</option><option>Locatário</option><option>Proprietário</option><option>Investidor</option></select></div>
       <article class="card table-card"><div class="table-wrap"><table class="table"><thead><tr><th>Pessoa</th><th>Perfil</th><th>Documento</th><th>Telefone</th><th>Último toque</th><th>Responsável</th><th></th></tr></thead><tbody id="clientTable"></tbody></table></div></article>
     </section>
 
@@ -263,7 +263,7 @@
 
     <section class="page" id="page-proprietarios">
       <div class="page-head"><div><h1>Proprietários</h1><p>Captação, exclusividade, carteira vinculada, relacionamento e dados essenciais de cada proprietário.</p></div><div class="head-actions"><button class="btn primary" data-open="owner">＋ Novo proprietário</button></div></div>
-      <div class="toolbar"><input class="field" id="ownerSearch" placeholder="Nome, documento, telefone ou imóvel..."><select class="select" id="ownerExclusivityFilter"><option value="">Todas as captações</option><option>Exclusivo</option><option>Não exclusivo</option></select></div>
+      <div class="toolbar"><input class="field" id="ownerSearch" name="ag_owner_query" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="search" placeholder="Nome, documento, telefone ou imóvel..."><select class="select" id="ownerExclusivityFilter"><option value="">Todas as captações</option><option>Exclusivo</option><option>Não exclusivo</option></select></div>
       <div class="v5-owner-grid" id="ownerGrid"></div>
     </section>
 
@@ -271,7 +271,7 @@
       <div class="page-head"><div><h1>Chaves</h1><p>Controle em tempo real onde está cada chave da carteira e quem é o responsável pela retirada.</p></div><div class="head-actions"><button class="btn primary" id="newKeyBtn">＋ Cadastrar chave</button></div></div>
       <div class="key-summary" id="keySummary"></div>
       <div class="key-toolbar">
-        <div class="search key-search"><span>⌕</span><input id="keySearch" placeholder="Buscar por imóvel, código da chave ou corretor"></div>
+        <div class="search key-search"><span>⌕</span><input id="keySearch" name="ag_key_query" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="search" placeholder="Buscar por imóvel, código da chave ou corretor"></div>
         <select class="select" id="keyStatusFilter"><option value="">Todas as situações</option><option>Central de Chaves</option><option>Com corretor</option><option>Atrasada</option></select>
       </div>
       <div class="key-grid" id="keyGrid"></div>
@@ -482,7 +482,7 @@
           <article class="card ag-cp-card">
             <div class="ag-cp-card-head"><div><span class="v5-kicker">CARTEIRA PARA PORTAIS</span><h3>Selecionar anúncios</h3></div><span class="ag-cp-sublabel">Só imóveis disponíveis</span></div>
             <p>Ative individualmente os imóveis que deseja anunciar. Imóveis vendidos, alugados ou inativos são removidos do próximo XML.</p>
-            <div class="ag-cp-filters"><input class="form-control" id="agCpSearch" placeholder="Pesquisar código, título ou bairro…" aria-label="Pesquisar imóveis"><select class="form-control" id="agCpFilter"><option value="all">Todos os imóveis</option><option value="selected">Selecionados</option><option value="issues">Com pendências</option></select></div>
+            <div class="ag-cp-filters"><input class="form-control" id="agCpSearch" name="ag_canalpro_query" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="search" placeholder="Pesquisar código, título ou bairro…" aria-label="Pesquisar imóveis"><select class="form-control" id="agCpFilter"><option value="all">Todos os imóveis</option><option value="selected">Selecionados</option><option value="issues">Com pendências</option></select></div>
             <div id="agCpPropertyList" class="ag-cp-property-list"></div>
           </article>
         </div>
@@ -507,7 +507,7 @@
   <div class="v25-command-dialog" role="dialog" aria-modal="true" aria-label="Command Center">
     <div class="v25-command-search">
       <span>⌕</span>
-      <input id="v25CommandInput" autocomplete="off" placeholder="Buscar cliente, imóvel ou executar uma ação..." aria-label="Buscar no CRM">
+      <input id="v25CommandInput" name="ag_command_query" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="search" placeholder="Buscar cliente, imóvel ou executar uma ação..." aria-label="Buscar no CRM">
       <kbd>ESC</kbd>
     </div>
     <div class="v25-command-results" id="v25CommandResults"></div>
@@ -537,5 +537,32 @@
 <script src="./js/19-ag-canal-pro-v113.js?v=114"></script>
 <script src="./js/20-ag-lead-distribution-v118.js?v=118"></script>
 <script src="./js/21-ag-agenda-meetings-v119.js?v=132"></script>
+
+<script id="ag-search-autofill-guard-v137">
+(function(){
+  const ids=['globalSearch','propertySearch','leadSearch','clientSearch','ownerSearch','keySearch','agCpSearch','v25CommandInput'];
+  function protect(){
+    ids.forEach(function(id){
+      const el=document.getElementById(id);
+      if(!el)return;
+      el.setAttribute('autocomplete','off');
+      el.setAttribute('autocapitalize','off');
+      el.setAttribute('spellcheck','false');
+      if(el.type!=='search') try{el.type='search'}catch(e){}
+      // Alguns navegadores/password managers preenchem o e-mail da sessao mesmo com autocomplete=off.
+      // Se o campo ainda nao recebeu interacao humana e contiver exatamente o e-mail logado, limpa.
+      const session=(()=>{try{return JSON.parse(localStorage.getItem('nexoSessionV1')||'{}')}catch(e){return {}}})();
+      const email=String(session.email||'').trim().toLowerCase();
+      if(email && String(el.value||'').trim().toLowerCase()===email && !el.dataset.agUserTyped){
+        el.value='';
+        el.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+      ['input','keydown','paste'].forEach(function(ev){el.addEventListener(ev,function(){el.dataset.agUserTyped='1'},{once:true})});
+    });
+  }
+  document.addEventListener('DOMContentLoaded',function(){protect();setTimeout(protect,350);setTimeout(protect,1200)});
+  window.addEventListener('pageshow',function(){setTimeout(protect,100)});
+})();
+</script>
 </body>
 </html>
