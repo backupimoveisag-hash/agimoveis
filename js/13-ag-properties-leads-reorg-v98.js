@@ -99,22 +99,67 @@
       return JSON.parse(localStorage.getItem('nexoSessionV1')||'null')||null;
     }catch(e){return null}
   }
+
+  let propertyBrokerDirectoryCache={at:0,users:[]};
+  function propertyBrokerUsersFromLocal(){
+    const list=Array.isArray(db.users)?db.users:[];
+    return list.filter(u=>u&&u.active!==false&&['Corretor','Corretora'].includes(String(u.role||''))&&String(u.name||'').trim());
+  }
+  async function loadPropertyBrokerDirectory(){
+    const profile=currentPropertyProfile();
+    if(profile?.role!=='Administrador')return profile?[{uid:profile.uid||'',name:profile.name||'',email:profile.email||'',role:profile.role,active:profile.active!==false}]:[];
+    const now=Date.now();
+    if(propertyBrokerDirectoryCache.users.length && now-propertyBrokerDirectoryCache.at<5*60*1000)return propertyBrokerDirectoryCache.users;
+    let users=propertyBrokerUsersFromLocal();
+    try{
+      const remote=await window.EIFirebaseCRM?.listUsers?.();
+      if(Array.isArray(remote)&&remote.length)users=remote;
+    }catch(e){console.warn('AG CRM: não foi possível carregar diretório de corretores.',e)}
+    users=(users||[]).filter(u=>u&&u.active!==false&&['Corretor','Corretora'].includes(String(u.role||''))&&String(u.name||'').trim());
+    const seen=new Set();
+    users=users.filter(u=>{const k=String(u.uid||u.id||u.email||u.name).toLowerCase();if(seen.has(k))return false;seen.add(k);return true});
+    propertyBrokerDirectoryCache={at:now,users};
+    return users;
+  }
+  function brokerOption(u,selected=''){
+    const name=String(u?.name||'').trim();
+    return `<option value="${safe(name)}" data-uid="${safe(u?.uid||u?.id||'')}" data-email="${safe(u?.email||'')}" ${name===selected?'selected':''}>${safe(name)}</option>`;
+  }
   function propertyBrokerField(data={}){
     const profile=currentPropertyProfile();
     const isAdmin=profile?.role==='Administrador';
-    const activeBrokers=(db.users||[])
-      .filter(u=>u&&u.active!==false&&['Corretor','Corretora'].includes(String(u.role||''))&&String(u.name||'').trim())
-      .map(u=>String(u.name).trim());
-    const unique=[...new Set(activeBrokers)];
+    const local=propertyBrokerUsersFromLocal();
     const currentName=String(profile?.name||'').trim();
-    const selected=String(data.broker||(!data.id&&currentName)||unique[0]||currentName||'').trim();
+    const selected=String(data.broker||(!data.id&&profile?.role!=='Administrador'?currentName:'')||'').trim();
     if(isAdmin){
-      const options=[...unique];
-      if(selected&&!options.includes(selected))options.unshift(selected);
-      return `<div class="form-group"><label>Corretor responsável</label><select class="form-control" name="broker" required>${options.length?options.map(n=>`<option value="${safe(n)}" ${n===selected?'selected':''}>${safe(n)}</option>`).join(''):'<option value="">Nenhum corretor ativo</option>'}</select><small class="muted-note">Administrador pode selecionar o corretor responsável pela captação.</small></div>`;
+      const options=[...local];
+      if(selected&&!options.some(u=>String(u.name||'').trim()===selected))options.unshift({name:selected,uid:data.brokerUid||'',email:data.brokerEmail||'',role:'Corretor',active:true});
+      return `<div class="form-group full ag-property-broker-field"><label>Corretor responsável pela captação</label><select class="form-control" id="propertyBrokerSelect" name="broker" required>${options.length?'<option value="">Selecione o corretor responsável</option>'+options.map(u=>brokerOption(u,selected)).join(''):'<option value="">Carregando corretores ativos…</option>'}</select><input type="hidden" name="brokerUid" id="propertyBrokerUid" value="${safe(data.brokerUid||'')}"><input type="hidden" name="brokerEmail" id="propertyBrokerEmail" value="${safe(data.brokerEmail||'')}"><small class="muted-note">Este corretor será vinculado ao imóvel e aparecerá na ficha de autorização para assinatura.</small></div>`;
     }
     const locked=selected||currentName;
-    return `<div class="form-group"><label>Corretor responsável</label><input type="hidden" name="broker" value="${safe(locked)}"><input class="form-control" value="${safe(locked)}" readonly aria-label="Corretor responsável"><small class="muted-note">Vinculado automaticamente ao usuário responsável pelo imóvel.</small></div>`;
+    return `<div class="form-group full ag-property-broker-field"><label>Corretor responsável pela captação</label><input type="hidden" name="broker" value="${safe(locked)}"><input type="hidden" name="brokerUid" value="${safe(profile?.uid||data.brokerUid||'')}"><input type="hidden" name="brokerEmail" value="${safe(profile?.email||data.brokerEmail||'')}"><input class="form-control" value="${safe(locked)}" readonly aria-label="Corretor responsável pela captação"><small class="muted-note">Preenchido automaticamente com o usuário que está cadastrando o imóvel.</small></div>`;
+  }
+  function syncBrokerHiddenFields(){
+    const sel=document.getElementById('propertyBrokerSelect');if(!sel)return;
+    const opt=sel.options[sel.selectedIndex];
+    const uid=document.getElementById('propertyBrokerUid'),email=document.getElementById('propertyBrokerEmail');
+    if(uid)uid.value=opt?.dataset?.uid||'';
+    if(email)email.value=opt?.dataset?.email||'';
+  }
+  async function hydratePropertyBrokerField(data={}){
+    const profile=currentPropertyProfile();
+    if(profile?.role!=='Administrador')return;
+    const sel=document.getElementById('propertyBrokerSelect');if(!sel)return;
+    const selected=String(data.broker||sel.value||'').trim();
+    const users=await loadPropertyBrokerDirectory();
+    if(!document.body.contains(sel))return;
+    sel.innerHTML='<option value="">Selecione o corretor responsável</option>'+users.map(u=>brokerOption(u,selected)).join('');
+    if(selected&&!users.some(u=>String(u.name||'').trim()===selected)){
+      const o=document.createElement('option');o.value=selected;o.textContent=selected;o.selected=true;sel.appendChild(o);
+    }
+    if(!sel.value&&users.length===1)sel.value=String(users[0].name||'');
+    syncBrokerHiddenFields();
+    sel.addEventListener('change',syncBrokerHiddenFields,{passive:true});
   }
 
   function v98PropertyForm(data={}){
@@ -126,6 +171,7 @@
       ${selectField('type','Tipo de imóvel',['Casa','Apartamento','Terreno','Sítio/Chácara','Comercial','Rural','Outro'],data.type||data.propertyType||'Casa')}
       ${selectField('purpose','Finalidade',['Venda','Locação'],data.purpose||'Venda')}
       ${selectField('status','Status',['Disponível','Reservado','Vendido','Alugado','Inativo'],data.status||'Disponível')}
+      ${propertyBrokerField(data)}
       ${selectField('priceDisplay','Preço no site',['Exibir preço','Conversar com Corretor'],data.priceDisplay||(data.hidePrice?'Conversar com Corretor':'Exibir preço'))}
       ${field('price','Valor do imóvel (interno)',data.price||'','number','min="0" step="0.01"')}
       ${field('address','Endereço',data.address||'','text','full required')}
@@ -163,7 +209,6 @@
       ${selectField('painting','Pintura',['Nova','Regular','Boa','Deficiente'],data.painting||'Boa')}
       ${selectField('floorFinish','Piso',['Mármore','Granito','Cerâmica','Porcelanato','Madeira','Outro'],data.floorFinish||'Porcelanato')}
       ${field('keysInfo','Chaves do imóvel',data.keysInfo||'','text','')}
-      ${propertyBrokerField(data)}
       ${field('created','Data da captação',data.created||todayISO(),'date')}
       <div class="form-group full"><label>Observações</label><textarea class="form-control" name="notes">${safe(data.notes||'')}</textarea></div>
 
@@ -234,6 +279,7 @@
     if(type==='property'){
       editing={type:'property',id:data.id||null};
       showModal(data.id?'Editar imóvel':'Cadastrar imóvel',v98PropertyForm(data),data.id?'Salvar alterações':'Cadastrar imóvel');
+      setTimeout(()=>hydratePropertyBrokerField(data),0);
       return;
     }
     if(type==='lead'){
