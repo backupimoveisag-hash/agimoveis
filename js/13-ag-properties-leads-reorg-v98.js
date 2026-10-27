@@ -94,7 +94,8 @@
       ${selectField('type','Tipo de imóvel',['Casa','Apartamento','Terreno','Sítio/Chácara','Comercial','Rural','Outro'],data.type||data.propertyType||'Casa')}
       ${selectField('purpose','Finalidade',['Venda','Locação'],data.purpose||'Venda')}
       ${selectField('status','Status',['Disponível','Reservado','Vendido','Alugado','Inativo'],data.status||'Disponível')}
-      ${field('price','Valor do imóvel',data.price||'','number','required min="0" step="0.01"')}
+      ${selectField('priceDisplay','Preço no site',['Exibir preço','Conversar com Corretor'],data.priceDisplay||(data.hidePrice?'Conversar com Corretor':'Exibir preço'))}
+      ${field('price','Valor do imóvel (interno)',data.price||'','number','min="0" step="0.01"')}
       ${field('address','Endereço',data.address||'','text','full required')}
       ${field('referencePoint','Ponto de referência',data.referencePoint||'','text','')}
       ${field('unit','BL/Unidade',data.unit||'','text','')}
@@ -255,6 +256,8 @@
       fd.parking=Number(fd.garageCovered||0)+Number(fd.garageUncovered||0)+Number(fd.garageIndependent||0);
       fd.featured=fd.featured==='Sim';
       fd.siteFeatured=fd.featured;
+      fd.priceDisplay=fd.priceDisplay==='Conversar com Corretor'?'Conversar com Corretor':'Exibir preço';
+      fd.hidePrice=fd.priceDisplay==='Conversar com Corretor';
       fd.published=fd.published!=='Não';
       fd.canalProPublished=fd.canalProPublished==='Sim';
       fd.ownerName=fd.owner;
