@@ -900,15 +900,25 @@ function v25DetailRows(items,empty){
 }
 
 function agPropertyResponsibleBroker(p){
-  const direct=String(p?.broker||p?.brokerName||p?.responsibleBroker||'').trim();
+  const direct=String(p?.brokerName||p?.responsibleBroker||p?.broker||'').trim();
   if(direct)return direct;
-  const users=Array.isArray(db?.users)?db.users:[];
   const uid=String(p?.brokerUid||'').trim();
+  const email=String(p?.brokerEmail||'').trim().toLowerCase();
+  // Primeiro tenta o próprio perfil logado. Isso funciona mesmo quando db.users
+  // não está carregado continuamente (otimização de leituras da V132).
+  try{
+    const me=window.EIFirebaseCRM?.getProfile?.()||JSON.parse(localStorage.getItem('nexoSessionV1')||'null');
+    const meUid=String(me?.uid||me?.id||'').trim();
+    const meMail=String(me?.email||'').trim().toLowerCase();
+    if((uid&&meUid&&uid===meUid)||(email&&meMail&&email===meMail)){
+      const name=String(me?.name||'').trim();if(name)return name;
+    }
+  }catch(e){}
+  const users=Array.isArray(db?.users)?db.users:[];
   if(uid){
     const byUid=users.find(u=>String(u?.uid||u?.id||'').trim()===uid);
     if(String(byUid?.name||'').trim())return String(byUid.name).trim();
   }
-  const email=String(p?.brokerEmail||'').trim().toLowerCase();
   if(email){
     const byEmail=users.find(u=>String(u?.email||'').trim().toLowerCase()===email);
     if(String(byEmail?.name||'').trim())return String(byEmail.name).trim();
@@ -916,6 +926,28 @@ function agPropertyResponsibleBroker(p){
   return '';
 }
 window.agPropertyResponsibleBroker=agPropertyResponsibleBroker;
+
+const agBrokerResolvePending=new Set();
+async function agHydratePropertyResponsibleBroker(p){
+  if(!p||agPropertyResponsibleBroker(p)||(!p.brokerUid&&!p.brokerEmail))return;
+  const key=String(p.id||p.brokerUid||p.brokerEmail);if(agBrokerResolvePending.has(key))return;
+  agBrokerResolvePending.add(key);
+  try{
+    const remote=await window.EIFirebaseCRM?.listUsers?.();
+    if(!Array.isArray(remote))return;
+    const uid=String(p.brokerUid||'').trim(),email=String(p.brokerEmail||'').trim().toLowerCase();
+    const u=remote.find(x=>(uid&&String(x?.uid||x?.id||'').trim()===uid)||(email&&String(x?.email||'').trim().toLowerCase()===email));
+    const name=String(u?.name||'').trim();if(!name)return;
+    p.broker=name;p.brokerName=name;p.responsibleBroker=name;
+    if(!p.brokerUid)p.brokerUid=String(u?.uid||u?.id||'').trim();
+    if(!p.brokerEmail)p.brokerEmail=String(u?.email||'').trim().toLowerCase();
+    p.updatedAt=new Date().toISOString();
+    try{saveDB()}catch(e){}
+    const el=document.getElementById('agPropertyBrokerName');if(el)el.textContent=name;
+  }catch(e){console.warn('AG CRM: não foi possível resolver o corretor responsável do imóvel.',e)}
+  finally{agBrokerResolvePending.delete(key)}
+}
+window.agHydratePropertyResponsibleBroker=agHydratePropertyResponsibleBroker;
 
 openPropertyDetails=function(id,tab='overview',photoId=''){
   const p=(db.properties||[]).find(x=>x.id===id);if(!p)return;
@@ -926,13 +958,15 @@ openPropertyDetails=function(id,tab='overview',photoId=''){
   const proposals=(db.proposals||[]).filter(x=>x.property===p.id).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   const contracts=(db.contracts||[]).filter(x=>x.property===p.id);
   const broker=agPropertyResponsibleBroker(p)||owner?.broker||visits[0]?.broker||proposals[0]?.broker||'Não definido';
+  // V144: se o imóvel antigo tiver somente UID/e-mail, resolve o nome uma única vez sob demanda.
+  if(broker==='Não definido'&&(p.brokerUid||p.brokerEmail))setTimeout(()=>agHydratePropertyResponsibleBroker(p),0);
   const overviewData=[['Código',p.id],['Tipo',p.type],['Finalidade',p.purpose],['Status',p.status],['Cidade',p.city||'-'],['Bairro',p.district||'-'],['Ano',p.year||'-'],['Andar / pavimentos',p.floor||'-'],['Condomínio',Number(p.condo)?money(p.condo):'—'],['IPTU anual',Number(p.iptu)?money(p.iptu):'—']];
   const interestedHTML=v25DetailRows(interested.map(person=>`<article class="v25-match-person"><div class="v25-match-score">${person.score}%</div><div><b>${safe(person.name)}</b><p>${safe(person.broker||'Sem responsável')} · ${person.phone?fmtPhone(person.phone):'sem telefone'}</p><div class="v25-reasons">${person.reasons.slice(0,4).map(r=>`<span>✓ ${safe(r)}</span>`).join('')}</div></div><div class="actions"><button class="btn small" onclick="openTimeline('${escJS(person.name)}')">360°</button></div></article>`),'Nenhum comprador ou lead compatível identificado para este imóvel.');
   const visitsHTML=v25DetailRows(visits.map(a=>`<article class="v25-detail-row"><div class="v25-detail-icon">□</div><div><b>${safe(a.title)}</b><p>${safe(a.client)} · ${safe(a.broker)}</p></div><aside><strong>${brDate(a.date)}</strong><span>${safe(a.time||'')}</span></aside></article>`),'Nenhuma visita registrada para este imóvel.');
   const proposalHTML=v25DetailRows(proposals.map(x=>`<article class="v25-detail-row"><div class="v25-detail-icon">◇</div><div><b>${safe(x.client)}</b><p>${safe(x.id)} · ${safe(x.type)} · ${safe(x.status)}</p></div><aside><strong>${money(x.value)}</strong><span>${brDate(x.date)}</span></aside></article>`),'Nenhuma proposta registrada para este imóvel.');
   const docsHTML=v25DetailRows(contracts.map(x=>`<article class="v25-detail-row"><div class="v25-detail-icon">▤</div><div><b>${safe(x.id)} · ${safe(x.type)}</b><p>${safe(x.client)} · ${safe(x.status)}</p></div><aside><strong>${money(x.value)}</strong><span>${brDate(x.start)}</span></aside></article>`),'Nenhum contrato ou documento vinculado ao imóvel.');
   const body=`<div class="property-workspace" data-property="${p.id}">
-    <div class="pw-hero"><div class="pw-gallery"><div class="pw-main-photo" id="pwMainPhoto" style="background-image:url('${selected.src}')"></div><span class="pw-photo-counter" id="pwPhotoCounter">${photos.findIndex(x=>x.id===selected.id)+1} / ${photos.length} fotos</span><span class="pw-photo-room" id="pwPhotoRoom">${safe(selected.room||'Foto')}</span></div><aside class="pw-summary"><div class="pw-summary-top"><div><span class="pw-kicker">${safe(p.id)} · ${safe(p.type)} · ${safe(p.purpose)}</span><h2>${safe(p.title)}</h2></div><div class="pw-address">${safe(p.address)}</div><div class="pw-price"><strong>${propertyPublicPrice(p)}</strong><small>${propertyPricePrivate(p)?'site: Conversar com Corretor':(p.purpose==='Locação'?'valor mensal anunciado':'valor de comercialização')}</small></div><div><span class="status">${safe(p.status)}</span></div></div><div class="v25-property-side internal-only"><div class="v25-property-side-card"><span>Corretor responsável</span><b>${safe(broker)}</b></div><div class="v25-property-side-card"><span>Proprietário</span><b>${safe(p.owner||'Não informado')}</b></div><div class="v25-property-side-card"><span>Captação</span><b>${safe(owner?.exclusivity||'Não informada')}</b></div><div class="v25-property-side-card"><span>Site</span><b>${p.published?'Publicado':'Não publicado'}</b></div></div><div class="pw-summary-actions internal-only"><button class="btn primary" onclick="editPropertyFromDetails('${p.id}')">Editar informações</button><button class="btn" onclick="switchPropertyTab('gallery')">＋ Fotos</button><button class="btn" onclick="switchPropertyTab('media')">▶ Vídeos</button><button class="btn v25-presentation-btn" onclick="togglePresentationMode()">Modo apresentação</button></div></aside></div>
+    <div class="pw-hero"><div class="pw-gallery"><div class="pw-main-photo" id="pwMainPhoto" style="background-image:url('${selected.src}')"></div><span class="pw-photo-counter" id="pwPhotoCounter">${photos.findIndex(x=>x.id===selected.id)+1} / ${photos.length} fotos</span><span class="pw-photo-room" id="pwPhotoRoom">${safe(selected.room||'Foto')}</span></div><aside class="pw-summary"><div class="pw-summary-top"><div><span class="pw-kicker">${safe(p.id)} · ${safe(p.type)} · ${safe(p.purpose)}</span><h2>${safe(p.title)}</h2></div><div class="pw-address">${safe(p.address)}</div><div class="pw-price"><strong>${propertyPublicPrice(p)}</strong><small>${propertyPricePrivate(p)?'site: Conversar com Corretor':(p.purpose==='Locação'?'valor mensal anunciado':'valor de comercialização')}</small></div><div><span class="status">${safe(p.status)}</span></div></div><div class="v25-property-side internal-only"><div class="v25-property-side-card"><span>Corretor responsável</span><b id="agPropertyBrokerName">${safe(broker)}</b></div><div class="v25-property-side-card"><span>Proprietário</span><b>${safe(p.owner||'Não informado')}</b></div><div class="v25-property-side-card"><span>Captação</span><b>${safe(owner?.exclusivity||'Não informada')}</b></div><div class="v25-property-side-card"><span>Site</span><b>${p.published?'Publicado':'Não publicado'}</b></div></div><div class="pw-summary-actions internal-only"><button class="btn primary" onclick="editPropertyFromDetails('${p.id}')">Editar informações</button><button class="btn" onclick="switchPropertyTab('gallery')">＋ Fotos</button><button class="btn" onclick="switchPropertyTab('media')">▶ Vídeos</button><button class="btn v25-presentation-btn" onclick="togglePresentationMode()">Modo apresentação</button></div></aside></div>
     <div class="pw-spec-grid"><div class="pw-spec"><span>Área privativa</span><b>${Number(p.area||0).toLocaleString('pt-BR')} m²</b></div><div class="pw-spec"><span>Dormitórios / suítes</span><b>${p.beds||0} / ${p.suites||0}</b></div><div class="pw-spec"><span>Banheiros</span><b>${p.baths||0}</b></div><div class="pw-spec"><span>Vagas</span><b>${p.parking||0}</b></div></div>
     <div class="pw-tabs"><button class="pw-tab ${tab==='overview'?'active':''}" data-pw-tab="overview" onclick="switchPropertyTab('overview')">Visão geral</button><button class="pw-tab ${tab==='gallery'?'active':''}" data-pw-tab="gallery" onclick="switchPropertyTab('gallery')">Galeria <span>${photos.length}</span></button><button class="pw-tab ${tab==='media'?'active':''}" data-pw-tab="media" onclick="switchPropertyTab('media')">Vídeos <span>${(p.videos||[]).length}</span></button><button class="pw-tab internal-only ${tab==='interested'?'active':''}" data-pw-tab="interested" onclick="switchPropertyTab('interested')">Interessados <span>${interested.length}</span></button><button class="pw-tab internal-only ${tab==='visits'?'active':''}" data-pw-tab="visits" onclick="switchPropertyTab('visits')">Visitas <span>${visits.length}</span></button><button class="pw-tab internal-only ${tab==='proposals'?'active':''}" data-pw-tab="proposals" onclick="switchPropertyTab('proposals')">Propostas <span>${proposals.length}</span></button><button class="pw-tab internal-only ${tab==='documents'?'active':''}" data-pw-tab="documents" onclick="switchPropertyTab('documents')">Documentos <span>${contracts.length}</span></button><button class="pw-tab internal-only ${tab==='owner'?'active':''}" data-pw-tab="owner" onclick="switchPropertyTab('owner')">Proprietário</button><button class="pw-tab internal-only ${tab==='history'?'active':''}" data-pw-tab="history" onclick="switchPropertyTab('history')">Histórico</button></div>
     <div class="pw-panel ${tab==='overview'?'active':''}" data-pw-panel="overview"><div class="pw-overview-grid"><div><section class="pw-section"><span class="v5-kicker">APRESENTAÇÃO</span><h3>Sobre o imóvel</h3><p>${safe(p.notes||'Sem descrição cadastrada para este imóvel.')}</p></section><section class="pw-section"><span class="v5-kicker">DIFERENCIAIS</span><h3>O que torna este imóvel especial</h3><div class="pw-chips">${features.length?features.map(x=>`<span class="pw-chip">✓ ${safe(x)}</span>`).join(''):'<span style="font-size:9px;color:var(--muted)">Nenhum diferencial cadastrado.</span>'}</div></section><section class="pw-section internal-only"><span class="v5-kicker">FICHA TÉCNICA</span><div class="pw-data-grid">${overviewData.map(x=>`<div class="pw-data"><span>${x[0]}</span><b>${safe(x[1])}</b></div>`).join('')}</div></section></div><aside class="internal-only"><section class="pw-section"><span class="v5-kicker">PULSO COMERCIAL</span><h3>Saúde deste imóvel</h3><div class="pw-data-grid">${propertyMarketPulse(p).map(m=>`<div class="pw-data"><span>${safe(m.label)}</span><b>${m.value}</b></div>`).join('')}</div></section><section class="pw-section"><span class="v5-kicker">PROPRIETÁRIO</span><div class="pw-owner"><div class="avatar">${initials(p.owner)}</div><div><b>${safe(p.owner||'Não informado')}</b><small>${owner?`${fmtPhone(owner.phone)} · ${safe(owner.exclusivity)}`:'Vínculo cadastrado no imóvel'}</small></div>${owner?`<button class="btn small" onclick="openTimeline('${escJS(owner.name)}')">360°</button>`:''}</div></section></aside></div></div>

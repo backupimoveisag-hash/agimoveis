@@ -123,7 +123,8 @@
   }
   function brokerOption(u,selected=''){
     const name=String(u?.name||'').trim();
-    return `<option value="${safe(name)}" data-uid="${safe(u?.uid||u?.id||'')}" data-email="${safe(u?.email||'')}" ${name===selected?'selected':''}>${safe(name)}</option>`;
+    const uid=String(u?.uid||u?.firebaseUid||u?.id||'').trim();
+    return `<option value="${safe(name)}" data-uid="${safe(uid)}" data-email="${safe(u?.email||'')}" ${name===selected?'selected':''}>${safe(name)}</option>`;
   }
   function propertyBrokerField(data={}){
     const profile=currentPropertyProfile();
@@ -321,6 +322,9 @@
       // was not disabled and two clicks could insert the same property twice.
       if(propertySavePending || form.dataset.agSaving==='1')return;
       const oldId=editing.id;
+      // V144: sincroniza explicitamente o corretor selecionado antes de ler o formulário.
+      // Isso evita que UID/e-mail fiquem atualizados enquanto o nome do responsável não seja persistido.
+      try{syncBrokerHiddenFields()}catch(e){}
       const raw=new FormData(form),fd={};
       for(const [k,v] of raw.entries()){if(!(v instanceof File))fd[k]=v}
       form.querySelectorAll('input[type="checkbox"][name]').forEach(ch=>{fd[ch.name]=ch.checked?'on':''});
@@ -341,6 +345,12 @@
       fd.ownerName=fd.owner;
       fd.propertyTitle=fd.title;
       fd.propertyType=fd.type;
+      // V144: identidade canônica do corretor responsável pela captação.
+      fd.broker=String(fd.broker||'').trim();
+      fd.brokerName=fd.broker;
+      fd.responsibleBroker=fd.broker;
+      fd.brokerUid=String(fd.brokerUid||'').trim();
+      fd.brokerEmail=String(fd.brokerEmail||'').trim().toLowerCase();
 
       if(oldId && !(db.properties||[]).some(x=>x.id===oldId)){
         toast('Imóvel original não encontrado. Atualize a lista antes de editar.');
