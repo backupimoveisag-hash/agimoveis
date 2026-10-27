@@ -92,8 +92,32 @@
     })||null;
   }
 
+  function currentPropertyProfile(){
+    try{
+      const p=window.EIFirebaseCRM?.getProfile?.();
+      if(p)return p;
+      return JSON.parse(localStorage.getItem('nexoSessionV1')||'null')||null;
+    }catch(e){return null}
+  }
+  function propertyBrokerField(data={}){
+    const profile=currentPropertyProfile();
+    const isAdmin=profile?.role==='Administrador';
+    const activeBrokers=(db.users||[])
+      .filter(u=>u&&u.active!==false&&['Corretor','Corretora'].includes(String(u.role||''))&&String(u.name||'').trim())
+      .map(u=>String(u.name).trim());
+    const unique=[...new Set(activeBrokers)];
+    const currentName=String(profile?.name||'').trim();
+    const selected=String(data.broker||(!data.id&&currentName)||unique[0]||currentName||'').trim();
+    if(isAdmin){
+      const options=[...unique];
+      if(selected&&!options.includes(selected))options.unshift(selected);
+      return `<div class="form-group"><label>Corretor responsável</label><select class="form-control" name="broker" required>${options.length?options.map(n=>`<option value="${safe(n)}" ${n===selected?'selected':''}>${safe(n)}</option>`).join(''):'<option value="">Nenhum corretor ativo</option>'}</select><small class="muted-note">Administrador pode selecionar o corretor responsável pela captação.</small></div>`;
+    }
+    const locked=selected||currentName;
+    return `<div class="form-group"><label>Corretor responsável</label><input type="hidden" name="broker" value="${safe(locked)}"><input class="form-control" value="${safe(locked)}" readonly aria-label="Corretor responsável"><small class="muted-note">Vinculado automaticamente ao usuário responsável pelo imóvel.</small></div>`;
+  }
+
   function v98PropertyForm(data={}){
-    const brokers=(db.users||[]).filter(u=>u.active).map(u=>u.name);
     const photoCount=Array.isArray(data.photos)?data.photos.length:0;
     return `<form id="modalForm" class="form-grid prospecting-grid v98-property-form">
       ${formDivider('Identificação do imóvel','Cadastro completo da captação e das informações comerciais.')}
@@ -139,7 +163,7 @@
       ${selectField('painting','Pintura',['Nova','Regular','Boa','Deficiente'],data.painting||'Boa')}
       ${selectField('floorFinish','Piso',['Mármore','Granito','Cerâmica','Porcelanato','Madeira','Outro'],data.floorFinish||'Porcelanato')}
       ${field('keysInfo','Chaves do imóvel',data.keysInfo||'','text','')}
-      ${field('broker','Responsável',data.broker||brokers[0]||'','text','')}
+      ${propertyBrokerField(data)}
       ${field('created','Data da captação',data.created||todayISO(),'date')}
       <div class="form-group full"><label>Observações</label><textarea class="form-control" name="notes">${safe(data.notes||'')}</textarea></div>
 
