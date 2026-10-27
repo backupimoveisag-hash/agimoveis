@@ -30,8 +30,16 @@
     }
     return score;
   }
+  function propertyUpdatedAtMs(p){
+    const raw=p?.updatedAt||p?.modifiedAt||p?.lastModified||'';
+    const ms=Date.parse(raw);
+    return Number.isFinite(ms)?ms:0;
+  }
   function mergeDuplicatePropertyRecords(a,b){
-    const primary=propertyCompletenessScore(a)>=propertyCompletenessScore(b)?a:b;
+    // V135: the newest edited record must always win. Completeness is used only
+    // for legacy records that do not have an update timestamp.
+    const aTime=propertyUpdatedAtMs(a),bTime=propertyUpdatedAtMs(b);
+    const primary=aTime!==bTime?(bTime>aTime?b:a):(propertyCompletenessScore(a)>=propertyCompletenessScore(b)?a:b);
     const secondary=primary===a?b:a;
     const merged={...secondary,...primary};
     const photos=[...(secondary?.photos||[]),...(primary?.photos||[])];
@@ -299,6 +307,10 @@
         if(lateDuplicate)throw new Error(`Este imóvel já foi cadastrado (${lateDuplicate.id}). Não foi criado outro registro.`);
 
         const record={...(existing||{}),...fd};
+        // V135: timestamp the edited version so dedupe/cloud sync never restores
+        // an older copy over the changes just saved by the user.
+        record.updatedAt=new Date().toISOString();
+        if(!record.createdAt)record.createdAt=existing?.createdAt||record.created||todayISO();
         record.photos=[...(existing?.photos||[]),...additions];
         if(!record.photos.length){
           record.photos=[{id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:v5FallbackPropertyImage(record),name:'Imagem principal',created:todayISO()}];
@@ -315,7 +327,27 @@
           : (sameCodeIndexes.length?sameCodeIndexes[0]:-1);
         const wasExisting=targetIndex>=0;
         if(wasExisting){
-          db.properties[targetIndex]=mergeDuplicatePropertyRecords(db.properties[targetIndex],record);
+          // V135: editing is an explicit replace/update. Do not merge the old
+          // record back over the form values. Preserve only photos from any
+          // accidental duplicate rows and remove those duplicate rows.
+          const extraPhotos=[];
+          (db.properties||[]).forEach((x,i)=>{
+            if(i!==targetIndex&&normalizedPropertyCode(x?.id)===recordCode){
+              extraPhotos.push(...(Array.isArray(x?.photos)?x.photos:[]));
+            }
+          });
+          if(extraPhotos.length){
+            const seen=new Set((record.photos||[]).map(ph=>String(ph?.id||ph?.driveFileId||ph?.src||'')));
+            for(const ph of extraPhotos){
+              const key=String(ph?.id||ph?.driveFileId||ph?.src||'');
+              if(key&&seen.has(key))continue;
+              if(key)seen.add(key);
+              record.photos.push(ph);
+            }
+          }
+          db.properties=db.properties.filter((x,i)=>i===targetIndex||normalizedPropertyCode(x?.id)!==recordCode);
+          const keptIndex=db.properties.findIndex(x=>normalizedPropertyCode(x?.id)===recordCode);
+          if(keptIndex>=0)db.properties[keptIndex]=record; else db.properties.push(record);
         }else{
           db.properties.push(record);
         }
