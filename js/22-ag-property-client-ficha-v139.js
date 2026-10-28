@@ -198,6 +198,36 @@
     })().catch(err=>{agPdfEnginePromise=null;throw err});
     return agPdfEnginePromise;
   }
+  let agFichaPdfRunning=false;
+  let agFichaPdfProgressTimer=null;
+  function ensureAgFichaPdfProgress(){
+    let el=document.getElementById('agFichaPdfProgress');
+    if(el)return el;
+    el=document.createElement('div');el.id='agFichaPdfProgress';el.className='ag-ficha-pdf-progress';el.setAttribute('role','status');el.setAttribute('aria-live','polite');el.setAttribute('aria-hidden','true');
+    el.innerHTML=`<div class="ag-ficha-pdf-progress-card">
+      <div class="ag-ficha-pdf-progress-head">
+        <div class="ag-ficha-pdf-progress-icon" aria-hidden="true"><span></span></div>
+        <div class="ag-ficha-pdf-progress-copy"><small>FICHA DO IMÓVEL</small><h3 id="agFichaPdfProgressTitle">Gerando PDF</h3><p id="agFichaPdfProgressText">Preparando dados do imóvel…</p></div>
+      </div>
+      <div class="ag-ficha-pdf-progress-track"><i id="agFichaPdfProgressBar"></i></div>
+      <div class="ag-ficha-pdf-progress-meta"><b id="agFichaPdfProgressPct">0%</b><span id="agFichaPdfProgressDetail">Iniciando</span></div>
+    </div>`;
+    document.body.appendChild(el);return el;
+  }
+  function setAgFichaPdfProgress(percent,text,detail='',state='working'){
+    const el=ensureAgFichaPdfProgress();clearTimeout(agFichaPdfProgressTimer);
+    const pct=Math.max(0,Math.min(100,Math.round(Number(percent)||0)));
+    el.classList.remove('is-success','is-error');if(state==='success')el.classList.add('is-success');if(state==='error')el.classList.add('is-error');
+    el.classList.add('show');el.setAttribute('aria-hidden','false');
+    const title=el.querySelector('#agFichaPdfProgressTitle'),copy=el.querySelector('#agFichaPdfProgressText'),bar=el.querySelector('#agFichaPdfProgressBar'),pctEl=el.querySelector('#agFichaPdfProgressPct'),detailEl=el.querySelector('#agFichaPdfProgressDetail');
+    if(title)title.textContent=state==='success'?'Ficha pronta':state==='error'?'Falha ao gerar ficha':'Gerando PDF';
+    if(copy)copy.textContent=text||'Processando…';if(bar)bar.style.width=`${pct}%`;if(pctEl)pctEl.textContent=`${pct}%`;if(detailEl)detailEl.textContent=detail||'';
+    return el;
+  }
+  function hideAgFichaPdfProgress(delay=0){
+    clearTimeout(agFichaPdfProgressTimer);agFichaPdfProgressTimer=setTimeout(()=>{const el=document.getElementById('agFichaPdfProgress');if(!el)return;el.classList.remove('show');el.setAttribute('aria-hidden','true')},Math.max(0,delay));
+  }
+
   function waitFichaImages(root){
     const imgs=[...root.querySelectorAll('img')];if(!imgs.length)return Promise.resolve();
     return Promise.all(imgs.map(img=>new Promise(resolve=>{if(img.complete&&img.naturalWidth){resolve();return}const finish=()=>resolve();img.addEventListener('load',finish,{once:true});img.addEventListener('error',finish,{once:true});setTimeout(resolve,12000)})));
@@ -285,20 +315,36 @@
   function savePdfBlob(blob,fileName){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fileName;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},2500)}
   async function downloadPropertyClientFicha(id=currentId){
     const p=getProperty(id);if(!p){window.toast?.('Imóvel não encontrado.');return}
+    if(agFichaPdfRunning){setAgFichaPdfProgress(8,'A ficha já está sendo gerada.','Aguarde a conclusão do PDF.');return}
+    agFichaPdfRunning=true;
     if(String(p.id)===String(currentId)&&dirty)savePropertyFichaSignature();
     const safeId=String(p.id||'imovel').replace(/[^a-z0-9_-]+/gi,'_');let frame=null;
     try{
-      window.toast?.('Gerando PDF da ficha…');const {html2canvas}=await ensureAgPdfEngine();const built=await buildDirectPdfFrame(p);frame=built.frame;const pages=built.pages;
+      setAgFichaPdfProgress(3,'Preparando os dados do imóvel…','Etapa 1 de 4');
+      const {html2canvas}=await ensureAgPdfEngine();
+      setAgFichaPdfProgress(14,'Carregando fotos e preparando o layout…','Etapa 2 de 4');
+      const built=await buildDirectPdfFrame(p);frame=built.frame;const pages=built.pages;
       if(!pages.length)throw new Error('Nenhuma página foi montada.');
+      setAgFichaPdfProgress(30,`Layout pronto com ${pages.length} página${pages.length===1?'':'s'}.`,'Renderização do PDF');
       const pageImages=[];
       for(let i=0;i<pages.length;i++){
-        const page=pages[i];await waitFichaImages(page);const c=await html2canvas(page,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,imageTimeout:20000,scrollX:0,scrollY:0,windowWidth:page.scrollWidth,windowHeight:page.scrollHeight});
+        const page=pages[i],startPct=32+Math.round((i/pages.length)*54);
+        setAgFichaPdfProgress(startPct,`Renderizando página ${i+1} de ${pages.length}…`,`Página ${i+1} de ${pages.length}`);
+        await waitFichaImages(page);const c=await html2canvas(page,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,imageTimeout:20000,scrollX:0,scrollY:0,windowWidth:page.scrollWidth,windowHeight:page.scrollHeight});
         if(!canvasHasVisibleContent(c)){console.warn('AG CRM · página vazia ignorada',i+1);continue}
         pageImages.push({dataUrl:c.toDataURL('image/jpeg',0.94),width:c.width,height:c.height});
+        setAgFichaPdfProgress(32+Math.round(((i+1)/pages.length)*54),`Página ${i+1} de ${pages.length} concluída.`,`Processando ${i+1}/${pages.length}`);
       }
       const expectedMin=3; if(pageImages.length<expectedMin)throw new Error('O PDF ficou incompleto e não foi baixado.');
-      const blob=buildDeterministicPdf(pageImages);savePdfBlob(blob,`Ficha_${safeId}.pdf`);window.toast?.(`Ficha_${safeId}.pdf baixada (${pageImages.length} páginas).`);
-    }catch(e){console.error('AG CRM · erro ao gerar PDF direto',e);window.toast?.(e?.message||'Não foi possível gerar o PDF automaticamente.')}finally{frame?.remove()}
+      setAgFichaPdfProgress(90,'Montando o arquivo PDF…',`${pageImages.length} páginas processadas`);
+      const blob=buildDeterministicPdf(pageImages);
+      setAgFichaPdfProgress(97,'Finalizando o download…',`Ficha_${safeId}.pdf`);
+      savePdfBlob(blob,`Ficha_${safeId}.pdf`);
+      setAgFichaPdfProgress(100,'Download iniciado com sucesso.',`${pageImages.length} páginas · Ficha_${safeId}.pdf`,'success');
+      window.toast?.(`Ficha_${safeId}.pdf baixada (${pageImages.length} páginas).`);hideAgFichaPdfProgress(2200);
+    }catch(e){
+      console.error('AG CRM · erro ao gerar PDF direto',e);const msg=e?.message||'Não foi possível gerar o PDF automaticamente.';setAgFichaPdfProgress(100,msg,'Verifique os dados e tente novamente.','error');window.toast?.(msg);hideAgFichaPdfProgress(5200);
+    }finally{frame?.remove();agFichaPdfRunning=false}
   }
 
   function addFichaButton(){
