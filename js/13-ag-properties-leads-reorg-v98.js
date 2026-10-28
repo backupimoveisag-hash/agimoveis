@@ -101,44 +101,64 @@
   }
 
   let propertyBrokerDirectoryCache={at:0,users:[]};
+  function normalizeBrokerRole(v){
+    return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+  }
+  function isPropertyBrokerUser(u){
+    const role=normalizeBrokerRole(u?.role);
+    return !!(u&&u.active!==false&&role.includes('corretor')&&String(u.name||'').trim());
+  }
   function propertyBrokerUsersFromLocal(){
     const list=Array.isArray(db.users)?db.users:[];
-    return list.filter(u=>u&&u.active!==false&&['Corretor','Corretora'].includes(String(u.role||''))&&String(u.name||'').trim());
+    return list.filter(isPropertyBrokerUser);
   }
-  async function loadPropertyBrokerDirectory(){
+  function currentProfileIsAdmin(profile=currentPropertyProfile()){
+    return normalizeBrokerRole(profile?.role).includes('administrador');
+  }
+  async function loadPropertyBrokerDirectory(force=false){
     const profile=currentPropertyProfile();
-    if(profile?.role!=='Administrador')return profile?[{uid:profile.uid||'',name:profile.name||'',email:profile.email||'',role:profile.role,active:profile.active!==false}]:[];
+    if(!currentProfileIsAdmin(profile))return profile?[{uid:profile.uid||profile.firebaseUid||'',name:profile.name||'',email:profile.email||'',role:profile.role,active:profile.active!==false}]:[];
     const now=Date.now();
-    if(propertyBrokerDirectoryCache.users.length && now-propertyBrokerDirectoryCache.at<5*60*1000)return propertyBrokerDirectoryCache.users;
-    let users=propertyBrokerUsersFromLocal();
+    if(!force&&propertyBrokerDirectoryCache.users.length&&now-propertyBrokerDirectoryCache.at<5*60*1000)return propertyBrokerDirectoryCache.users;
+    let users=[];
     try{
+      // Fonte principal: usuários cadastrados no CRM/Firebase. A leitura ocorre
+      // somente quando o Administrador abre o cadastro/edição do imóvel.
       const remote=await window.EIFirebaseCRM?.listUsers?.();
-      if(Array.isArray(remote)&&remote.length)users=remote;
-    }catch(e){console.warn('AG CRM: não foi possível carregar diretório de corretores.',e)}
-    users=(users||[]).filter(u=>u&&u.active!==false&&['Corretor','Corretora'].includes(String(u.role||''))&&String(u.name||'').trim());
+      if(Array.isArray(remote))users=remote;
+    }catch(e){console.warn('AG CRM: não foi possível carregar o diretório de corretores do sistema.',e)}
+    if(!users.length)users=propertyBrokerUsersFromLocal();
+    users=(users||[]).filter(isPropertyBrokerUser);
     const seen=new Set();
-    users=users.filter(u=>{const k=String(u.uid||u.id||u.email||u.name).toLowerCase();if(seen.has(k))return false;seen.add(k);return true});
+    users=users.filter(u=>{
+      const k=String(u.uid||u.firebaseUid||u.id||u.email||u.name).trim().toLowerCase();
+      if(!k||seen.has(k))return false;
+      seen.add(k);return true;
+    }).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
     propertyBrokerDirectoryCache={at:now,users};
     return users;
   }
   function brokerOption(u,selected=''){
     const name=String(u?.name||'').trim();
     const uid=String(u?.uid||u?.firebaseUid||u?.id||'').trim();
-    return `<option value="${safe(name)}" data-uid="${safe(uid)}" data-email="${safe(u?.email||'')}" ${name===selected?'selected':''}>${safe(name)}</option>`;
+    const email=String(u?.email||'').trim().toLowerCase();
+    const selectedUid=String(selected?.uid||'').trim();
+    const selectedEmail=String(selected?.email||'').trim().toLowerCase();
+    const selectedName=String(selected?.name||selected||'').trim();
+    const isSelected=(selectedUid&&uid===selectedUid)||(selectedEmail&&email===selectedEmail)||(!selectedUid&&!selectedEmail&&name===selectedName);
+    const label=email?`${name} · ${email}`:name;
+    return `<option value="${safe(name)}" data-uid="${safe(uid)}" data-email="${safe(email)}" ${isSelected?'selected':''}>${safe(label)}</option>`;
   }
   function propertyBrokerField(data={}){
     const profile=currentPropertyProfile();
-    const isAdmin=profile?.role==='Administrador';
-    const local=propertyBrokerUsersFromLocal();
+    const isAdmin=currentProfileIsAdmin(profile);
     const currentName=String(profile?.name||'').trim();
-    const selected=String(data.broker||(!data.id&&profile?.role!=='Administrador'?currentName:'')||'').trim();
+    const selected={name:String(data.brokerName||data.responsibleBroker||data.broker||(!data.id&&!isAdmin?currentName:'')||'').trim(),uid:String(data.brokerUid||data.responsibleBrokerUid||'').trim(),email:String(data.brokerEmail||data.responsibleBrokerEmail||'').trim().toLowerCase()};
     if(isAdmin){
-      const options=[...local];
-      if(selected&&!options.some(u=>String(u.name||'').trim()===selected))options.unshift({name:selected,uid:data.brokerUid||'',email:data.brokerEmail||'',role:'Corretor',active:true});
-      return `<div class="form-group full ag-property-broker-field"><label>Corretor responsável pela captação</label><select class="form-control" id="propertyBrokerSelect" name="broker" required>${options.length?'<option value="">Selecione o corretor responsável</option>'+options.map(u=>brokerOption(u,selected)).join(''):'<option value="">Carregando corretores ativos…</option>'}</select><input type="hidden" name="brokerUid" id="propertyBrokerUid" value="${safe(data.brokerUid||'')}"><input type="hidden" name="brokerEmail" id="propertyBrokerEmail" value="${safe(data.brokerEmail||'')}"><small class="muted-note">Este corretor será vinculado ao imóvel e aparecerá na ficha de autorização para assinatura.</small></div>`;
+      return `<div class="form-group full ag-property-broker-field"><label>Corretor responsável pela captação</label><input class="form-control" type="search" id="propertyBrokerSearch" placeholder="Buscar corretor por nome ou e-mail" autocomplete="off" autocapitalize="off" spellcheck="false"><select class="form-control" id="propertyBrokerSelect" name="broker" required><option value="">Carregando corretores cadastrados no sistema…</option></select><input type="hidden" name="brokerUid" id="propertyBrokerUid" value="${safe(selected.uid)}"><input type="hidden" name="brokerEmail" id="propertyBrokerEmail" value="${safe(selected.email)}"><small class="muted-note" id="propertyBrokerDirectoryNote">Buscando usuários ativos com perfil Corretor/Corretora cadastrados no CRM.</small></div>`;
     }
-    const locked=selected||currentName;
-    return `<div class="form-group full ag-property-broker-field"><label>Corretor responsável pela captação</label><input type="hidden" name="broker" value="${safe(locked)}"><input type="hidden" name="brokerUid" value="${safe(profile?.uid||data.brokerUid||'')}"><input type="hidden" name="brokerEmail" value="${safe(profile?.email||data.brokerEmail||'')}"><input class="form-control" value="${safe(locked)}" readonly aria-label="Corretor responsável pela captação"><small class="muted-note">Preenchido automaticamente com o usuário que está cadastrando o imóvel.</small></div>`;
+    const locked=selected.name||currentName;
+    return `<div class="form-group full ag-property-broker-field"><label>Corretor responsável pela captação</label><input type="hidden" name="broker" value="${safe(locked)}"><input type="hidden" name="brokerUid" value="${safe(profile?.uid||profile?.firebaseUid||selected.uid||'')}"><input type="hidden" name="brokerEmail" value="${safe(profile?.email||selected.email||'')}"><input class="form-control" value="${safe(locked)}" readonly aria-label="Corretor responsável pela captação"><small class="muted-note">Preenchido automaticamente com o corretor autenticado.</small></div>`;
   }
   function syncBrokerHiddenFields(){
     const sel=document.getElementById('propertyBrokerSelect');if(!sel)return;
@@ -149,17 +169,29 @@
   }
   async function hydratePropertyBrokerField(data={}){
     const profile=currentPropertyProfile();
-    if(profile?.role!=='Administrador')return;
+    if(!currentProfileIsAdmin(profile))return;
     const sel=document.getElementById('propertyBrokerSelect');if(!sel)return;
-    const selected=String(data.broker||sel.value||'').trim();
-    const users=await loadPropertyBrokerDirectory();
+    const search=document.getElementById('propertyBrokerSearch');
+    const note=document.getElementById('propertyBrokerDirectoryNote');
+    const selected={name:String(data.brokerName||data.responsibleBroker||data.broker||'').trim(),uid:String(data.brokerUid||data.responsibleBrokerUid||'').trim(),email:String(data.brokerEmail||data.responsibleBrokerEmail||'').trim().toLowerCase()};
+    const users=await loadPropertyBrokerDirectory(true);
     if(!document.body.contains(sel))return;
-    sel.innerHTML='<option value="">Selecione o corretor responsável</option>'+users.map(u=>brokerOption(u,selected)).join('');
-    if(selected&&!users.some(u=>String(u.name||'').trim()===selected)){
-      const o=document.createElement('option');o.value=selected;o.textContent=selected;o.selected=true;sel.appendChild(o);
-    }
-    if(!sel.value&&users.length===1)sel.value=String(users[0].name||'');
-    syncBrokerHiddenFields();
+    const render=(q='')=>{
+      const needle=String(q||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+      const filtered=!needle?users:users.filter(u=>{
+        const hay=`${u.name||''} ${u.email||''}`.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+        return hay.includes(needle);
+      });
+      sel.innerHTML='<option value="">Selecione o corretor responsável</option>'+filtered.map(u=>brokerOption(u,selected)).join('');
+      if(selected.name&&!users.some(u=>String(u.name||'').trim()===selected.name||String(u.uid||u.firebaseUid||u.id||'').trim()===selected.uid||String(u.email||'').trim().toLowerCase()===selected.email)){
+        const o=document.createElement('option');o.value=selected.name;o.textContent=`${selected.name} · vínculo anterior`;o.dataset.uid=selected.uid;o.dataset.email=selected.email;o.selected=true;sel.appendChild(o);
+      }
+      if(!sel.value&&users.length===1&&!needle)sel.value=String(users[0].name||'');
+      syncBrokerHiddenFields();
+      if(note)note.textContent=users.length?`${users.length} corretor${users.length===1?'':'es'} ativo${users.length===1?'':'s'} encontrado${users.length===1?'':'s'} no sistema.`:'Nenhum usuário ativo com perfil Corretor/Corretora foi encontrado em Ajustes → Usuários e permissões.';
+    };
+    render('');
+    search?.addEventListener('input',()=>render(search.value));
     sel.addEventListener('change',syncBrokerHiddenFields,{passive:true});
   }
 
