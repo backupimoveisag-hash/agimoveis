@@ -1,4 +1,4 @@
-/* AG CRM V145 — corretor edita exclusivamente imóveis vinculados a ele */
+/* AG CRM V146 — identidade de perfil real + corretor edita exclusivamente imóveis vinculados a ele */
 (function(){
   const norm=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
   const profile=()=>{
@@ -137,6 +137,7 @@
     const role=document.getElementById('cloudRole');if(role)new MutationObserver(queueApply).observe(role,{childList:true,subtree:true,characterData:true});
     const grid=document.getElementById('propertyGrid');if(grid)new MutationObserver(queueApply).observe(grid,{childList:true,subtree:true});
     window.addEventListener('focus',queueApply);
+    window.addEventListener('ag:profile-changed',queueApply);
   });
 
   const css=document.createElement('style');

@@ -193,7 +193,27 @@ if(!enabled){
   }
   function canPage(page){return permissionsForProfile(roleProfile).includes(page)}
   function isAdmin(){return roleProfile?.active!==false&&roleProfile?.role==='Administrador'}
+  function profileInitials(profile){
+    const raw=String(profile?.name||profile?.displayName||profile?.email||'AG').trim();
+    const parts=raw.split(/\s+/).filter(Boolean);
+    if(parts.length>=2)return (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+    return raw.slice(0,2).toUpperCase()||'AG';
+  }
+  function syncLoggedUserHeader(profile){
+    const nameEl=$('#loggedUserName'),roleEl=$('#loggedUserRole'),avatarEl=$('#loggedUserAvatar');
+    if(!profile){
+      if(nameEl)nameEl.textContent='Usuário';
+      if(roleEl)roleEl.textContent='—';
+      if(avatarEl)avatarEl.textContent='AG';
+      return;
+    }
+    const name=String(profile.name||profile.displayName||profile.email||'Usuário').trim();
+    if(nameEl)nameEl.textContent=name;
+    if(roleEl)roleEl.textContent=String(profile.role||'Usuário');
+    if(avatarEl)avatarEl.textContent=profileInitials(profile);
+  }
   function applyProfileAccess(profile){
+    syncLoggedUserHeader(profile);
     const allowed=new Set(permissionsForProfile(profile));
     document.querySelectorAll('[data-page]').forEach(el=>el.classList.toggle('role-hidden',!allowed.has(el.dataset.page)));
     document.querySelectorAll('[data-pagejump]').forEach(el=>{const p=el.dataset.pagejump;if(p)el.classList.toggle('role-hidden',!allowed.has(p))});
@@ -204,6 +224,7 @@ if(!enabled){
     const active=document.querySelector('.page.active')?.id?.replace('page-','');if(active&&!allowed.has(active))bridge.navigate('dashboard');
     if($('#cloudRole'))$('#cloudRole').textContent=profile?.role||'—';
     renderCurrentAccessSummary();
+    try{window.dispatchEvent(new CustomEvent('ag:profile-changed',{detail:{profile:profile||null}}))}catch(e){}
   }
   function sectionPermission(key){
     const map={settings:'configuracoes',properties:'imoveis',prospectings:'imoveis',owners:'proprietarios',leads:'leads',tasks:'atendimento',siteEvents:'atendimento',automation:'configuracoes',clients:'clientes',appointments:'agenda',proposals:'propostas',contracts:'propostas',commissions:'financeiro',finance:'financeiro',users:'equipe',keys:'chaves',keyMovements:'chaves'};
