@@ -1,0 +1,21 @@
+{
+  "name": "AG CRM Imobiliário",
+  "short_name": "AG CRM",
+  "description": "CRM imobiliário da AG para gestão de imóveis, leads, agenda, propostas e operação comercial.",
+  "lang": "pt-BR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#05080d",
+  "theme_color": "#05080d",
+  "icons": [
+    {"src":"./assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"./assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ],
+  "shortcuts": [
+    {"name":"Imóveis","short_name":"Imóveis","url":"./index.html#imoveis","icons":[{"src":"./assets/icon-192.png","sizes":"192x192"}]},
+    {"name":"Leads","short_name":"Leads","url":"./index.html#leads","icons":[{"src":"./assets/icon-192.png","sizes":"192x192"}]},
+    {"name":"Agenda","short_name":"Agenda","url":"./index.html#agenda","icons":[{"src":"./assets/icon-192.png","sizes":"192x192"}]}
+  ]
+}
