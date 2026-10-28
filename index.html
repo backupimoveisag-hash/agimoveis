@@ -94,6 +94,8 @@
 <link rel="stylesheet" id="ag-property-admin-watermark-v99" href="./css/42-ag-property-admin-watermark-v99.css?v=100">
 <link rel="stylesheet" id="ag-keys-v102" href="./css/43-ag-keys-v102.css?v=104">
 <link rel="stylesheet" id="ag-drive-appscript-v107" href="./css/46-ag-drive-appscript-v107.css?v=107">
+<link rel="stylesheet" id="ag-drive-video-v159" href="./css/53-ag-drive-video-v159.css?v=159">
+<link rel="stylesheet" id="ag-property-editor-video-v160" href="./css/54-ag-property-editor-video-v160.css?v=160">
 <link rel="stylesheet" href="./css/47-ag-canal-pro-v113.css?v=114">
 <link rel="stylesheet" href="./css/48-ag-lead-distribution-v118.css?v=118">
 <link rel="stylesheet" id="ag-header-pwa-fix-v127" href="./css/50-ag-header-pwa-fix-v127.css?v=127">
@@ -368,7 +370,7 @@
         <div class="grid settings-grid"><article class="card settings-card"><h3>Identidade da imobiliária</h3><div class="form-grid"><div class="form-group"><label>Nome fantasia</label><input class="form-control" id="cfgName"></div><div class="form-group"><label>CNPJ</label><input class="form-control" id="cfgCnpj"></div><div class="form-group"><label>Telefone</label><input class="form-control" id="cfgPhone"></div><div class="form-group"><label>E-mail</label><input class="form-control" id="cfgEmail"></div><div class="form-group full"><label>Endereço</label><input class="form-control" id="cfgAddress"></div></div><div style="margin-top:14px"><button class="btn primary" id="saveSettings">Salvar identidade</button></div></article><article class="card settings-card cloud-card"><h3>Firebase · operação online</h3><div class="cloud-status-row"><div class="cloud-pill" id="cloudStatus">Não configurado</div><button class="btn small" id="cloudTestBtn">Testar</button></div><div class="cloud-grid"><div class="cloud-metric"><span>Projeto</span><b id="cloudProject">—</b></div><div class="cloud-metric"><span>Usuário</span><b id="cloudUser">—</b></div><div class="cloud-metric"><span>Perfil</span><b id="cloudRole">—</b></div><div class="cloud-metric"><span>Última sincronização</span><b id="cloudLastSync">—</b></div></div><div class="cloud-actions"><button class="btn primary" id="cloudPushBtn">Enviar local → nuvem</button><button class="btn" id="cloudPullBtn">Atualizar da nuvem</button></div><p class="cloud-help">Configuração central em <b>firebase-config.js</b>. Quando ativado, CRM, catálogo, leads e usuários sincronizam entre dispositivos. Backups JSON e fotos de imóveis são enviados ao Google Drive pelo Apps Script. O Firebase Storage continua desativado.</p></article><article class="card settings-card"><h3>Dados e portabilidade</h3><p class="ag-settings-support-copy">O navegador funciona como cache e fallback. Com Firebase ativo, a nuvem passa a ser a fonte compartilhada da operação.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="backupBtn">Baixar JSON ↓</button><label class="btn" for="importFile">Importar ↑</label><input type="file" id="importFile" accept="application/json" hidden><button class="btn danger" id="resetBtn">Reiniciar cache local</button></div></article>
 <article class="card settings-card ag-drive-card" id="agDriveBackupCard">
   <div class="ag-drive-head"><div><span class="v5-kicker">ARMAZENAMENTO EXTERNO</span><h3>Google Drive · Apps Script</h3></div><span class="ag-drive-state" id="agDriveState" data-state="off">Configuração pendente</span></div>
-  <p class="ag-settings-support-copy">O Apps Script recebe os arquivos do CRM e grava no seu Google Drive. <b>Toda nova foto de imóvel</b> passa a ser armazenada no Drive, além do backup JSON.</p>
+  <p class="ag-settings-support-copy">O Apps Script recebe os arquivos do CRM e grava no seu Google Drive. <b>Toda nova foto e vídeo de imóvel</b> pode ser armazenado no Drive, além do backup JSON.</p>
   <div class="ag-drive-config-grid">
     <label class="full">URL do Web App do Apps Script<input class="form-control" id="agDriveWebAppUrl" placeholder="https://script.google.com/macros/s/.../exec"><small>Use a URL da implantação do tipo Aplicativo da Web, terminada em /exec.</small></label>
     <label>Chave de integração<div class="ag-drive-key-wrap"><input class="form-control" id="agDriveApiKey" type="password" autocomplete="off" placeholder="Chave gerada por AGCRM_CONFIGURAR()"><button class="btn" type="button" id="agDriveShowKeyBtn">Mostrar</button></div></label>
@@ -380,7 +382,7 @@
   <div class="ag-drive-grid">
     <div class="ag-drive-metric"><span>Último backup manual</span><b id="agDriveLastBackup">Nunca</b></div>
     <div class="ag-drive-metric"><span>Pasta raiz</span><b id="agDriveFolder">AG CRM</b></div>
-    <div class="ag-drive-metric"><span>Fotos novas</span><b id="agDriveImageMode">Pendente</b></div>
+    <div class="ag-drive-metric"><span>Fotos e vídeos</span><b id="agDriveImageMode">Pendente</b></div>
     <div class="ag-drive-metric"><span>Backup agendado</span><b id="agDriveScheduleLabel">Pendente</b></div>
   </div>
   <div class="ag-drive-grid">
@@ -393,7 +395,7 @@
     <button class="btn" id="agDriveInstallTriggerBtn" type="button">Ativar backup 12h</button>
     <button class="btn" id="agDriveTestWelcomeBtn" type="button">Testar e-mail de boas-vindas</button>
   </div>
-  <div class="ag-drive-storage-note"><b>Imagens no Drive:</b> o CRM aplica a marca d’água e envia a foto ao Apps Script antes de salvar o cadastro. O banco guarda somente a URL do arquivo no Drive.</div>
+  <div class="ag-drive-storage-note"><b>Mídia no Drive:</b> fotos e vídeos de imóveis são enviados ao Apps Script antes de salvar o cadastro. O banco guarda somente os links e IDs dos arquivos no Drive.</div>
   <div class="ag-drive-schedule-note"><b>Rotina automática:</b> após alterações relevantes, o CRM atualiza <code>AG CRM/Sistema/AG_CRM_LATEST.json</code>. O Apps Script cria um backup versionado desse estado a cada 12 horas e envia a confirmação por e-mail.</div>
   <div class="ag-drive-message" id="agDriveMessage">Cole as credenciais geradas pelo Apps Script.</div>
 </article></div>
@@ -534,12 +536,14 @@
 <script src="./js/13-ag-properties-leads-reorg-v98.js?v=145"></script>
 <script src="./js/14-ag-property-admin-watermark-v99.js?v=100"></script>
 <script src="./js/15-ag-keys-v102.js?v=104"></script>
-<script src="./js/18-ag-drive-appscript-v107.js?v=117"></script>
+<script src="./js/18-ag-drive-appscript-v107.js?v=159"></script>
 <script src="./js/19-ag-canal-pro-v113.js?v=114"></script>
 <script src="./js/20-ag-lead-distribution-v118.js?v=118"></script>
 <script src="./js/21-ag-agenda-meetings-v119.js?v=132"></script>
 <script src="./js/22-ag-property-client-ficha-v139.js?v=157"></script>
 <script src="./js/23-ag-property-edit-permissions-v142.js?v=146"></script>
+<script src="./js/24-ag-drive-video-v159.js?v=159"></script>
+<script src="./js/25-ag-property-editor-video-v160.js?v=160"></script>
 
 <script id="ag-search-autofill-guard-v140">
 (function(){
