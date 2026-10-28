@@ -1,4 +1,4 @@
-const CACHE_NAME='ag-crm-v149';
+const CACHE_NAME='ag-crm-v155';
 const APP_SHELL = [
   './', './index.html', './manifest.webmanifest', './firebase-config.js',
   './assets/ag-logo.png', './assets/login-luxury-bg.jpg', './assets/login-luxury-bg-mobile.jpg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png',
