@@ -33,3 +33,7 @@
 .ag-ficha-sheet.ag-pdf-export .ag-ficha-signature-area,
 .ag-ficha-sheet.ag-pdf-export .ag-ficha-sublist,
 .ag-ficha-sheet.ag-pdf-export .ag-ficha-photo-item{break-inside:avoid!important;page-break-inside:avoid!important}
+
+/* V157 — contracapa minimalista: somente logo + site */
+.ag-ficha-back-cover{background:#14253f!important;color:#fff!important;border:none!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;padding:0!important}.ag-ficha-back-simple{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px}.ag-ficha-back-simple-logo{width:190px!important;max-height:145px!important;object-fit:contain!important;filter:none!important}.ag-ficha-back-simple-site{font-size:18px;font-weight:650;letter-spacing:.08em;color:#fff!important}
+@media(max-width:720px){.ag-ficha-back-simple{gap:24px}.ag-ficha-back-simple-logo{width:150px!important}.ag-ficha-back-simple-site{font-size:15px}}
