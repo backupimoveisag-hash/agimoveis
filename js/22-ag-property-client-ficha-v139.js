@@ -177,17 +177,70 @@
     @page{size:A4 portrait;margin:14mm}
   `}
 
-  function openPrintWindow(p,downloadIntent=false){
+  function openPrintWindow(p){
     if(!p)return;
     if(String(p.id)===String(currentId)&&dirty)savePropertyFichaSignature();
     const html=renderSheet(p);
     const w=window.open('','_blank','width=1100,height=900');if(!w){window.toast?.('Libere pop-ups para gerar a ficha.');return}
     const safeId=String(p.id||'imovel').replace(/[^a-z0-9_-]+/gi,'_');
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Ficha_${esc(safeId)}</title><style>${printCss()}</style></head><body><div class="ag-ficha-sheet">${html}</div><script>window.onload=()=>setTimeout(()=>window.print(),550)<\/script></body></html>`);w.document.close();
-    if(downloadIntent)window.toast?.('Na janela aberta, escolha “Salvar como PDF” para baixar a ficha completa.');
   }
-  function printPropertyClientFicha(){openPrintWindow(getProperty(currentId),false)}
-  function downloadPropertyClientFicha(id=currentId){const p=getProperty(id);if(!p){window.toast?.('Imóvel não encontrado.');return}openPrintWindow(p,true)}
+  function printPropertyClientFicha(){openPrintWindow(getProperty(currentId))}
+
+  let agPdfEnginePromise=null;
+  function ensureAgPdfEngine(){
+    if(window.html2pdf)return Promise.resolve(window.html2pdf);
+    if(agPdfEnginePromise)return agPdfEnginePromise;
+    agPdfEnginePromise=new Promise((resolve,reject)=>{
+      const existing=document.querySelector('script[data-ag-html2pdf]');
+      const done=()=>window.html2pdf?resolve(window.html2pdf):reject(new Error('Biblioteca PDF indisponível'));
+      if(existing){existing.addEventListener('load',done,{once:true});existing.addEventListener('error',()=>reject(new Error('Falha ao carregar o gerador de PDF')),{once:true});return}
+      const sc=document.createElement('script');
+      sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.14.0/html2pdf.bundle.min.js';
+      sc.async=true;sc.dataset.agHtml2pdf='1';sc.crossOrigin='anonymous';sc.referrerPolicy='no-referrer';
+      sc.onload=done;sc.onerror=()=>reject(new Error('Falha ao carregar o gerador de PDF'));
+      document.head.appendChild(sc);
+    }).catch(err=>{agPdfEnginePromise=null;throw err});
+    return agPdfEnginePromise;
+  }
+  function waitFichaImages(root){
+    const imgs=[...root.querySelectorAll('img')];
+    if(!imgs.length)return Promise.resolve();
+    return Promise.all(imgs.map(img=>new Promise(resolve=>{
+      if(img.complete){resolve();return}
+      const finish=()=>resolve();img.addEventListener('load',finish,{once:true});img.addEventListener('error',finish,{once:true});
+      setTimeout(resolve,12000);
+    })));
+  }
+  async function downloadPropertyClientFicha(id=currentId){
+    const p=getProperty(id);if(!p){window.toast?.('Imóvel não encontrado.');return}
+    if(String(p.id)===String(currentId)&&dirty)savePropertyFichaSignature();
+    const safeId=String(p.id||'imovel').replace(/[^a-z0-9_-]+/gi,'_');
+    const host=document.createElement('div');
+    host.setAttribute('aria-hidden','true');
+    host.style.cssText='position:fixed;left:-100000px;top:0;width:210mm;background:#fff;z-index:-1;pointer-events:none;';
+    host.innerHTML=`<div class="ag-ficha-sheet ag-pdf-export">${renderSheet(p)}</div>`;
+    document.body.appendChild(host);
+    const sheet=host.firstElementChild;
+    try{
+      window.toast?.('Gerando PDF da ficha…');
+      await ensureAgPdfEngine();
+      await waitFichaImages(sheet);
+      const opt={
+        margin:0,
+        filename:`Ficha_${safeId}.pdf`,
+        image:{type:'jpeg',quality:.96},
+        html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',imageTimeout:20000,logging:false},
+        jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},
+        pagebreak:{mode:['css','legacy'],before:['.ag-ficha-photo-annex','.ag-ficha-back-cover'],after:['.ag-ficha-cover'],avoid:['.ag-ficha-section','.ag-ficha-field','.ag-ficha-declaration','.ag-ficha-signature-area','.ag-ficha-sublist','.ag-ficha-photo-item']}
+      };
+      await window.html2pdf().set(opt).from(sheet).save();
+      window.toast?.(`Ficha_${safeId}.pdf baixada.`);
+    }catch(e){
+      console.error('AG CRM · erro ao gerar PDF direto',e);
+      window.toast?.('Não foi possível gerar o PDF automaticamente. Verifique a conexão e tente novamente.');
+    }finally{host.remove()}
+  }
 
   function addFichaButton(){
     const workspace=document.querySelector('#modal.property-detail-shell .property-workspace')||document.querySelector('#modal .property-workspace');const actions=workspace?.querySelector('.pw-summary-actions');if(!workspace||!actions)return;const id=workspace.dataset.property;const p=getProperty(id);
