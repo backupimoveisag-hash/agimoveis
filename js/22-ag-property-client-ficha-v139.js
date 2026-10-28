@@ -1,4 +1,4 @@
-/* AG CRM V149 — Ficha premium compacta com capa, anexo fotográfico, contracapa e download */
+/* AG CRM V156 — Ficha premium + PDF direto determinístico (sem páginas extras) */
 (function(){
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const moneyBR=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -18,7 +18,9 @@
   function getProperty(id){const state=(typeof db!=='undefined'?db:null);return (state?.properties||[]).find(p=>String(p.id)===String(id))}
   function companySettings(){try{return (typeof db!=='undefined'&&db?.settings)||{}}catch(e){return {}}}
   function photosOf(p){return (Array.isArray(p?.photos)?p.photos:[]).filter(ph=>ph&&ph.src)}
-  function coverOf(p){const photos=photosOf(p);return photos.find(ph=>String(ph.id)===String(p?.coverPhoto))?.src||photos[0]?.src||''}
+  function coverPhotoOf(p){const photos=photosOf(p);return photos.find(ph=>String(ph.id)===String(p?.coverPhoto))||photos[0]||null}
+  function coverOf(p){return coverPhotoOf(p)?.src||''}
+  function driveFileIdOf(ph){if(ph?.driveFileId)return String(ph.driveFileId);const src=String(ph?.src||'');const m=src.match(/[?&]id=([^&]+)/i)||src.match(/\/d\/([^/]+)/i);return m?decodeURIComponent(m[1]):''}
   function chunks(arr,size){const out=[];for(let i=0;i<arr.length;i+=size)out.push(arr.slice(i,i+size));return out.length?out:[[]]}
   function brokerOf(p){return (window.agPropertyResponsibleBroker?.(p))||p.brokerName||p.responsibleBroker||p.broker||'—'}
   function logoUrl(){return new URL('./assets/ag-logo.png',location.href).href}
@@ -40,10 +42,10 @@
   let currentId='',canvas=null,ctx=null,drawing=false,dirty=false;
 
   function renderCover(p,logo){
-    const cover=coverOf(p);
+    const coverPhoto=coverPhotoOf(p),cover=coverPhoto?.src||'',coverFileId=driveFileIdOf(coverPhoto);
     const address=[p.address,p.district,p.city,p.state].filter(Boolean).join(' · ');
     return `<section class="ag-ficha-cover ag-ficha-break-page">
-      ${cover?`<img class="ag-ficha-cover-photo" src="${esc(cover)}" alt="Imagem de capa do imóvel">`:''}
+      ${cover?`<img class="ag-ficha-cover-photo" src="${esc(cover)}" ${coverFileId?`data-ag-drive-file-id="${esc(coverFileId)}"`:''} alt="Imagem de capa do imóvel">`:''}
       <div class="ag-ficha-cover-shade"></div>
       <div class="ag-ficha-cover-content">
         <img class="ag-ficha-cover-logo" src="${logo}" alt="AG Imobiliária">
@@ -123,7 +125,7 @@
     const pages=chunks(photos,6);
     return pages.map((pagePhotos,idx)=>`<section class="ag-ficha-photo-annex ag-ficha-break-page">
       <div class="ag-ficha-annex-head"><img src="${logo}" alt="AG"><div><small>ANEXO FOTOGRÁFICO</small><h2>${esc(p.id)} · ${esc(p.title||'Imóvel')}</h2><p>${photos.length?`${photos.length} imagem${photos.length===1?'':'ens'} cadastrada${photos.length===1?'':'s'} no imóvel`:'Nenhuma imagem cadastrada no imóvel'}</p></div><span>${pages.length>1?`${idx+1}/${pages.length}`:''}</span></div>
-      ${pagePhotos.length?`<div class="ag-ficha-photo-grid">${pagePhotos.map((ph,i)=>`<figure class="ag-ficha-photo-item"><img src="${esc(ph.src)}" alt="${esc(ph.room||ph.name||'Foto do imóvel')}"><figcaption><b>${esc(ph.room||'Foto')}</b>${ph.name?`<span>${esc(ph.name)}</span>`:''}</figcaption></figure>`).join('')}</div>`:'<div class="ag-ficha-no-photos">Nenhuma foto cadastrada para este imóvel.</div>'}
+      ${pagePhotos.length?`<div class="ag-ficha-photo-grid">${pagePhotos.map((ph,i)=>{const fid=driveFileIdOf(ph);return `<figure class="ag-ficha-photo-item"><img src="${esc(ph.src)}" ${fid?`data-ag-drive-file-id="${esc(fid)}"`:''} alt="${esc(ph.room||ph.name||'Foto do imóvel')}"><figcaption><b>${esc(ph.room||'Foto')}</b>${ph.name?`<span>${esc(ph.name)}</span>`:''}</figcaption></figure>`}).join('')}</div>`:'<div class="ag-ficha-no-photos">Nenhuma foto cadastrada para este imóvel.</div>'}
       <div class="ag-ficha-annex-foot">Anexo integrante da ficha de cadastro e autorização de comercialização.</div>
     </section>`).join('');
   }
@@ -188,58 +190,125 @@
   function printPropertyClientFicha(){openPrintWindow(getProperty(currentId))}
 
   let agPdfEnginePromise=null;
-  function ensureAgPdfEngine(){
-    if(window.html2pdf)return Promise.resolve(window.html2pdf);
+  function loadAgPdfScript(src,key){
+    return new Promise((resolve,reject)=>{
+      const existing=document.querySelector(`script[data-ag-pdf-lib="${key}"]`);
+      if(existing){if(existing.dataset.loaded==='1'){resolve();return}existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(new Error('Falha ao carregar o gerador do PDF.')),{once:true});return}
+      const sc=document.createElement('script');sc.src=src;sc.async=true;sc.crossOrigin='anonymous';sc.referrerPolicy='no-referrer';sc.dataset.agPdfLib=key;
+      sc.onload=()=>{sc.dataset.loaded='1';resolve()};sc.onerror=()=>reject(new Error('Falha ao carregar o gerador do PDF.'));document.head.appendChild(sc);
+    });
+  }
+  async function ensureAgPdfEngine(){
+    if(window.html2canvas)return {html2canvas:window.html2canvas};
     if(agPdfEnginePromise)return agPdfEnginePromise;
-    agPdfEnginePromise=new Promise((resolve,reject)=>{
-      const existing=document.querySelector('script[data-ag-html2pdf]');
-      const done=()=>window.html2pdf?resolve(window.html2pdf):reject(new Error('Biblioteca PDF indisponível'));
-      if(existing){existing.addEventListener('load',done,{once:true});existing.addEventListener('error',()=>reject(new Error('Falha ao carregar o gerador de PDF')),{once:true});return}
-      const sc=document.createElement('script');
-      sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.14.0/html2pdf.bundle.min.js';
-      sc.async=true;sc.dataset.agHtml2pdf='1';sc.crossOrigin='anonymous';sc.referrerPolicy='no-referrer';
-      sc.onload=done;sc.onerror=()=>reject(new Error('Falha ao carregar o gerador de PDF'));
-      document.head.appendChild(sc);
-    }).catch(err=>{agPdfEnginePromise=null;throw err});
+    agPdfEnginePromise=(async()=>{
+      await loadAgPdfScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','html2canvas');
+      if(!window.html2canvas)throw new Error('Gerador visual de PDF indisponível.');
+      return {html2canvas:window.html2canvas};
+    })().catch(err=>{agPdfEnginePromise=null;throw err});
     return agPdfEnginePromise;
   }
   function waitFichaImages(root){
-    const imgs=[...root.querySelectorAll('img')];
-    if(!imgs.length)return Promise.resolve();
-    return Promise.all(imgs.map(img=>new Promise(resolve=>{
-      if(img.complete){resolve();return}
-      const finish=()=>resolve();img.addEventListener('load',finish,{once:true});img.addEventListener('error',finish,{once:true});
-      setTimeout(resolve,12000);
-    })));
+    const imgs=[...root.querySelectorAll('img')];if(!imgs.length)return Promise.resolve();
+    return Promise.all(imgs.map(img=>new Promise(resolve=>{if(img.complete&&img.naturalWidth){resolve();return}const finish=()=>resolve();img.addEventListener('load',finish,{once:true});img.addEventListener('error',finish,{once:true});setTimeout(resolve,12000)})));
   }
+  function blobToDataUrl(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob)})}
+  async function fetchAsDataUrl(url){
+    if(!url||/^data:/i.test(url))return url||'';
+    const r=await fetch(url,{mode:'cors',credentials:'omit',cache:'force-cache'});if(!r.ok)throw new Error('Imagem HTTP '+r.status);return blobToDataUrl(await r.blob());
+  }
+  async function driveImageDataUrl(fileId){
+    if(!fileId||!window.AGDriveGateway?.configured?.())return '';
+    const r=await window.AGDriveGateway.request('getImageFile',{fileId});return String(r?.dataUrl||'');
+  }
+  async function hydrateDirectPdfImages(root){
+    const cache=new Map(),imgs=[...root.querySelectorAll('img')],failed=[];
+    for(const img of imgs){
+      const src=img.getAttribute('src')||'';if(!src||/^data:/i.test(src))continue;
+      const fileId=img.dataset.agDriveFileId||'';const key=fileId?`drive:${fileId}`:`url:${src}`;
+      let data=cache.get(key)||'';
+      if(!data&&fileId){try{data=await driveImageDataUrl(fileId)}catch(e){console.warn('AG CRM · proxy Drive indisponível',e)}}
+      if(!data){try{data=await fetchAsDataUrl(src)}catch(e){console.warn('AG CRM · imagem sem CORS',e)}}
+      if(data){cache.set(key,data);img.src=data;img.removeAttribute('crossorigin')}
+      else if(img.closest('.ag-ficha-photo-item'))failed.push(img);
+    }
+    await waitFichaImages(root);
+    for(const img of imgs){if(!img.complete||!img.naturalWidth){if(img.closest('.ag-ficha-photo-item')&&!failed.includes(img))failed.push(img)}}
+    if(failed.length){throw new Error(`Não foi possível carregar ${failed.length} foto(s) do imóvel para o PDF. Atualize/reimplante o Apps Script desta versão e tente novamente.`)}
+  }
+  function directPdfCss(){return `${printCss()}
+    html,body{width:210mm!important;margin:0!important;padding:0!important;background:#e9edf2!important;overflow:visible!important}.ag-direct-root{width:210mm;margin:0;padding:0}.ag-direct-page{position:relative!important;width:210mm!important;height:297mm!important;min-height:297mm!important;max-height:297mm!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important;break-after:auto!important;page-break-after:auto!important}.ag-direct-cover-page.ag-ficha-cover,.ag-direct-back-page.ag-ficha-back-cover{width:210mm!important;height:297mm!important;min-height:297mm!important;max-height:297mm!important;margin:0!important;padding:0!important}.ag-direct-content-page{padding:14mm!important}.ag-direct-content-page .ag-ficha-content-flow{width:100%!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important}.ag-direct-annex-page{padding:14mm!important}.ag-direct-annex-page .ag-ficha-photo-annex{position:relative!important;width:100%!important;height:269mm!important;min-height:269mm!important;max-height:269mm!important;margin:0!important;padding:0!important;break-before:auto!important;page-break-before:auto!important;break-after:auto!important;page-break-after:auto!important}.ag-direct-annex-page .ag-ficha-photo-grid{height:228mm!important}.ag-direct-page+.ag-direct-page{margin-top:0!important}.ag-direct-page .ag-ficha-signature-head span{display:none!important}`}
+  function makeDirectContentPage(doc,root){
+    const page=doc.createElement('section');page.className='ag-direct-page ag-direct-content-page';
+    const flow=doc.createElement('main');flow.className='ag-ficha-content-flow';page.appendChild(flow);root.appendChild(page);return {page,flow};
+  }
+  function paginateDirectPdf(doc,root){
+    const cover=root.querySelector('.ag-ficha-cover'),sourceContent=root.querySelector('.ag-ficha-content-flow'),annexes=[...root.querySelectorAll('.ag-ficha-photo-annex')],back=root.querySelector('.ag-ficha-back-cover');
+    const ordered=[];
+    if(cover){cover.classList.add('ag-direct-page','ag-direct-cover-page');cover.classList.remove('ag-ficha-break-page');ordered.push(cover)}
+    if(sourceContent){
+      const children=[...sourceContent.children].map(n=>n.cloneNode(true));let holder=null,count=0;
+      for(const node of children){
+        if(!holder){holder=makeDirectContentPage(doc,root);count=0}
+        holder.flow.appendChild(node);count++;
+        if(holder.page.scrollHeight>holder.page.clientHeight+2&&count>1){holder.flow.removeChild(node);holder=null;holder=makeDirectContentPage(doc,root);holder.flow.appendChild(node);count=1}
+      }
+      const contentPages=[...root.querySelectorAll('.ag-direct-content-page')].filter(pg=>pg.querySelector('.ag-ficha-content-flow')?.children.length);
+      ordered.push(...contentPages);sourceContent.remove();
+    }
+    for(const annex of annexes){const page=doc.createElement('section');page.className='ag-direct-page ag-direct-annex-page';annex.classList.remove('ag-ficha-break-page');page.appendChild(annex);root.appendChild(page);ordered.push(page)}
+    if(back){back.classList.add('ag-direct-page','ag-direct-back-page');ordered.push(back)}
+    root.replaceChildren(...ordered);
+    return ordered.filter(p=>p&&p.children.length);
+  }
+  async function buildDirectPdfFrame(p){
+    const frame=document.createElement('iframe');frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;left:-12000px;top:0;width:210mm;height:297mm;border:0;opacity:.01;pointer-events:none;z-index:-1;';document.body.appendChild(frame);
+    const doc=frame.contentDocument;doc.open();doc.write(`<!doctype html><html><head><meta charset="utf-8"><style>${directPdfCss()}</style></head><body><div class="ag-ficha-sheet ag-direct-root">${renderSheet(p)}</div></body></html>`);doc.close();
+    await new Promise(r=>setTimeout(r,120));const root=doc.querySelector('.ag-direct-root');await hydrateDirectPdfImages(root);const pages=paginateDirectPdf(doc,root);await new Promise(r=>setTimeout(r,120));return {frame,doc,root,pages};
+  }
+  function canvasHasVisibleContent(canvas){
+    try{const ctx=canvas.getContext('2d',{willReadFrequently:true}),w=canvas.width,h=canvas.height,cols=36,rows=50;let visible=0,total=0;for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){const px=Math.min(w-1,Math.floor((x+.5)*w/cols)),py=Math.min(h-1,Math.floor((y+.5)*h/rows)),d=ctx.getImageData(px,py,1,1).data;total++;if(d[3]>10&&(d[0]<245||d[1]<245||d[2]<245))visible++}}return visible>=3||visible/total>.002}catch(e){return true}
+  }
+  function dataUrlBytes(dataUrl){
+    const b64=String(dataUrl||'').split(',')[1]||'',bin=atob(b64),out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;
+  }
+  function asciiBytes(s){return new TextEncoder().encode(String(s))}
+  function concatBytes(parts){let n=0;for(const p of parts)n+=p.length;const out=new Uint8Array(n);let o=0;for(const p of parts){out.set(p,o);o+=p.length}return out}
+  function buildDeterministicPdf(pageImages){
+    if(!pageImages.length)throw new Error('Nenhuma página válida foi gerada.');
+    const W=595.28,H=841.89,totalObjects=2+pageImages.length*3,parts=[],offsets=new Array(totalObjects+1).fill(0);let cursor=0;
+    const push=bytes=>{parts.push(bytes);cursor+=bytes.length};
+    const pushAscii=s=>push(asciiBytes(s));
+    push(concatBytes([asciiBytes('%PDF-1.4\n%'),new Uint8Array([255,255,255,255]),asciiBytes('\n')]));
+    const writeObj=(id,bodyParts)=>{offsets[id]=cursor;pushAscii(`${id} 0 obj\n`);for(const part of bodyParts)push(typeof part==='string'?asciiBytes(part):part);pushAscii('\nendobj\n')};
+    writeObj(1,[`<< /Type /Catalog /Pages 2 0 R >>`]);
+    const pageIds=pageImages.map((_,i)=>3+i*3);writeObj(2,[`<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map(id=>`${id} 0 R`).join(' ')}] >>`]);
+    pageImages.forEach((img,i)=>{
+      const pageId=3+i*3,imgId=pageId+1,contentId=pageId+2,jpeg=dataUrlBytes(img.dataUrl),content=`q\n${W.toFixed(2)} 0 0 ${H.toFixed(2)} 0 0 cm\n/Im0 Do\nQ\n`,contentBytes=asciiBytes(content);
+      writeObj(pageId,[`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W.toFixed(2)} ${H.toFixed(2)}] /Resources << /XObject << /Im0 ${imgId} 0 R >> >> /Contents ${contentId} 0 R >>`]);
+      writeObj(imgId,[`<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`,jpeg,`\nendstream`]);
+      writeObj(contentId,[`<< /Length ${contentBytes.length} >>\nstream\n`,contentBytes,`endstream`]);
+    });
+    const xref=cursor;pushAscii(`xref\n0 ${totalObjects+1}\n0000000000 65535 f \n`);for(let i=1;i<=totalObjects;i++)pushAscii(`${String(offsets[i]).padStart(10,'0')} 00000 n \n`);pushAscii(`trailer\n<< /Size ${totalObjects+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+    return new Blob(parts,{type:'application/pdf'});
+  }
+  function savePdfBlob(blob,fileName){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fileName;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},2500)}
   async function downloadPropertyClientFicha(id=currentId){
     const p=getProperty(id);if(!p){window.toast?.('Imóvel não encontrado.');return}
     if(String(p.id)===String(currentId)&&dirty)savePropertyFichaSignature();
-    const safeId=String(p.id||'imovel').replace(/[^a-z0-9_-]+/gi,'_');
-    const host=document.createElement('div');
-    host.setAttribute('aria-hidden','true');
-    host.style.cssText='position:fixed;left:-100000px;top:0;width:210mm;background:#fff;z-index:-1;pointer-events:none;';
-    host.innerHTML=`<div class="ag-ficha-sheet ag-pdf-export">${renderSheet(p)}</div>`;
-    document.body.appendChild(host);
-    const sheet=host.firstElementChild;
+    const safeId=String(p.id||'imovel').replace(/[^a-z0-9_-]+/gi,'_');let frame=null;
     try{
-      window.toast?.('Gerando PDF da ficha…');
-      await ensureAgPdfEngine();
-      await waitFichaImages(sheet);
-      const opt={
-        margin:0,
-        filename:`Ficha_${safeId}.pdf`,
-        image:{type:'jpeg',quality:.96},
-        html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',imageTimeout:20000,logging:false},
-        jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},
-        pagebreak:{mode:['css','legacy'],before:['.ag-ficha-photo-annex','.ag-ficha-back-cover'],after:['.ag-ficha-cover'],avoid:['.ag-ficha-section','.ag-ficha-field','.ag-ficha-declaration','.ag-ficha-signature-area','.ag-ficha-sublist','.ag-ficha-photo-item']}
-      };
-      await window.html2pdf().set(opt).from(sheet).save();
-      window.toast?.(`Ficha_${safeId}.pdf baixada.`);
-    }catch(e){
-      console.error('AG CRM · erro ao gerar PDF direto',e);
-      window.toast?.('Não foi possível gerar o PDF automaticamente. Verifique a conexão e tente novamente.');
-    }finally{host.remove()}
+      window.toast?.('Gerando PDF da ficha…');const {html2canvas}=await ensureAgPdfEngine();const built=await buildDirectPdfFrame(p);frame=built.frame;const pages=built.pages;
+      if(!pages.length)throw new Error('Nenhuma página foi montada.');
+      const pageImages=[];
+      for(let i=0;i<pages.length;i++){
+        const page=pages[i];await waitFichaImages(page);const c=await html2canvas(page,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,imageTimeout:20000,scrollX:0,scrollY:0,windowWidth:page.scrollWidth,windowHeight:page.scrollHeight});
+        if(!canvasHasVisibleContent(c)){console.warn('AG CRM · página vazia ignorada',i+1);continue}
+        pageImages.push({dataUrl:c.toDataURL('image/jpeg',0.94),width:c.width,height:c.height});
+      }
+      const expectedMin=3; if(pageImages.length<expectedMin)throw new Error('O PDF ficou incompleto e não foi baixado.');
+      const blob=buildDeterministicPdf(pageImages);savePdfBlob(blob,`Ficha_${safeId}.pdf`);window.toast?.(`Ficha_${safeId}.pdf baixada (${pageImages.length} páginas).`);
+    }catch(e){console.error('AG CRM · erro ao gerar PDF direto',e);window.toast?.(e?.message||'Não foi possível gerar o PDF automaticamente.')}finally{frame?.remove()}
   }
 
   function addFichaButton(){
