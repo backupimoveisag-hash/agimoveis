@@ -207,7 +207,7 @@ if(!enabled){
       if(avatarEl)avatarEl.textContent='AG';
       return;
     }
-    const name=String(profile.name||profile.displayName||profile.email||'Usuário').trim();
+    const name=String(auth.currentUser?.displayName||profile.name||profile.displayName||auth.currentUser?.email||profile.email||'Usuário').trim();
     if(nameEl)nameEl.textContent=name;
     if(roleEl)roleEl.textContent=String(profile.role||'Usuário');
     if(avatarEl)avatarEl.textContent=profileInitials(profile);
@@ -716,7 +716,15 @@ if(!enabled){
     if(!user||authProcessing)return;authProcessing=true;hideFirestoreRecoveryUI();setRegisterBusy(false);setLoginMessage(`Autenticação concluída. Conectando ao Firestore · banco ${firestoreDatabaseId} · V132…`,'pending');
     try{
       roleProfile=await withTimeout(ensureProfile(user),12500,'Inicialização do perfil');pendingRegisterName='';if(roleProfile.active===false)throw new Error('Acesso inativo. Fale com o administrador.');
-      localStorage.setItem('nexoSessionV1',JSON.stringify({email:user.email,name:roleProfile.name||user.displayName||user.email,role:roleProfile.role,uid:user.uid,at:new Date().toISOString()}));
+      // V167: o UID autenticado é a identidade canônica. Se o perfil próprio ficou com nome/e-mail
+      // de outra sessão administrativa, repara somente o documento deste UID usando Authentication.
+      const authDisplayName=String(user.displayName||'').trim();
+      const authEmail=String(user.email||'').trim().toLowerCase();
+      const identityPatch={uid:user.uid,...(authEmail?{email:authEmail}:{}),...(authDisplayName?{name:authDisplayName}:{}),updatedAt:new Date().toISOString()};
+      if((authDisplayName&&String(roleProfile.name||'').trim()!==authDisplayName)||(authEmail&&String(roleProfile.email||'').trim().toLowerCase()!==authEmail)||String(roleProfile.uid||'')!==String(user.uid)){
+        try{await dbSet(`users/${user.uid}`,identityPatch,{merge:true});roleProfile={...roleProfile,...identityPatch}}catch(identityErr){console.warn('V167: não foi possível reparar identidade do perfil',identityErr);roleProfile={...roleProfile,uid:user.uid,...(authEmail?{email:authEmail}:{}),...(authDisplayName?{name:authDisplayName}:{})}}
+      }
+      localStorage.setItem('nexoSessionV1',JSON.stringify({email:authEmail||roleProfile.email||'',name:authDisplayName||roleProfile.name||authEmail||roleProfile.email||'Usuário',role:roleProfile.role,uid:user.uid,at:new Date().toISOString()}));
       bridge.setLoginVisible(false);if($('#cloudUser'))$('#cloudUser').textContent=user.email||user.uid;applyProfileAccess(roleProfile);setAuthNote(`Firebase online · ${roleProfile.role}${firestoreTransport==='rest'?' · HTTPS':''}`);status(firestoreTransport==='rest'?'Online via HTTPS':'Online','online');await ensureProductionResetV82();ensureRosterLink(user,roleProfile);startStateListener();startLeadListener();queueCatalogSync();startAdminConsole();setLoginMessage('','');$('#loginError').textContent='';
       ownProfileUnsub?.();if(firestoreTransport==='sdk')ownProfileUnsub=onSnapshot(doc(fs,'users',user.uid),async snap=>{if(!snap.exists())return;const next=snap.data();if(next.active===false){bridge.toast('Seu acesso foi desativado.');await signOut(auth);return}roleProfile=next;applyProfileAccess(roleProfile);startLeadListener();startAdminConsole()},err=>{console.warn('Perfil em tempo real',err);if(isFirestoreConnectivityError(err)){firestoreTransport='rest';startStateListener();startAdminConsole()}});
     }catch(err){
@@ -758,5 +766,5 @@ if(!enabled){
     return [...userCache.values()].map(u=>({uid:u.uid||u.firebaseUid||'',...u}));
   }
 
-  window.EIFirebaseCRM={enabled:true,queueStateSync,queueCatalogSync,saveStateNow,saveCatalogNow,getProfile:()=>roleProfile,permissionsForProfile,listUsers:listDirectoryUsers};
+  window.EIFirebaseCRM={enabled:true,queueStateSync,queueCatalogSync,saveStateNow,saveCatalogNow,getProfile:()=>roleProfile,getAuthUser:()=>auth.currentUser?{uid:auth.currentUser.uid,email:auth.currentUser.email||'',displayName:auth.currentUser.displayName||''}:null,permissionsForProfile,listUsers:listDirectoryUsers};
 }

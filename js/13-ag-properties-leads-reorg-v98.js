@@ -335,7 +335,7 @@
         id:current?.id||('L'+uid().slice(-6).toUpperCase()),
         source:current?.source||'Cadastro manual',
         stage:current?.stage||'Novo',
-        broker:current?.broker||(db.users||[]).find(u=>u.active)?.name||'',
+        broker:current?.broker||window.EIFirebaseCRM?.getProfile?.()?.name||window.EIFirebaseCRM?.getAuthUser?.()?.displayName||'',
         value:Number(current?.value||0),
         temp:current?.temp||'Morno',
         created:current?.created||todayISO()
@@ -464,6 +464,9 @@
           db.properties.push(record);
         }
         enforceUniqueProperties();
+        // V167: cria/atualiza automaticamente o proprietário usando os dados preenchidos no imóvel.
+        // A sincronização ocorre antes do saveDB para imóvel + proprietário irem juntos ao Firestore.
+        try{window.AGOwnerSyncV167?.syncProperty?.(record)}catch(e){console.warn('V167 proprietário automático',e)}
         pushActivity('⌂',wasExisting?'Imóvel atualizado':'Novo imóvel cadastrado',`${record.id} · ${record.title}`);
         saveDB();
         closeModal();
