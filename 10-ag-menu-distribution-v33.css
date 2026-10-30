@@ -1,0 +1,81 @@
+/* V33 — menu AG sem sobreposição: a navegação ganha a largura principal e o perfil nunca invade os itens. */
+@media (min-width:901px){
+  .sidebar{
+    width:calc(100% - 32px)!important;
+    max-width:none!important;
+    display:grid!important;
+    grid-template-columns:90px minmax(0,1fr) 170px!important;
+    align-items:center!important;
+    column-gap:8px!important;
+    padding:8px 12px!important;
+  }
+  .brand.brand--with-logo{
+    width:90px!important;min-width:0!important;max-width:none!important;
+    margin:0!important;padding:0 12px 0 2px!important;
+    justify-content:center!important;
+  }
+  .brand-mark.logo-full img{height:52px!important;max-width:72px!important;width:auto!important}
+  .nav{
+    width:100%!important;min-width:0!important;max-width:none!important;
+    display:flex!important;align-items:center!important;justify-content:space-between!important;
+    gap:2px!important;padding:0 4px!important;overflow:hidden!important;
+  }
+  .nav button{
+    flex:0 1 auto!important;min-width:0!important;height:44px!important;
+    padding:0 7px!important;gap:5px!important;border-radius:12px!important;
+    font-size:9.2px!important;line-height:1!important;white-space:nowrap!important;
+    overflow:hidden!important;text-overflow:ellipsis!important;
+  }
+  .nav .ico{width:14px!important;height:14px!important;flex:0 0 14px!important}
+  .nav .ico svg{width:14px!important;height:14px!important}
+  .nav button:nth-child(7),.nav button:nth-child(9),.nav button:nth-child(13){margin-left:0!important}
+  .nav button:nth-child(7)::before,.nav button:nth-child(9)::before,.nav button:nth-child(13)::before{display:none!important}
+  .sidebar-foot{
+    width:170px!important;min-width:0!important;max-width:170px!important;
+    margin:0!important;padding-left:10px!important;overflow:hidden!important;
+  }
+  .user-mini{width:100%!important;min-width:0!important;display:grid!important;grid-template-columns:34px minmax(0,1fr) 34px!important;align-items:center!important;gap:7px!important;padding:3px 0!important}
+  .user-mini>div:not(.avatar){min-width:0!important;overflow:hidden!important}
+  .user-mini b,.user-mini small{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .logout-mini{width:34px!important;height:34px!important;margin:0!important;flex:0 0 34px!important}
+}
+@media (min-width:901px) and (max-width:1749px){
+  .sidebar{grid-template-columns:82px minmax(0,1fr) 92px!important}
+  .brand.brand--with-logo{width:82px!important;padding-right:8px!important}
+  .brand-mark.logo-full img{height:48px!important;max-width:66px!important}
+  .nav{gap:1px!important;padding-inline:2px!important}
+  .nav button{font-size:9px!important;padding-inline:6px!important;gap:0!important}
+  .nav .ico{display:none!important}
+  .sidebar-foot{width:92px!important;max-width:92px!important;padding-left:8px!important}
+  .user-mini{grid-template-columns:34px 34px!important;justify-content:end!important;gap:7px!important}
+  .user-mini>div:not(.avatar){display:none!important}
+}
+@media (min-width:901px) and (max-width:1399px){
+  .sidebar{grid-template-columns:72px minmax(0,1fr) 80px!important}
+  .brand.brand--with-logo{width:72px!important;padding-right:6px!important}
+  .brand-mark.logo-full img{height:44px!important;max-width:58px!important}
+  .nav button{font-size:8.4px!important;padding-inline:5px!important}
+  .sidebar-foot{width:80px!important;max-width:80px!important;padding-left:6px!important}
+  .user-mini{grid-template-columns:32px 32px!important;gap:5px!important}.avatar,.logout-mini{width:32px!important;height:32px!important}
+}
+@media (min-width:901px) and (max-width:1199px){
+  .sidebar{grid-template-columns:68px minmax(0,1fr) 72px!important}
+  .brand.brand--with-logo{width:68px!important}
+  .nav{justify-content:space-evenly!important}
+  .nav button{font-size:0!important;width:38px!important;flex:0 0 38px!important;padding:0!important;overflow:visible!important}
+  .nav .ico{display:grid!important;width:16px!important;height:16px!important;flex-basis:16px!important}
+  .nav .ico svg{width:16px!important;height:16px!important}
+  .nav button .badge{font-size:8px!important;position:absolute!important;top:3px!important;right:1px!important;padding:1px 5px!important}
+  .sidebar-foot{width:72px!important;max-width:72px!important}
+  .user-mini{grid-template-columns:32px 32px!important}
+}
+@media (max-width:900px){
+  .sidebar{display:block!important;width:min(300px,88vw)!important;max-width:none!important}
+  .brand.brand--with-logo{width:100%!important;min-width:0!important;justify-content:flex-start!important}
+  .nav{display:grid!important;overflow:visible!important}
+  .nav button{font-size:11px!important;width:100%!important;justify-content:flex-start!important;overflow:visible!important}
+  .nav .ico{display:grid!important}
+  .sidebar-foot{width:auto!important;max-width:none!important;overflow:visible!important}
+  .user-mini{display:flex!important;width:auto!important}
+  .user-mini>div:not(.avatar){display:block!important}
+}

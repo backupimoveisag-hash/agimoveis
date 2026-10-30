@@ -1,0 +1,87 @@
+/* V43 — refinamento dos cards executivos AG */
+  .v5-management,
+  .v5-alert-card{
+    background:linear-gradient(145deg,#14253F 0%,#182E4E 100%) !important;
+    border:1px solid rgba(234,198,134,.18) !important;
+    box-shadow:0 18px 42px rgba(20,37,63,.14) !important;
+  }
+  .v5-management .card-head,
+  .v5-alert-card .card-head{
+    background:transparent !important;
+    border-bottom:1px solid rgba(255,255,255,.12) !important;
+  }
+  .v5-management .card-head h3,
+  .v5-alert-card .card-head h3{color:#fff !important;}
+  .v5-management .v5-kicker,
+  .v5-alert-card .v5-kicker{color:#EAC686 !important;}
+  .v5-live{color:#EAC686 !important;}
+  .v5-management .btn.small{
+    background:rgba(255,255,255,.08) !important;
+    border-color:rgba(255,255,255,.16) !important;
+    color:#fff !important;
+  }
+  .v5-management .btn.small:hover{background:#EAC686 !important;border-color:#EAC686 !important;color:#14253F !important;}
+
+  .v5-health-grid{
+    background:transparent !important;
+    border-top:0 !important;
+  }
+  .v5-health-grid>div{
+    background:rgba(255,255,255,.018) !important;
+    border-right:1px solid rgba(255,255,255,.11) !important;
+  }
+  .v5-health-grid>div:last-child{border-right:0 !important;}
+  .v5-health-grid span,.v5-health-grid small{color:rgba(255,255,255,.62) !important;}
+  .v5-health-grid strong{color:#fff !important;}
+
+  .v5-alert-list{
+    background:transparent !important;
+    padding:0 16px 14px !important;
+  }
+  .v5-alert{
+    background:transparent !important;
+    border-top:1px solid rgba(255,255,255,.11) !important;
+    color:#fff !important;
+  }
+  .v5-alert:first-child{border-top:0 !important;}
+  .v5-alert-icon{
+    background:rgba(234,198,134,.12) !important;
+    color:#EAC686 !important;
+    border:1px solid rgba(234,198,134,.18) !important;
+  }
+  .v5-alert b{color:#fff !important;}
+  .v5-alert p{color:rgba(255,255,255,.60) !important;}
+  .v5-alert .btn{
+    background:rgba(255,255,255,.06) !important;
+    border:1px solid rgba(255,255,255,.16) !important;
+    color:#fff !important;
+  }
+  .v5-alert .btn:hover{background:#EAC686 !important;border-color:#EAC686 !important;color:#14253F !important;}
+
+  /* O título desta seção fica fora dos cards e precisa permanecer legível no fundo branco. */
+  .v25-attention-head .v5-kicker{color:#9A7742 !important;}
+  .v25-attention-head h2{color:#14253F !important;}
+  .v25-attention-head p{color:rgba(20,37,63,.54) !important;}
+
+  .v25-attention-card{
+    background:linear-gradient(150deg,#14253F 0%,#172D4B 100%) !important;
+    border:1px solid rgba(234,198,134,.14) !important;
+    box-shadow:0 14px 30px rgba(20,37,63,.10) !important;
+  }
+  .v25-attention-card:before{
+    content:"";
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:3px;
+    background:linear-gradient(180deg,#EAC686,rgba(234,198,134,.25));
+    opacity:.8;
+  }
+  .v25-attention-card small{color:#EAC686 !important;}
+  .v25-attention-card strong{color:#fff !important;}
+  .v25-attention-card span{color:rgba(255,255,255,.64) !important;}
+  .v25-attention-card:after{color:#EAC686 !important;}
+  .v25-attention-card:hover{
+    transform:translateY(-3px) !important;
+    border-color:rgba(234,198,134,.62) !important;
+    box-shadow:0 20px 44px rgba(20,37,63,.18) !important;
+  }
