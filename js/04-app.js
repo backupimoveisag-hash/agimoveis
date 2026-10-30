@@ -227,7 +227,7 @@ if(!enabled){
     try{window.dispatchEvent(new CustomEvent('ag:profile-changed',{detail:{profile:profile||null}}))}catch(e){}
   }
   function sectionPermission(key){
-    const map={settings:'configuracoes',properties:'imoveis',prospectings:'imoveis',owners:'proprietarios',leads:'leads',tasks:'atendimento',siteEvents:'atendimento',automation:'configuracoes',clients:'clientes',appointments:'agenda',proposals:'propostas',contracts:'propostas',commissions:'financeiro',finance:'financeiro',users:'equipe',keys:'chaves',keyMovements:'chaves'};
+    const map={settings:'configuracoes',properties:'imoveis',prospectings:'imoveis',propertyDrafts:'imoveis',owners:'proprietarios',leads:'leads',tasks:'atendimento',siteEvents:'atendimento',automation:'configuracoes',clients:'clientes',appointments:'agenda',proposals:'propostas',contracts:'propostas',commissions:'financeiro',finance:'financeiro',users:'equipe',keys:'chaves',keyMovements:'chaves'};
     return map[key]||null;
   }
   function canWriteSection(key){

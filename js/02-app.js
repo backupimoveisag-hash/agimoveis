@@ -492,17 +492,18 @@ function ensureV7SiteSchema(){
   db.settings=db.settings||{};
   db.settings.siteBrand=db.settings.siteBrand||db.settings.name||'AG';
   db.settings.siteTagline=db.settings.siteTagline||'Imóveis para viver o próximo capítulo.';
-  db.settings.siteWhatsapp=String(db.settings.siteWhatsapp||db.settings.phone||'5547999990000').replace(/\D/g,'');
+  if(db.settings.siteContactV169!=='5547991237384'){db.settings.siteWhatsapp='5547991237384';db.settings.siteContactV169='5547991237384'}
+  db.settings.siteWhatsapp=String(db.settings.siteWhatsapp||'5547991237384').replace(/\D/g,'');
   db.settings.siteRegion=db.settings.siteRegion||'Jaraguá do Sul e região';
   db.properties.forEach(p=>{if(typeof p.published!=='boolean')p.published=['Disponível','Reservado'].includes(p.status);if(typeof p.siteFeatured!=='boolean')p.siteFeatured=!!p.featured;if(!p.priceDisplay)p.priceDisplay=p.hidePrice?'Conversar com Corretor':'Exibir preço';p.hidePrice=p.priceDisplay==='Conversar com Corretor'});
 }
 function publicPropertyPayload(p){
   const photos=propertyPhotos(p).map(ph=>({id:ph.id,room:ph.room||'Foto',name:ph.name||'',src:ph.src}));
-  const privatePrice=propertyPricePrivate(p);return {id:p.id,title:p.title,type:p.type,purpose:p.purpose,price:privatePrice?0:Number(p.price||0),priceDisplay:privatePrice?'Conversar com Corretor':'Exibir preço',hidePrice:privatePrice,address:p.address||'',city:p.city||'',state:p.state||((String(p.address||'').match(/-\s*([A-Z]{2})\s*$/)||[])[1])||'',district:p.district||'',beds:Number(p.beds||0),suites:Number(p.suites||0),baths:Number(p.baths||0),parking:Number(p.parking||0),area:Number(p.area||0),landArea:Number(p.landArea||0),condo:Number(p.condo||0),iptu:Number(p.iptu||0),year:Number(p.year||0),status:p.status||'',notes:p.notes||'',amenities:p.amenities||'',featured:!!p.siteFeatured,photos,coverPhoto:p.coverPhoto||photos[0]?.id||'',videos:(p.videos||[]).map(v=>({id:v.id,title:v.title||'',url:v.url||'',thumb:v.thumb||'',featured:p.videoFeaturedId===v.id})),videoFeaturedId:p.videoFeaturedId||'',tour360Url:p.tour360Url||''};
+  const privatePrice=propertyPricePrivate(p);return {id:p.id,title:p.title,type:p.type,purpose:p.purpose,price:privatePrice?0:Number(p.price||0),priceDisplay:privatePrice?'Conversar com Corretor':'Exibir preço',hidePrice:privatePrice,city:p.city||'',state:p.state||((String(p.address||'').match(/-\s*([A-Z]{2})\s*$/)||[])[1])||'',district:p.district||'',beds:Number(p.beds||0),suites:Number(p.suites||0),baths:Number(p.baths||0),parking:Number(p.parking||0),area:Number(p.area||0),landArea:Number(p.landArea||0),condo:Number(p.condo||0),iptu:Number(p.iptu||0),year:Number(p.year||0),status:p.status||'',notes:p.notes||'',amenities:p.amenities||'',featured:!!p.siteFeatured,photos,coverPhoto:p.coverPhoto||photos[0]?.id||'',videos:(p.videos||[]).map(v=>({id:v.id,title:v.title||'',url:v.url||'',thumb:v.thumb||'',featured:p.videoFeaturedId===v.id})),videoFeaturedId:p.videoFeaturedId||'',tour360Url:p.tour360Url||''};
 }
 function getPublicCatalog(){
   ensureV7SiteSchema();
-  return {version:1,syncedAt:new Date().toISOString(),settings:{brand:db.settings.siteBrand,tagline:db.settings.siteTagline,whatsapp:db.settings.siteWhatsapp,region:db.settings.siteRegion,email:db.settings.email||'',phone:db.settings.phone||'',address:db.settings.address||''},properties:db.properties.filter(p=>p.published&&['Disponível','Reservado'].includes(p.status)).map(publicPropertyPayload)};
+  return {version:1,syncedAt:new Date().toISOString(),settings:{brand:db.settings.siteBrand,tagline:db.settings.siteTagline,whatsapp:'5547991237384',region:db.settings.siteRegion,email:db.settings.email||'',phone:'(47) 99123-7384'},properties:db.properties.filter(p=>p.published&&['Disponível','Reservado'].includes(p.status)).map(publicPropertyPayload)};
 }
 function syncPublicCatalog(){
   const catalog=getPublicCatalog();
