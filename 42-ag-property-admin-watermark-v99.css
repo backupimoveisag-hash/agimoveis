@@ -1,2 +1,0 @@
-/* AG CRM V99 — controles administrativos e aviso de marca d'água */
-.ag-watermark-note{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(234,198,134,.38);background:rgba(234,198,134,.09);border-radius:12px;color:#14253f}.ag-watermark-note b{font-size:10px}.ag-watermark-note span{font-size:9px;color:var(--muted)}.ag-admin-delete-property{margin-left:auto}@media(max-width:700px){.ag-watermark-note{align-items:flex-start;flex-direction:column}.ag-admin-delete-property{margin-left:0;width:100%}}
