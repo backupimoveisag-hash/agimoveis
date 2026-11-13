@@ -3,12 +3,17 @@
   const baseOpenModal = openModal;
   const baseSaveModal = saveModal;
 
-  // Incremental code independent of the length of the property list (which may have gaps).
+  function propertyCodeNumber(value){
+    const raw=String(value||'').trim().toUpperCase();
+    const m=raw.match(/^IM\s*[-_.\/]?\s*0*(\d+)$/);
+    return m?Number(m[1])||0:0;
+  }
+  // Incremental local helper kept only for legacy UI. The final new code is always
+  // reserved globally by Firestore before saving.
   function nextPropertyCode(){
-    const used=new Set((db.properties||[]).map(p=>String(p.id||'').trim().toUpperCase()));
-    const next=1+Math.max(0,...[...used].map(code=>/^IM\d+$/.test(code)?Number(code.slice(2)):0));
-    let candidate=next;
-    while(used.has(`IM${String(candidate).padStart(3,'0')}`))candidate++;
+    const usedNumbers=new Set((db.properties||[]).map(p=>propertyCodeNumber(p?.id)).filter(Boolean));
+    let candidate=1+Math.max(0,...usedNumbers);
+    while(usedNumbers.has(candidate))candidate++;
     return `IM${String(candidate).padStart(3,'0')}`;
   }
 
@@ -18,6 +23,8 @@
 
   // V115 — invariant: property code is unique across the CRM state.
   function normalizedPropertyCode(value){
+    const n=propertyCodeNumber(value);
+    if(n>0)return `IM${String(n).padStart(3,'0')}`;
     return String(value||'').trim().toUpperCase();
   }
   function propertyCompletenessScore(p){

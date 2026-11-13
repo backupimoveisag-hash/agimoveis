@@ -743,13 +743,26 @@ if(!enabled){
     await completeAuthenticatedSession(user);
   });
 
+  function propertyCodeNumber(value){
+    const raw=String(value||'').trim().toUpperCase();
+    // Aceita formatos legados equivalentes: IM18, IM018, IM 18, IM-18 etc.
+    const m=raw.match(/^IM\s*[-_.\/]?\s*0*(\d+)$/);
+    return m?Number(m[1])||0:0;
+  }
   function maxPropertyCodeNumber(list){
     let max=0;
-    for(const item of (Array.isArray(list)?list:[])){
-      const m=String(item?.id||'').trim().toUpperCase().match(/^IM(\d+)$/);
-      if(m)max=Math.max(max,Number(m[1])||0);
-    }
+    for(const item of (Array.isArray(list)?list:[]))max=Math.max(max,propertyCodeNumber(item?.id));
     return max;
+  }
+  function usedPropertyCodeNumbers(...lists){
+    const used=new Set();
+    for(const list of lists){
+      for(const item of (Array.isArray(list)?list:[])){
+        const n=propertyCodeNumber(item?.id);
+        if(n>0)used.add(n);
+      }
+    }
+    return used;
   }
 
   // V181 · Sequência global de imóveis.
@@ -772,7 +785,11 @@ if(!enabled){
       const remoteList=propsSnap.exists()?(propsSnap.data()?.value||[]):[];
       const remoteMax=maxPropertyCodeNumber(remoteList);
       const counterMax=counterSnap.exists()?Number(counterSnap.data()?.lastNumber||0):0;
-      const next=Math.max(localMax,remoteMax,counterMax)+1;
+      const used=usedPropertyCodeNumbers(bridge.getState()?.properties||[],remoteList);
+      // Começa sempre após o maior número conhecido. Se o contador estiver defasado
+      // ou houver código legado com espaço/hífen, pula qualquer número já ocupado.
+      let next=Math.max(localMax,remoteMax,counterMax)+1;
+      while(used.has(next))next++;
       const nextCode=`IM${String(next).padStart(3,'0')}`;
       tx.set(counterRef,{
         lastNumber:next,
