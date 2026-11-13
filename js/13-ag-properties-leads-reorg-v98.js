@@ -199,7 +199,7 @@
     const photoCount=Array.isArray(data.photos)?data.photos.length:0;
     return `<form id="modalForm" class="form-grid prospecting-grid v98-property-form">
       ${formDivider('Identificação do imóvel','Cadastro completo da captação e das informações comerciais.')}
-      ${field('id','Código',data.id||nextPropertyCode(),'text','required')}
+      ${data.id?field('id','Código',data.id,'text','required readonly'):`<div class="form-group"><label>Código</label><input class="form-control" value="Gerado automaticamente ao salvar" readonly aria-label="Código gerado automaticamente"><input type="hidden" name="id" value=""><small class="muted-note">Sequência global do CRM. O próximo IMxxx é reservado no Firestore e não pode se repetir entre computadores.</small></div>`}
       ${field('title','Título do imóvel',data.title||data.propertyTitle||'','text','required')}
       ${selectField('type','Tipo de imóvel',['Casa','Apartamento','Terreno','Sítio/Chácara','Comercial','Rural','Outro'],data.type||data.propertyType||'Casa')}
       ${selectField('purpose','Finalidade',['Venda','Locação'],data.purpose||'Venda')}
@@ -407,10 +407,23 @@
           for(const file of files){
             if(saveBtn)saveBtn.textContent=`Enviando fotos (${additions.length+1}/${files.length})…`;
             const processed=await compressPropertyImage(file);
-            const stored=await window.AGDriveGateway.uploadImageData(processed,{propertyId:fd.id,fileName:file.name,room:'Capa'});
+            const uploadPropertyId=oldId||`PENDENTE-${String(window.EIFirebaseCRM?.getAuthUser?.()?.uid||'LOCAL').slice(0,8)}-${Date.now()}`;
+            const stored=await window.AGDriveGateway.uploadImageData(processed,{propertyId:uploadPropertyId,fileName:file.name,room:'Capa'});
             additions.push({id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:stored.url,driveFileId:stored.fileId||'',driveWebViewLink:stored.webViewLink||'',name:file.name.replace(/\.[^.]+$/,''),created:todayISO(),watermarked:true,watermark:'AG',storage:'google-drive'});
           }
         }
+        // V181: para imóvel novo, o código só é definido agora, após os uploads,
+        // por uma transação atômica no Firestore. Assim dois PCs não conseguem
+        // receber o mesmo IMxxx. O código não é digitável pelo usuário.
+        if(!oldId){
+          if(!window.EIFirebaseCRM?.enabled||typeof window.EIFirebaseCRM?.reservePropertyCode!=='function'){
+            throw new Error('Conecte o CRM ao Firestore antes de cadastrar o imóvel. O código precisa ser gerado pela sequência global para não duplicar em outro computador.');
+          }
+          if(saveBtn)saveBtn.textContent='Gerando código sequencial…';
+          fd.id=await window.EIFirebaseCRM.reservePropertyCode();
+          const hiddenCode=form.querySelector('input[name="id"]');if(hiddenCode)hiddenCode.value=fd.id;
+        }
+
         // A remote update may arrive while pictures are uploading. Recheck the
         // currently synchronized state immediately before committing the insert.
         const existing=oldId?(db.properties||[]).find(x=>x.id===oldId):null;

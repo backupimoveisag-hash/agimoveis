@@ -28,7 +28,7 @@ const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 if(!enabled){
   status('Modo local');
   setAuthNote('Modo local · configure firebase-config.js para ativar a nuvem.');
-  window.EIFirebaseCRM={enabled:false,queueStateSync(){},queueCatalogSync(){}};
+  window.EIFirebaseCRM={enabled:false,queueStateSync(){},queueCatalogSync(){},reservePropertyCode:async()=>{throw new Error('Conecte o CRM ao Firestore para gerar o código sequencial do imóvel sem risco de duplicidade.')}};
 }else{
   const [appMod,authMod,fsMod]=await Promise.all([
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),
@@ -743,6 +743,48 @@ if(!enabled){
     await completeAuthenticatedSession(user);
   });
 
+  function maxPropertyCodeNumber(list){
+    let max=0;
+    for(const item of (Array.isArray(list)?list:[])){
+      const m=String(item?.id||'').trim().toUpperCase().match(/^IM(\d+)$/);
+      if(m)max=Math.max(max,Number(m[1])||0);
+    }
+    return max;
+  }
+
+  // V181 · Sequência global de imóveis.
+  // A transação do Firestore serializa a reserva entre todos os computadores.
+  // O número sempre parte do maior IMxxx já existente (local/remoto/contador),
+  // portanto duas máquinas nunca recebem o mesmo código.
+  async function reservePropertyCode(){
+    if(!auth.currentUser||!roleProfile?.active)throw new Error('Faça login para gerar o código do imóvel.');
+    if(!canPage('imoveis')&&!isAdmin())throw new Error('Seu usuário não possui permissão para cadastrar imóveis.');
+    // Em contingência REST não existe transação atômica equivalente neste CRM.
+    // Bloqueamos a geração em vez de correr risco de código duplicado em outro PC.
+    if(firestoreTransport==='rest')throw new Error('O Firestore está em modo de contingência. Reconecte o CRM antes de cadastrar o imóvel para garantir o código sequencial sem duplicidade.');
+    const localMax=maxPropertyCodeNumber(bridge.getState()?.properties||[]);
+    const propsRef=sectionRef('properties');
+    const counterRef=doc(fs,'workspaces',wid,'counters','propertyCode');
+    const code=await withTimeout(runTransaction(fs,async tx=>{
+      // Todas as leituras vêm antes da escrita para permitir retry automático.
+      const propsSnap=await tx.get(propsRef);
+      const counterSnap=await tx.get(counterRef);
+      const remoteList=propsSnap.exists()?(propsSnap.data()?.value||[]):[];
+      const remoteMax=maxPropertyCodeNumber(remoteList);
+      const counterMax=counterSnap.exists()?Number(counterSnap.data()?.lastNumber||0):0;
+      const next=Math.max(localMax,remoteMax,counterMax)+1;
+      const nextCode=`IM${String(next).padStart(3,'0')}`;
+      tx.set(counterRef,{
+        lastNumber:next,
+        lastCode:nextCode,
+        updatedAt:serverTimestamp(),
+        updatedBy:auth.currentUser.uid
+      },{merge:true});
+      return nextCode;
+    }),10000,'Geração do código sequencial do imóvel');
+    return code;
+  }
+
   async function listDirectoryUsers(){
     if(!auth.currentUser)return [];
     if(!isAdmin())return roleProfile?[{uid:auth.currentUser.uid,...roleProfile}]:[];
@@ -766,5 +808,5 @@ if(!enabled){
     return [...userCache.values()].map(u=>({uid:u.uid||u.firebaseUid||'',...u}));
   }
 
-  window.EIFirebaseCRM={enabled:true,queueStateSync,queueCatalogSync,saveStateNow,saveCatalogNow,getProfile:()=>roleProfile,getAuthUser:()=>auth.currentUser?{uid:auth.currentUser.uid,email:auth.currentUser.email||'',displayName:auth.currentUser.displayName||''}:null,permissionsForProfile,listUsers:listDirectoryUsers};
+  window.EIFirebaseCRM={enabled:true,queueStateSync,queueCatalogSync,saveStateNow,saveCatalogNow,reservePropertyCode,getProfile:()=>roleProfile,getAuthUser:()=>auth.currentUser?{uid:auth.currentUser.uid,email:auth.currentUser.email||'',displayName:auth.currentUser.displayName||''}:null,permissionsForProfile,listUsers:listDirectoryUsers};
 }

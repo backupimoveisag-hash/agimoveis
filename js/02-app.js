@@ -495,7 +495,7 @@ function ensureV7SiteSchema(){
   if(db.settings.siteContactV169!=='5547991237384'){db.settings.siteWhatsapp='5547991237384';db.settings.siteContactV169='5547991237384'}
   db.settings.siteWhatsapp=String(db.settings.siteWhatsapp||'5547991237384').replace(/\D/g,'');
   db.settings.siteRegion=db.settings.siteRegion||'Jaraguá do Sul e região';
-  db.properties.forEach(p=>{if(typeof p.published!=='boolean')p.published=['Disponível','Reservado'].includes(p.status);if(typeof p.siteFeatured!=='boolean')p.siteFeatured=!!p.featured;if(!p.priceDisplay)p.priceDisplay=p.hidePrice?'Conversar com Corretor':'Exibir preço';p.hidePrice=p.priceDisplay==='Conversar com Corretor'});
+  db.properties.forEach(p=>{if(typeof p.siteFeatured!=='boolean')p.siteFeatured=!!p.featured;if(!p.priceDisplay)p.priceDisplay=p.hidePrice?'Conversar com Corretor':'Exibir preço';p.hidePrice=p.priceDisplay==='Conversar com Corretor'});
 }
 function publicPropertyPayload(p){
   const photos=propertyPhotos(p).map(ph=>({id:ph.id,room:ph.room||'Foto',name:ph.name||'',src:ph.src}));
@@ -503,7 +503,7 @@ function publicPropertyPayload(p){
 }
 function getPublicCatalog(){
   ensureV7SiteSchema();
-  return {version:1,syncedAt:new Date().toISOString(),settings:{brand:db.settings.siteBrand,tagline:db.settings.siteTagline,whatsapp:'5547991237384',region:db.settings.siteRegion,email:db.settings.email||'',phone:'(47) 99123-7384'},properties:db.properties.filter(p=>p.published&&['Disponível','Reservado'].includes(p.status)).map(publicPropertyPayload)};
+  return {version:1,syncedAt:new Date().toISOString(),settings:{brand:db.settings.siteBrand,tagline:db.settings.siteTagline,whatsapp:'5547991237384',region:db.settings.siteRegion,email:db.settings.email||'',phone:'(47) 99123-7384'},properties:db.properties.filter(p=>p.published===true||String(p.published||'').trim().toLowerCase()==='sim').map(publicPropertyPayload)};
 }
 function syncPublicCatalog(){
   const catalog=getPublicCatalog();
@@ -532,17 +532,17 @@ function buildSitePreviewHTML(catalog){
 function renderSiteManager(){
   if(!$('#page-site'))return;ensureV7SiteSchema();db.settings.siteBrand='AG';updatePublicSyncIndicator();
   $('#siteBrandInput').value=db.settings.siteBrand||'';$('#siteTaglineInput').value=db.settings.siteTagline||'';$('#siteWhatsappInput').value=db.settings.siteWhatsapp||'';$('#siteRegionInput').value=db.settings.siteRegion||'';
-  const published=db.properties.filter(p=>p.published).length;$('#sitePublishedCount').textContent=published;const last=localStorage.getItem('nexoPublicLastSync');$('#siteLastSync').textContent=last?new Date(last).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'agora';
-  $('#sitePropertyPublishList').innerHTML=db.properties.map(p=>`<div class="site-publish-row"><div class="site-publish-thumb" style="background-image:url('${propertyImage(p)}')"></div><div class="site-publish-copy"><b>${safe(p.title)}</b><span>${safe(p.id)} · ${safe(p.status)} · ${propertyPricePrivate(p)?'Site: Conversar com Corretor':money(p.price)}</span></div><label class="site-toggle" title="${p.published?'Publicado':'Não publicado'}"><input type="checkbox" data-site-publish="${p.id}" ${p.published?'checked':''}><i></i></label></div>`).join('')||'<div class="site-empty">Nenhum imóvel cadastrado.</div>';
+  const published=db.properties.filter(p=>p.published===true||String(p.published||'').trim().toLowerCase()==='sim').length;$('#sitePublishedCount').textContent=published;const last=localStorage.getItem('nexoPublicLastSync');$('#siteLastSync').textContent=last?new Date(last).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'agora';
+  $('#sitePropertyPublishList').innerHTML=db.properties.map(p=>`<div class="site-publish-row"><div class="site-publish-thumb" style="background-image:url('${propertyImage(p)}')"></div><div class="site-publish-copy"><b>${safe(p.title)}</b><span>${safe(p.id)} · ${safe(p.status)} · ${propertyPricePrivate(p)?'Site: Conversar com Corretor':money(p.price)}</span></div><label class="site-toggle" title="${p.published===true?'Publicado':'Não publicado'}"><input type="checkbox" data-site-publish="${p.id}" ${p.published===true?'checked':''}><i></i></label></div>`).join('')||'<div class="site-empty">Nenhum imóvel cadastrado.</div>';
   const frame=$('#sitePreviewFrame');if(frame){frame.removeAttribute('src');const html=window.AG_SITE_PREVIEW_HTML_V92?.(getPublicCatalog())||buildSitePreviewHTML(getPublicCatalog());frame.srcdoc=html;}
 }
-function setPropertyPublication(id,value){const p=db.properties.find(x=>x.id===id);if(!p)return;p.published=!!value;localStorage.setItem('atlasImobCRM',JSON.stringify(db));syncPublicCatalog();renderSiteManager();renderProperties();toast(value?'Imóvel publicado no site.':'Imóvel removido do site.')}
+function setPropertyPublication(id,value){const p=db.properties.find(x=>x.id===id);if(!p)return;p.published=!!value;localStorage.setItem('atlasImobCRM',JSON.stringify(db));syncPublicCatalog();renderSiteManager();renderProperties();toast(value?'Imóvel incluído no site.':'Imóvel removido do site.')}
 function initSiteEvents(){
   $('#sitePropertyPublishList')?.addEventListener('change',e=>{const input=e.target.closest('[data-site-publish]');if(input)setPropertyPublication(input.dataset.sitePublish,input.checked)});
   $('#saveSiteSettings')?.addEventListener('click',()=>{db.settings.siteBrand=$('#siteBrandInput').value.trim()||db.settings.name;db.settings.siteTagline=$('#siteTaglineInput').value.trim()||'Imóveis para viver o próximo capítulo.';db.settings.siteWhatsapp=$('#siteWhatsappInput').value.replace(/\D/g,'');db.settings.siteRegion=$('#siteRegionInput').value.trim();localStorage.setItem('atlasImobCRM',JSON.stringify(db));syncPublicCatalog();renderSiteManager();toast('Site atualizado e sincronizado.')});
   $('#refreshSitePreview')?.addEventListener('click',()=>{renderSiteManager();toast('Prévia atualizada.')});
   $('#openPublicSite')?.addEventListener('click',()=>{const url=window.EI_FIREBASE_CONFIG?.publicSiteUrl||'';if(url){window.open(url,'_blank','noopener')}else{toast('Configure publicSiteUrl no firebase-config.js do CRM.')}});
-  $('#publishAllAvailable')?.addEventListener('click',()=>{db.properties.forEach(p=>p.published=p.status==='Disponível'||p.status==='Reservado');localStorage.setItem('atlasImobCRM',JSON.stringify(db));syncPublicCatalog();renderSiteManager();toast('Imóveis disponíveis publicados.')});
+  $('#publishAllAvailable')?.addEventListener('click',()=>{syncPublicCatalog();renderSiteManager();toast('Catálogo sincronizado somente com os imóveis marcados como Publicar no site = Sim.')});
 }
 function initLoginV7(){
   const screen=$('#loginScreen'),form=$('#loginForm');
