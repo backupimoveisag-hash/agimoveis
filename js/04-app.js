@@ -28,7 +28,7 @@ const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 if(!enabled){
   status('Modo local');
   setAuthNote('Modo local · configure firebase-config.js para ativar a nuvem.');
-  window.EIFirebaseCRM={enabled:false,queueStateSync(){},queueCatalogSync(){},reservePropertyCode:async()=>{throw new Error('Conecte o CRM ao Firestore para gerar o código sequencial do imóvel sem risco de duplicidade.')}};
+  window.EIFirebaseCRM={enabled:false,queueStateSync(){},queueCatalogSync(){},reservePropertyCode:async()=>{throw new Error('Conecte o CRM ao Firestore para gerar o código sequencial do imóvel sem risco de duplicidade.')},createPropertyRecordAtomic:async()=>{throw new Error('Conecte o CRM ao Firestore para cadastrar o imóvel com segurança.')}};
 }else{
   const [appMod,authMod,fsMod]=await Promise.all([
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),
@@ -802,6 +802,48 @@ if(!enabled){
     return code;
   }
 
+
+  // V184 · Criação atômica do imóvel.
+  // Gera o próximo código global e grava o registro na coleção de propriedades
+  // dentro da MESMA transação. O CRM só informa sucesso após leitura de confirmação.
+  async function createPropertyRecordAtomic(record){
+    if(!auth.currentUser||!roleProfile?.active)throw new Error('Faça login para cadastrar o imóvel.');
+    if(!canPage('imoveis')&&!isAdmin())throw new Error('Seu usuário não possui permissão para cadastrar imóveis.');
+    if(firestoreTransport==='rest')throw new Error('O Firestore está em modo de contingência. Reconecte o CRM antes de cadastrar o imóvel para garantir gravação e código sequencial sem duplicidade.');
+    const localState=bridge.getState()||{};
+    const localMax=maxPropertyCodeNumber(localState.properties||[]);
+    const propsRef=sectionRef('properties');
+    const counterRef=doc(fs,'workspaces',wid,'counters','propertyCode');
+    const safeInput=(cloudSafeState({properties:[record||{}]}).properties||[])[0]||{};
+    const result=await withTimeout(runTransaction(fs,async tx=>{
+      const propsSnap=await tx.get(propsRef);
+      const counterSnap=await tx.get(counterRef);
+      const remoteList=propsSnap.exists()&&Array.isArray(propsSnap.data()?.value)?clean(propsSnap.data().value):[];
+      const remoteMax=maxPropertyCodeNumber(remoteList);
+      const counterMax=counterSnap.exists()?Number(counterSnap.data()?.lastNumber||0):0;
+      const used=usedPropertyCodeNumbers(remoteList,localState.properties||[]);
+      let next=Math.max(localMax,remoteMax,counterMax)+1;
+      while(used.has(next))next++;
+      const id=`IM${String(next).padStart(3,'0')}`;
+      const normalized=id;
+      // Segurança adicional para bases legadas com IM 18 / IM-18 / IM018.
+      if(remoteList.some(p=>propertyCodeNumber(p?.id)===next))throw new Error(`O código ${id} já existe. Tente salvar novamente para obter o próximo sequencial.`);
+      const saved={...safeInput,id,updatedAt:new Date().toISOString()};
+      if(!saved.createdAt)saved.createdAt=saved.created||new Date().toISOString().slice(0,10);
+      remoteList.push(saved);
+      tx.set(propsRef,{value:remoteList,updatedAt:serverTimestamp()},{merge:true});
+      tx.set(counterRef,{lastNumber:next,lastCode:id,updatedAt:serverTimestamp(),updatedBy:auth.currentUser.uid},{merge:true});
+      return {id,properties:remoteList};
+    }),12000,'Cadastro sequencial do imóvel');
+
+    // Confirmação real: não fecha o formulário se o registro não puder ser lido de volta.
+    const verifySnap=await withTimeout(getDoc(propsRef),7000,'Confirmação do imóvel no Firestore');
+    const verifyList=verifySnap.exists()&&Array.isArray(verifySnap.data()?.value)?verifySnap.data().value:[];
+    const exists=verifyList.some(p=>propertyCodeNumber(p?.id)===propertyCodeNumber(result.id));
+    if(!exists)throw new Error(`O Firestore não confirmou a criação de ${result.id}. O formulário foi mantido aberto; tente novamente.`);
+    return {id:result.id,properties:clean(verifyList)};
+  }
+
   async function listDirectoryUsers(){
     if(!auth.currentUser)return [];
     if(!isAdmin())return roleProfile?[{uid:auth.currentUser.uid,...roleProfile}]:[];
@@ -825,5 +867,5 @@ if(!enabled){
     return [...userCache.values()].map(u=>({uid:u.uid||u.firebaseUid||'',...u}));
   }
 
-  window.EIFirebaseCRM={enabled:true,queueStateSync,queueCatalogSync,saveStateNow,saveCatalogNow,reservePropertyCode,getProfile:()=>roleProfile,getAuthUser:()=>auth.currentUser?{uid:auth.currentUser.uid,email:auth.currentUser.email||'',displayName:auth.currentUser.displayName||''}:null,permissionsForProfile,listUsers:listDirectoryUsers};
+  window.EIFirebaseCRM={enabled:true,queueStateSync,queueCatalogSync,saveStateNow,saveCatalogNow,reservePropertyCode,createPropertyRecordAtomic,getProfile:()=>roleProfile,getAuthUser:()=>auth.currentUser?{uid:auth.currentUser.uid,email:auth.currentUser.email||'',displayName:auth.currentUser.displayName||''}:null,permissionsForProfile,listUsers:listDirectoryUsers};
 }

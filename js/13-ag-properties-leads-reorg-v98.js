@@ -435,24 +435,19 @@
             additions.push({id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:stored.url,driveFileId:stored.fileId||'',driveWebViewLink:stored.webViewLink||'',name:file.name.replace(/\.[^.]+$/,''),created:todayISO(),watermarked:true,watermark:'AG',storage:'google-drive'});
           }
         }
-        // V181: para imóvel novo, o código só é definido agora, após os uploads,
-        // por uma transação atômica no Firestore. Assim dois PCs não conseguem
-        // receber o mesmo IMxxx. O código não é digitável pelo usuário.
-        if(!oldId){
-          if(!window.EIFirebaseCRM?.enabled||typeof window.EIFirebaseCRM?.reservePropertyCode!=='function'){
-            throw new Error('Conecte o CRM ao Firestore antes de cadastrar o imóvel. O código precisa ser gerado pela sequência global para não duplicar em outro computador.');
-          }
-          if(saveBtn)saveBtn.textContent='Gerando código sequencial…';
-          fd.id=await window.EIFirebaseCRM.reservePropertyCode();
-          const hiddenCode=form.querySelector('input[name="id"]');if(hiddenCode)hiddenCode.value=fd.id;
-        }
+        // V184: a criação de imóvel novo não reserva mais o código separadamente.
+        // Código + registro serão gravados juntos na MESMA transação, depois que
+        // o objeto completo estiver pronto. Isso elimina o caso “código reservado,
+        // mensagem de salvo, mas imóvel não criado”.
 
         // A remote update may arrive while pictures are uploading. Recheck the
         // currently synchronized state immediately before committing the insert.
         const existing=oldId?(db.properties||[]).find(x=>x.id===oldId):null;
         if(oldId&&!existing)throw new Error('O imóvel foi removido durante o envio. Atualize a lista antes de tentar novamente.');
-        const lateCodeConflict=propertyCodeConflict(fd.id,oldId);
-        if(lateCodeConflict)throw new Error(`O código ${normalizedPropertyCode(fd.id)} já está em uso por ${lateCodeConflict.id}. Gere novamente para obter o próximo código sequencial.`);
+        if(oldId){
+          const lateCodeConflict=propertyCodeConflict(fd.id,oldId);
+          if(lateCodeConflict)throw new Error(`O código ${normalizedPropertyCode(fd.id)} já está em uso por ${lateCodeConflict.id}.`);
+        }
 
         const record={...(existing||{}),...fd};
         // V135: timestamp the edited version so dedupe/cloud sync never restores
@@ -464,8 +459,43 @@
           record.photos=[{id:'PH'+uid().slice(-8).toUpperCase(),room:'Capa',src:v5FallbackPropertyImage(record),name:'Imagem principal',created:todayISO()}];
         }
         if(!record.coverPhoto || !record.photos.some(x=>x.id===record.coverPhoto))record.coverPhoto=record.photos[0]?.id||'';
+
+        let committedProperties=null;
+        if(!oldId){
+          if(!window.EIFirebaseCRM?.enabled||typeof window.EIFirebaseCRM?.createPropertyRecordAtomic!=='function'){
+            throw new Error('Conecte o CRM ao Firestore antes de cadastrar o imóvel. O cadastro precisa ser confirmado na nuvem antes de concluir.');
+          }
+          if(saveBtn)saveBtn.textContent='Gerando código e gravando imóvel…';
+          const committed=await window.EIFirebaseCRM.createPropertyRecordAtomic(record);
+          record.id=committed.id;
+          fd.id=committed.id;
+          committedProperties=Array.isArray(committed.properties)?committed.properties:null;
+          const hiddenCode=form.querySelector('input[name="id"]');if(hiddenCode)hiddenCode.value=record.id;
+        }
+
         // V115: upsert by property code. Even if two asynchronous save paths race,
         // the second one replaces/merges the same code instead of appending another row.
+        // Para imóvel novo, a lista devolvida pelo Firestore é a fonte de verdade.
+        // Isso evita que um snapshot antigo de outro PC apague o registro recém-criado.
+        if(!oldId&&committedProperties){
+          const beforeLocal=Array.isArray(db.properties)?db.properties:[];
+          const localByCode=new Map(beforeLocal.map(x=>[normalizedPropertyCode(x?.id),x]));
+          db.properties=committedProperties.map(remote=>{
+            const local=localByCode.get(normalizedPropertyCode(remote?.id));
+            if(!local)return remote;
+            const merged={...local,...remote};
+            const remotePhotos=Array.isArray(remote?.photos)?remote.photos:[];
+            const localPhotos=Array.isArray(local?.photos)?local.photos:[];
+            merged.photos=remotePhotos.map(ph=>{
+              const lp=localPhotos.find(x=>String(x?.id||'')===String(ph?.id||''));
+              return (!ph?.src&&lp?.src)?{...ph,src:lp.src}:ph;
+            });
+            return merged;
+          });
+          const ci=db.properties.findIndex(x=>normalizedPropertyCode(x?.id)===normalizedPropertyCode(record.id));
+          if(ci>=0)db.properties[ci]={...db.properties[ci],...record};
+          else db.properties.push(record);
+        }
         enforceUniqueProperties();
         const recordCode=normalizedPropertyCode(record.id);
         const sameCodeIndexes=[];
@@ -473,7 +503,7 @@
         const targetIndex=existing
           ? db.properties.findIndex(x=>normalizedPropertyCode(x?.id)===normalizedPropertyCode(oldId))
           : (sameCodeIndexes.length?sameCodeIndexes[0]:-1);
-        const wasExisting=targetIndex>=0;
+        const wasExisting=!!oldId && targetIndex>=0;
         if(wasExisting){
           // V135: editing is an explicit replace/update. Do not merge the old
           // record back over the form values. Preserve only photos from any
@@ -496,8 +526,11 @@
           db.properties=db.properties.filter((x,i)=>i===targetIndex||normalizedPropertyCode(x?.id)!==recordCode);
           const keptIndex=db.properties.findIndex(x=>normalizedPropertyCode(x?.id)===recordCode);
           if(keptIndex>=0)db.properties[keptIndex]=record; else db.properties.push(record);
-        }else{
+        }else if(targetIndex<0){
           db.properties.push(record);
+        }else{
+          // Imóvel novo já veio confirmado do Firestore; apenas mantém a versão local completa.
+          db.properties[targetIndex]={...db.properties[targetIndex],...record};
         }
         enforceUniqueProperties();
         // V167: cria/atualiza automaticamente o proprietário usando os dados preenchidos no imóvel.
@@ -506,7 +539,7 @@
         pushActivity('⌂',wasExisting?'Imóvel atualizado':'Novo imóvel cadastrado',`${record.id} · ${record.title}`);
         saveDB();
         closeModal();
-        toast(files.length?`Imóvel salvo com ${files.length} ${files.length===1?'foto':'fotos'}.`:'Imóvel salvo com sucesso.');
+        toast(oldId?(files.length?`Imóvel atualizado com ${files.length} ${files.length===1?'foto':'fotos'}.`:'Imóvel atualizado com sucesso.'):`${record.id} criado e confirmado no Firestore.`);
         if(files.length)setTimeout(()=>openPropertyDetails(record.id,'gallery',additions[0]?.id),120);
       }catch(e){
         console.error('Falha no cadastro do imóvel',e);
