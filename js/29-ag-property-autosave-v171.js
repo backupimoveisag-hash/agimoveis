@@ -46,8 +46,11 @@
     try{window.EIFirebaseCRM?.queueStateSync?.()}catch(e){}
   }
   function saveDraftObject(draft,{cloud=true}={}){
-    try{ensureBucket()[userKey()]=draft}catch(e){}
-    try{localStorage.setItem(localKey(),JSON.stringify(draft))}catch(e){}
+    // V183: saneia rascunhos legados para nunca persistir o código do imóvel novo.
+    const cleanFields={...(draft?.fields||{})}; delete cleanFields.id;
+    const cleanDraft={...(draft||{}),version:183,propertyCode:'',fields:cleanFields};
+    try{ensureBucket()[userKey()]=cleanDraft}catch(e){}
+    try{localStorage.setItem(localKey(),JSON.stringify(cleanDraft))}catch(e){}
     persistLocalState();
     if(cloud)queueCloudDraft();
   }
@@ -109,6 +112,8 @@
     const fields={};
     for(const el of Array.from(form.elements||[])){
       if(!el?.name||el.disabled)continue;
+      // V183: código de imóvel novo nunca entra no rascunho. Ele é reservado globalmente apenas ao salvar.
+      if(el.name==='id')continue;
       if(el.type==='file'||el.type==='button'||el.type==='submit')continue;
       if(el.type==='checkbox')fields[el.name]=el.checked?'on':'';
       else if(el.type==='radio'){if(el.checked)fields[el.name]=el.value}
@@ -121,6 +126,8 @@
     const fields=draft?.fields||{};
     for(const el of Array.from(form.elements||[])){
       if(!el?.name||!(el.name in fields))continue;
+      // V183: ignora qualquer id legado que tenha ficado salvo em rascunhos antigos.
+      if(el.name==='id')continue;
       const value=fields[el.name];
       if(el.type==='checkbox')el.checked=value==='on'||value===true;
       else if(el.type==='radio')el.checked=String(el.value)===String(value);
@@ -136,7 +143,7 @@
   }
   function draftFromForm(form){
     const fields=serialize(form);
-    return {version:DRAFT_VERSION,userKey:userKey(),propertyCode:String(fields.id||'').trim(),fields,savedAt:safeNow(),startedAt:newestDraft()?.startedAt||safeNow()};
+    return {version:183,userKey:userKey(),propertyCode:'',fields,savedAt:safeNow(),startedAt:newestDraft()?.startedAt||safeNow()};
   }
   function statusText(text,tone='saved'){
     const el=document.getElementById('agPropertyDraftStatusV171');if(!el)return;
@@ -179,6 +186,8 @@
     form.dataset.agAutosaveV171='1';activeNewPropertyForm=form;draftStarted=false;
     const draft=newestDraft();
     if(draft?.fields){applyDraft(form,draft);draftStarted=true;saveDraftObject(draft,{cloud:true})}
+    // V183: limpa qualquer código residual de tentativa anterior antes de um novo cadastro.
+    const hiddenId=form.elements?.namedItem('id'); if(hiddenId) hiddenId.value='';
     setupMoneyFields(form);
     decorateAutosave(form,!!draft?.fields);
     form.addEventListener('input',scheduleAutosave,{passive:true});

@@ -99,6 +99,15 @@
     })||null;
   }
 
+  function propertyCodeConflict(code,editingId){
+    const normalized=normalizedPropertyCode(code);
+    if(!normalized)return null;
+    return (db.properties||[]).find(other=>{
+      if(editingId && normalizedPropertyCode(other?.id)===normalizedPropertyCode(editingId))return false;
+      return normalizedPropertyCode(other?.id)===normalized;
+    })||null;
+  }
+
   function currentPropertyProfile(){
     try{
       const p=window.EIFirebaseCRM?.getProfile?.();
@@ -391,14 +400,21 @@
       fd.brokerUid=String(fd.brokerUid||'').trim();
       fd.brokerEmail=String(fd.brokerEmail||'').trim().toLowerCase();
 
-      if(oldId && !(db.properties||[]).some(x=>x.id===oldId)){
+      // V183: imóvel novo nunca reutiliza código vindo de rascunho/tentativa anterior.
+      // O id só nasce na reserva global do Firestore, mais abaixo.
+      if(!oldId)fd.id='';
+      if(oldId && !(db.properties||[]).some(x=>normalizedPropertyCode(x?.id)===normalizedPropertyCode(oldId))){
         toast('Imóvel original não encontrado. Atualize a lista antes de editar.');
         return;
       }
-      const duplicate=propertyDuplicate(fd,oldId);
-      if(duplicate){
-        toast(`Cadastro já existente (${duplicate.id}). Abra a ficha para editar, em vez de cadastrar novamente.`);
-        return;
+      // A antiga regra de "cadastro semelhante" podia bloquear um imóvel novo por endereço/título/proprietário.
+      // Para novos cadastros a única trava obrigatória é a unicidade do código global.
+      if(oldId){
+        const duplicate=propertyDuplicate(fd,oldId);
+        if(duplicate){
+          toast(`Cadastro já existente (${duplicate.id}). Abra a ficha para editar, em vez de cadastrar novamente.`);
+          return;
+        }
       }
 
       propertySavePending=true;
@@ -435,8 +451,8 @@
         // currently synchronized state immediately before committing the insert.
         const existing=oldId?(db.properties||[]).find(x=>x.id===oldId):null;
         if(oldId&&!existing)throw new Error('O imóvel foi removido durante o envio. Atualize a lista antes de tentar novamente.');
-        const lateDuplicate=propertyDuplicate(fd,oldId);
-        if(lateDuplicate)throw new Error(`Este imóvel já foi cadastrado (${lateDuplicate.id}). Não foi criado outro registro.`);
+        const lateCodeConflict=propertyCodeConflict(fd.id,oldId);
+        if(lateCodeConflict)throw new Error(`O código ${normalizedPropertyCode(fd.id)} já está em uso por ${lateCodeConflict.id}. Gere novamente para obter o próximo código sequencial.`);
 
         const record={...(existing||{}),...fd};
         // V135: timestamp the edited version so dedupe/cloud sync never restores
